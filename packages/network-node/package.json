@@ -1,0 +1,42 @@
+{
+  "name": "@modality-tools/network-node",
+  "version": "0.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "rimraf ./dist && tsc && npx prettier ./dist --write",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
+  },
+  "author": "Foy Savas",
+  "license": "LGPL-3.0",
+  "type": "module",
+  "files": [
+    "src",
+    "src/*"
+  ],
+  "exports": {
+    ".": "./src/index.js",
+    "./*": "./src/*.js"
+  },
+  "dependencies": {
+    "@chainsafe/libp2p-noise": "^15.0.0",
+    "@chainsafe/libp2p-yamux": "^6.0.2",
+    "@libp2p/identify": "^2.0.0",
+    "@libp2p/peer-id-factory": "^4.1.1",
+    "@libp2p/plaintext": "^1.0.22",
+    "@libp2p/tcp": "^9.0.24",
+    "@libp2p/webrtc": "^4.0.31",
+    "@libp2p/websockets": "^8.0.22",
+    "@multiformats/multiaddr": "^12.2.1",
+    "cli-calls": "^1.0.0",
+    "debug": "^4.3.4",
+    "it-all": "^3.0.6",
+    "it-length-prefixed": "^9.0.4",
+    "it-map": "^3.1.0",
+    "it-pipe": "^3.0.1",
+    "jest": "^28.1.1",
+    "libp2p": "^1.5.1",
+    "lodash": "^4.17.21",
+    "uint8arrays": "^3.1.1"
+  }
+}
