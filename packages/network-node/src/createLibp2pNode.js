@@ -3,6 +3,7 @@ import { createLibp2p } from 'libp2p'
 // protocols
 import { tcp } from '@libp2p/tcp';
 import { webSockets } from "@libp2p/websockets";
+import { ping } from '@libp2p/ping'
 // import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 
 // encryption
@@ -68,6 +69,7 @@ export default async function createLibp2pNode({
     nat,
     services: {
       identify: identify(),
+      ping: ping(),
     },
     ...options,
   });

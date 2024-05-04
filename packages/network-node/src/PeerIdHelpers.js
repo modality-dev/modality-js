@@ -3,11 +3,21 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { createEd25519PeerId } from "@libp2p/peer-id-factory";
 import { createFromJSON as _createFromJSON } from "@libp2p/peer-id-factory";
 
-export const createFromJSON = _createFromJSON;
+export function createFromJSON(obj) {
+  return _createFromJSON({
+    id: obj.id,
+    pubKey: obj.public_key || obj.publicKey || obj.pubKey,
+    privKey: obj.private_key || obj.privateKey || obj.privKey,
+  });
+}
 
-export function createFromJSONString(json) {
-  const obj = JSON.parse(json);
-  return _createFromJSON(obj);
+export function createFromJSONString(str) {
+  const obj = JSON.parse(str);
+  return _createFromJSON({
+    id: obj.id,
+    publicKey: obj.public_key || obj.publicKey,
+    privateKey: obj.private_key || obj.privateKey,
+  });
 }
 
 export async function create() {
@@ -17,8 +27,8 @@ export async function create() {
 export function exportToJSON(peerId, excludePrivateKey = false) {
   return {
     id: peerId.toString(),
-    pubKey: uint8ArrayToString(peerId.publicKey, 'base64pad'),
-    privKey:
+    public_key: uint8ArrayToString(peerId.publicKey, 'base64pad'),
+    private_key:
       excludePrivateKey === true || peerId.privateKey == null
         ? undefined
         : uint8ArrayToString(peerId.privateKey, 'base64pad'),

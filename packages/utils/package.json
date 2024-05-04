@@ -1,0 +1,37 @@
+{
+  "name": "@modality-tools/utils",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
+  },
+  "files": [
+    "src",
+    "src/*"
+  ],
+  "exports": {
+    ".": "./src/index.js",
+    "./*": "./src/*.js"
+  },
+  "author": "Foy Savas",
+  "license": "LGPL-3.0",
+  "type": "module",
+  "dependencies": {
+    "@libp2p/crypto": "^1.0.0",
+    "@libp2p/logger": "^2.0.0",
+    "debug": "^4.3.4",
+    "jest": "^28.1.1",
+    "json-stringify-deterministic": "^1.0.7",
+    "lodash": "^4.17.21",
+    "multiaddr": "^10.0.1",
+    "multiformats": "^9.7.0",
+    "uint8arrays": "^3.0.0"
+  },
+  "devDependencies": {
+    "node-fetch": "^3.2.9"
+  },
+  "peerDependencies": {
+    "node-fetch": "^3.2.9"
+  }
+}
