@@ -80,12 +80,18 @@ importers:
 
   packages/network-node:
     dependencies:
+      '@chainsafe/libp2p-gossipsub':
+        specifier: ^13.0.0
+        version: 13.0.0
       '@chainsafe/libp2p-noise':
         specifier: ^15.0.0
         version: 15.0.0
       '@chainsafe/libp2p-yamux':
         specifier: ^6.0.2
         version: 6.0.2
+      '@libp2p/bootstrap':
+        specifier: ^10.0.22
+        version: 10.0.22
       '@libp2p/crypto':
         specifier: ^1.0.0
         version: 1.0.17
@@ -125,6 +131,9 @@ importers:
       debug:
         specifier: ^4.3.4
         version: 4.3.4
+      delay:
+        specifier: ^6.0.0
+        version: 6.0.0
       it-all:
         specifier: ^3.0.6
         version: 3.0.6
@@ -149,6 +158,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      p-wait-for:
+        specifier: ^5.0.2
+        version: 5.0.2
       uint8arrays:
         specifier: ^3.1.1
         version: 3.1.1
@@ -1703,6 +1715,28 @@ packages:
     resolution: {integrity: sha512-ndGqEMG1W5WkGagaqOZHpPU172AGdxr+LD15sv3WIUvT5oCFUrG1Y0CW/v2Egwj4JXEvSibaIIIqImsm98y1nA==}
     dev: false
 
+  /@chainsafe/libp2p-gossipsub@13.0.0:
+    resolution: {integrity: sha512-2q+v429uZjMl6N3d+j9QCMj8YO0aiYvLSN1t0aTdpMXQHCHLJaaT9PtNn845B1Li7/uZjYESmikgVt8r7keH0w==}
+    engines: {npm: '>=8.7.0'}
+    dependencies:
+      '@libp2p/crypto': 4.1.1
+      '@libp2p/interface': 1.3.1
+      '@libp2p/interface-internal': 1.2.0
+      '@libp2p/peer-id': 4.1.1
+      '@libp2p/pubsub': 9.0.17
+      '@multiformats/multiaddr': 12.2.1
+      denque: 2.1.0
+      it-length-prefixed: 9.0.4
+      it-pipe: 3.0.1
+      it-pushable: 3.2.3
+      multiformats: 13.1.0
+      protons-runtime: 5.4.0
+      uint8arraylist: 2.4.8
+      uint8arrays: 5.0.3
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
   /@chainsafe/libp2p-noise@15.0.0:
     resolution: {integrity: sha512-O8Y/WVU4J/qrnG72jwVhbmdXiBzv1dT9B3PMClCRmZ9z/5vVPEGRVXE/SVYeGF3bNuBTLoh+F+GaKG/9UHlMhg==}
     engines: {node: '>=16.0.0', npm: '>=7.0.0'}
@@ -2242,6 +2276,15 @@ packages:
       - typescript
     dev: true
 
+  /@libp2p/bootstrap@10.0.22:
+    resolution: {integrity: sha512-qAEBvmsksPnuVYMF2Khfvw3Nvatv+VHvrW36A1LQM20nIZ4D25c0t0D9xUyMZd87R4/T+fqCPsW8JKG+6XQH7w==}
+    dependencies:
+      '@libp2p/interface': 1.3.1
+      '@libp2p/peer-id': 4.1.1
+      '@multiformats/mafmt': 12.1.6
+      '@multiformats/multiaddr': 12.2.1
+    dev: false
+
   /@libp2p/crypto@1.0.17:
     resolution: {integrity: sha512-Oeg0Eb/EvAho0gVkOgemXEgrVxWaT3x/DpFgkBdZ9qGxwq75w/E/oPc7souqBz+l1swfz37GWnwV7bIb4Xv5Ag==}
     engines: {node: '>=16.0.0', npm: '>=7.0.0'}
@@ -2455,6 +2498,26 @@ packages:
       it-stream-types: 2.0.1
       protons-runtime: 5.4.0
       uint8arraylist: 2.4.8
+    dev: false
+
+  /@libp2p/pubsub@9.0.17:
+    resolution: {integrity: sha512-7QOoaQ+DqPcQARUBjKAY2pE81nQ10kqfTi+QWZxhgxGFFjDAWpEnu4mELRXGAyPfo/TZ+P+6kHulMJ/JKjoUJA==}
+    dependencies:
+      '@libp2p/crypto': 4.1.1
+      '@libp2p/interface': 1.3.1
+      '@libp2p/interface-internal': 1.2.0
+      '@libp2p/peer-collections': 5.2.0
+      '@libp2p/peer-id': 4.1.1
+      '@libp2p/utils': 5.4.0
+      it-length-prefixed: 9.0.4
+      it-pipe: 3.0.1
+      it-pushable: 3.2.3
+      multiformats: 13.1.0
+      p-queue: 8.0.1
+      uint8arraylist: 2.4.8
+      uint8arrays: 5.0.3
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /@libp2p/tcp@9.0.24:
@@ -4995,6 +5058,11 @@ packages:
 
   /denodeify@1.2.1:
     resolution: {integrity: sha512-KNTihKNmQENUZeKu5fzfpzRqR5S2VMp4gl9RFHiWzj9DfvYQPMJ6XHKNaQxaGCXwPk6y9yme3aUoaiAe+KX+vg==}
+    dev: false
+
+  /denque@2.1.0:
+    resolution: {integrity: sha512-HVQE3AAb/pxF8fQAoiqpvg9i3evqug3hoiwakOyZAwJm+6vZehbkYXZ0l4JxS+I3QxM97v5aaRNhj8v5oBhekw==}
+    engines: {node: '>=0.10'}
     dev: false
 
   /depd@2.0.0:
@@ -8705,6 +8773,13 @@ packages:
   /p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
+
+  /p-wait-for@5.0.2:
+    resolution: {integrity: sha512-lwx6u1CotQYPVju77R+D0vFomni/AqRfqLmqQ8hekklqZ6gAY9rONh7lBQ0uxWMkC2AuX9b2DVAl8To0NyP1JA==}
+    engines: {node: '>=12'}
+    dependencies:
+      p-timeout: 6.1.2
+    dev: false
 
   /p-waterfall@2.1.1:
     resolution: {integrity: sha512-RRTnDb2TBG/epPRI2yYXsimO0v3BXC8Yd3ogr1545IaqKK17VGhbWVeGGN+XfCm/08OK8635nH31c8bATkHuSw==}

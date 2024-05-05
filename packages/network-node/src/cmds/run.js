@@ -1,36 +1,47 @@
 import createLibp2pNode from "../createLibp2pNode.js";
 import PeerIdHelpers from "../PeerIdHelpers.js";
-import { multiaddr } from '@multiformats/multiaddr'
-import { pipe } from "it-pipe";
-
-import { streamToConsole } from "../StreamHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
-export default async function run({config, keypair, listen, storage}) {
-  const conf = parseConfigArgs({config, keypair, listen, storage});
+import { VALIDATOR_TOPIC_MODULES } from '../gossip/index.js';
+
+async function addValidatorEventListeners(node) {
+  for (const module of VALIDATOR_TOPIC_MODULES) {
+    node.services.pubsub.subscribe(module.TOPIC);
+  }
+  node.services.pubsub.addEventListener("message", (message) => {
+    const topic = message.detail.topic;
+    for (const module of VALIDATOR_TOPIC_MODULES) {
+      if (topic === module.TOPIC) {
+        module.handler(message);
+      }
+    }
+  });
+}
+
+async function addPeerDiscoveryEventListeners(node) {
+  node.addEventListener("peer:connect", (evt) => {
+    console.log("connected to: ", evt.detail.toString());
+  });
+
+  node.addEventListener('peer:discovery', (evt) => {
+    console.log('found peer: ', evt.detail.toString())
+  })
+}
+
+export default async function run({ config, keypair, listen, storage }) {
+  const conf = parseConfigArgs({ config, keypair, listen, storage });
   const peerId = await PeerIdHelpers.createFromJSON(conf.keypair);
   const node = await createLibp2pNode({
     peerId,
     addresses: {
       listen: [conf.listen],
     },
+    bootstrappers: conf.bootstrappers,
   });
 
-  // Log a message when a remote peer connects to us
-  node.addEventListener("peer:connect", (evt) => {
-    const remotePeer = evt.detail;
-    console.log("connected to: ", remotePeer.toString());
-  });
+  await addPeerDiscoveryEventListeners(node);
+  await addValidatorEventListeners(node);
 
-  // Handle messages for the protocol
-  await node.handle("/chat/1.0.0", async ({ stream }) => {
-    // Send stdin to the stream
-    stdinToStream(stream);
-    // Read the stream and output to console
-    streamToConsole(stream);
-  });
-
-  // Output listen addresses to the console
   console.log("Listener ready, listening on:");
   node.getMultiaddrs().forEach((ma) => {
     console.log(ma.toString());

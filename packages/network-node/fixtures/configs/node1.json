@@ -5,5 +5,8 @@
     "private_key": "CAESQOf+u8qrRXj0KnDcz+CjCveXh3xFKsj38B+LJuoWZqq5xoy+BiHu9GkmPrr2Bvo4sw6ZMXS4TnOvg0VP3DFi93s="
   },
   "listen": "/ip4/0.0.0.0/tcp/10001/ws",
-  "storage": "/tmp/storage/node1"
+  "storage": "/tmp/storage/node1",
+  "bootstrappers": [
+    "/ip4/127.0.0.1/tcp/10001/ws/p2p/12D3KooWPBRNBzgceXh7Z27wGoyYYz9ggwaYg2dWiwXXe8ieyFCN"
+  ]
 }

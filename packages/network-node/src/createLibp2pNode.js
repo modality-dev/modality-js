@@ -13,18 +13,22 @@ import { plaintext } from "@libp2p/plaintext";
 // multiplexers
 import { yamux } from '@chainsafe/libp2p-yamux'
 
-// protocols
+// peer discovery
+import { bootstrap } from '@libp2p/bootstrap';
+
+// services
 import { identify } from '@libp2p/identify'
+import { gossipsub } from '@chainsafe/libp2p-gossipsub'
 
 export default async function createLibp2pNode({
   port,
   enableNAT,
-  enableWebSockets,
-  enableWebRTC,
-  enableWebRTCDirect,
   disableEncryption,
+  disableBootstrap,
   enableServeAsRelay,
   enableListenViaRelay,
+  bootstrappers,
+  peerId,
   ...options
 } = {}) {
   const transports =
@@ -61,16 +65,25 @@ export default async function createLibp2pNode({
     };
   }
 
+  bootstrappers = bootstrappers?.filter(
+    (i) => !i.match(`p2p/${peerId.toString()}$`)
+  );
+  
   const node = await createLibp2p({
     transports,
     connectionEncryption,
     streamMuxers: [yamux()],
     relay,
     nat,
+    peerDiscovery: [
+      ...((disableBootstrap || !bootstrappers?.length) ? [] : [bootstrap({list: bootstrappers})])
+    ],
     services: {
       identify: identify(),
       ping: ping(),
+      pubsub: gossipsub(),
     },
+    peerId,
     ...options,
   });
 
