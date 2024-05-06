@@ -3,7 +3,7 @@ import LevelMem from "level-mem";
 import LevelRocksDb from "level-rocksdb";
 
 import Keypair from "@modality-tools/utils/Keypair";
-import ValidatorVertex from "./ValidatorVertex.js";
+import SequencerVertex from "./SequencerVertex.js";
 
 export default class LocalDAG {
   constructor(datastore) {
@@ -69,9 +69,9 @@ export default class LocalDAG {
   }
 
   async createVertex(events = []) {
-    return new ValidatorVertex({
+    return new SequencerVertex({
       round: this.round,
-      validator: this.whoami,
+      sequencer: this.whoami,
       timelyEdges: await this.getTimelyEdges(),
       lateEdges: await this.getLateEdges(),
       events,
@@ -85,7 +85,7 @@ export default class LocalDAG {
   }
 
   async addVertexFromValues(vertexValues, noteIfLate = true) {
-    const vertex = new ValidatorVertex(vertexValues);
+    const vertex = new SequencerVertex(vertexValues);
     const id = vertex.getId();
     await this.datastore.put(id, JSON.stringify(vertex.getValues()));
     if (noteIfLate & (vertex.round < this.round - 1)) {
@@ -93,12 +93,12 @@ export default class LocalDAG {
     }
   }
 
-  async getVertexId({ validator, round }) {
-    return ValidatorVertex.getIdFor({ validator, round });
+  async getVertexId({ sequencer, round }) {
+    return SequencerVertex.getIdFor({ sequencer, round });
   }
 
-  async getVertex({ validator, round }) {
-    const id = ValidatorVertex.getIdFor({ validator, round });
+  async getVertex({ sequencer, round }) {
+    const id = SequencerVertex.getIdFor({ sequencer, round });
     return this.getVertexById(id);
   }
 
@@ -111,81 +111,81 @@ export default class LocalDAG {
       }
     });
     const data = JSON.parse(rawData);
-    return new ValidatorVertex(data);
+    return new SequencerVertex(data);
   }
 
-  async findPathBetweenVertices(firstValidatorVertexId, lastValidatorVertexId) {
-    const firstValidatorVertexJSONString = await this.datastore.get(
-      firstValidatorVertexId
+  async findPathBetweenVertices(firstSequencerVertexId, lastSequencerVertexId) {
+    const firstSequencerVertexJSONString = await this.datastore.get(
+      firstSequencerVertexId
     );
-    if (!firstValidatorVertexJSONString) {
+    if (!firstSequencerVertexJSONString) {
       return null;
     }
-    const firstValidatorVertex = JSON.parse(firstValidatorVertexJSONString);
-    const lastValidatorVertexJSONString = await this.datastore.get(
-      lastValidatorVertexId
+    const firstSequencerVertex = JSON.parse(firstSequencerVertexJSONString);
+    const lastSequencerVertexJSONString = await this.datastore.get(
+      lastSequencerVertexId
     );
-    if (!lastValidatorVertexJSONString) {
+    if (!lastSequencerVertexJSONString) {
       return null;
     }
-    const lastValidatorVertex = JSON.parse(lastValidatorVertexJSONString);
-    if (firstValidatorVertex.round >= lastValidatorVertex.round) {
+    const lastSequencerVertex = JSON.parse(lastSequencerVertexJSONString);
+    if (firstSequencerVertex.round >= lastSequencerVertex.round) {
       return null;
     }
 
     // assume densely connected, trace paths one at a time
     const exploringRoundEdges = [
-      ...lastValidatorVertex.timelyEdges || [],
-      ...lastValidatorVertex.lateEdges || [],
+      ...lastSequencerVertex.timelyEdges || [],
+      ...lastSequencerVertex.lateEdges || [],
     ];
-    if (exploringRoundEdges.find((i) => i === firstValidatorVertexId)) {
-      return [lastValidatorVertexId, firstValidatorVertexId];
+    if (exploringRoundEdges.find((i) => i === firstSequencerVertexId)) {
+      return [lastSequencerVertexId, firstSequencerVertexId];
     }
     for (const timelyEdgeId of exploringRoundEdges) {
       const p = await this.findTimelyPathBetweenVertices(
-        firstValidatorVertexId,
+        firstSequencerVertexId,
         timelyEdgeId
       );
       if (p) {
-        return [lastValidatorVertexId, ...p];
+        return [lastSequencerVertexId, ...p];
       }
     }
   }
 
   async findTimelyPathBetweenVertices(
-    firstValidatorVertexId,
-    lastValidatorVertexId
+    firstSequencerVertexId,
+    lastSequencerVertexId
   ) {
-    const firstValidatorVertexJSONString = await this.datastore.get(
-      firstValidatorVertexId
+    const firstSequencerVertexJSONString = await this.datastore.get(
+      firstSequencerVertexId
     );
-    if (!firstValidatorVertexJSONString) {
+    if (!firstSequencerVertexJSONString) {
       return null;
     }
-    const firstValidatorVertex = JSON.parse(firstValidatorVertexJSONString);
-    const lastValidatorVertexJSONString = await this.datastore.get(
-      lastValidatorVertexId
+    const firstSequencerVertex = JSON.parse(firstSequencerVertexJSONString);
+    const lastSequencerVertexJSONString = await this.datastore.get(
+      lastSequencerVertexId
     );
-    if (!lastValidatorVertexJSONString) {
+    if (!lastSequencerVertexJSONString) {
       return null;
     }
-    const lastValidatorVertex = JSON.parse(lastValidatorVertexJSONString);
-    if (firstValidatorVertex.round >= lastValidatorVertex.round) {
+    const lastSequencerVertex = JSON.parse(lastSequencerVertexJSONString);
+    if (firstSequencerVertex.round >= lastSequencerVertex.round) {
       return null;
     }
 
     // assume densely connected, trace paths one at a time
-    const exploringRoundTimelyEdges = lastValidatorVertex.timelyEdges;
-    if (exploringRoundTimelyEdges.find((i) => i === firstValidatorVertexId)) {
-      return [lastValidatorVertexId, firstValidatorVertexId];
+    const exploringRoundTimelyEdges = lastSequencerVertex.timelyEdges;
+    if (exploringRoundTimelyEdges.find((i) => i === firstSequencerVertexId)) {
+      return [lastSequencerVertexId, firstSequencerVertexId];
     }
     for (const timelyEdgeId of exploringRoundTimelyEdges) {
       const p = await this.findTimelyPathBetweenVertices(
-        firstValidatorVertexId,
+        firstSequencerVertexId,
         timelyEdgeId
       );
       if (p) {
-        return [lastValidatorVertexId, ...p];
+        return [lastSequencerVertexId, ...p];
       }
     }
   }
@@ -241,7 +241,7 @@ export default class LocalDAG {
     const r = [];
     for await (const keypair of keypairAsyncIter) {
       const v = await this.getVertexById(keypair.toString());
-      r.push(v.validator);
+      r.push(v.sequencer);
     }
     return r; 
   }
