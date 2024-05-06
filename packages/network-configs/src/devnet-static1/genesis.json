@@ -53,49 +53,49 @@
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 2,
       "timelyEdges": [
-        "/powo-network/NETWORK_ID/round/1/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+        "/consensus/round/1/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
       ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 3,
       "timelyEdges": [
-        "/powo-network/NETWORK_ID/round/2/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+        "/consensus/round/2/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
       ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 4,
       "timelyEdges": [
-        "/powo-network/NETWORK_ID/round/3/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+        "/consensus/round/3/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
       ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 5,
       "timelyEdges": [
-        "/powo-network/NETWORK_ID/round/4/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+        "/consensus/round/4/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
       ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 6,
       "timelyEdges": [
-        "/powo-network/NETWORK_ID/round/5/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+        "/consensus/round/5/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
       ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 7,
       "timelyEdges": [
-        "/powo-network/NETWORK_ID/round/6/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+        "/consensus/round/6/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
       ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 8,
       "timelyEdges": [
-        "/powo-network/NETWORK_ID/round/7/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+        "/consensus/round/7/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
       ]
     }
   ],

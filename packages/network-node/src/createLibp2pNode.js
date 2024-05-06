@@ -19,6 +19,7 @@ import { bootstrap } from '@libp2p/bootstrap';
 // services
 import { identify } from '@libp2p/identify'
 import { gossipsub } from '@chainsafe/libp2p-gossipsub'
+import reqres from './reqres/index.js';
 
 export default async function createLibp2pNode({
   port,
@@ -82,6 +83,7 @@ export default async function createLibp2pNode({
       identify: identify(),
       ping: ping(),
       pubsub: gossipsub(),
+      reqres: reqres(),
     },
     peerId,
     ...options,

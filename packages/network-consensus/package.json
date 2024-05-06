@@ -19,8 +19,12 @@
     "./*": "./src/*.js"
   },
   "dependencies": {
+    "@modality-tools/utils": "workspace:^",
+    "datastore-level": "^8.0.0",
     "debug": "^4.3.4",
-    "jest": "^28.1.1",
+    "jest": "^29.7",
+    "level-mem": "^6.0.1",
+    "level-rocksdb": "^5.0.0",
     "lodash": "^4.17.21",
     "uint8arrays": "^3.0.0"
   }
