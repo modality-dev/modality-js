@@ -3,6 +3,8 @@ import PeerIdHelpers from "../PeerIdHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
 import { addSequencerEventListeners } from "../gossip/index.js";
+import { addLocalDAGStorage } from "../storage.js";
+
 
 async function addPeerDiscoveryEventListeners(node) {
   node.addEventListener("peer:connect", (evt) => {
@@ -17,6 +19,7 @@ async function addPeerDiscoveryEventListeners(node) {
 export default async function run({ config, keypair, listen, storage }) {
   const conf = parseConfigArgs({ config, keypair, listen, storage });
   const peerId = await PeerIdHelpers.createFromJSON(conf.keypair);
+
   const node = await createLibp2pNode({
     peerId,
     addresses: {
@@ -24,6 +27,8 @@ export default async function run({ config, keypair, listen, storage }) {
     },
     bootstrappers: conf.bootstrappers,
   });
+
+  await addLocalDAGStorage(node, conf);
 
   await addPeerDiscoveryEventListeners(node);
   await addSequencerEventListeners(node);

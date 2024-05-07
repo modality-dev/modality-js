@@ -82,7 +82,6 @@ export class ReqResService {
 
     const { stream } = data;
     const start = Date.now()
-    console.log({ stream });
 
     let req_data = [];
     for await (const datum of stream.source) {

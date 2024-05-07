@@ -37,6 +37,7 @@ class GossipSub extends EventTarget {
   async publish(topic, data) {
     const peer_set = this.constructor.topics_to_peers_set.get(topic) || new Set();
     for (const peerId of peer_set) {
+      if (this.peerId === peerId) { continue; }
       const peer = this.peers.byPeerId(peerId);
       await peer.services.pubsub.doDispatchEvent({ topic, data });
     }
@@ -44,7 +45,7 @@ class GossipSub extends EventTarget {
 
   async subscribe(topic) {
     const peer_set = this.constructor.topics_to_peers_set.get(topic) || new Set();
-    peer_set.add(this.peerId);
+    peer_set.add(this.peerId.toString());
     this.constructor.topics_to_peers_set.set(topic, peer_set);
   }
 
@@ -70,7 +71,8 @@ class ReqResService {
   }
 
   async call(peerId, path, data) {
-    const target_node = await this.peers.byPeerId(peerId);
+    const target_node = this.peers.peers_by_peerId.get(peerId.toString());
+    if (!target_node) { throw new Error(`peer not found`); }
     const r = await target_node.services.reqres.handleRequest(peerId, path, data);
     return r;
   }
@@ -100,7 +102,7 @@ export default async function createTestNode({
     addresses: { listen: [multiaddr] }
   }
 
-  TestPeers.addPeer(peerId, multiaddr, node);
+  TestPeers.addPeer(peerId.toString(), multiaddr, node);
 
   return node;
 }

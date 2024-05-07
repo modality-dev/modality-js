@@ -14,7 +14,7 @@ export async function addSequencerEventListeners(node) {
     const topic = message.detail.topic;
     for (const module of SEQUENCER_TOPIC_MODULES) {
       if (topic === module.TOPIC) {
-        module.handler(message);
+        module.handler(node, message);
       }
     }
   });
