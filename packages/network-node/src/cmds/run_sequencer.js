@@ -2,21 +2,7 @@ import createLibp2pNode from "../createLibp2pNode.js";
 import PeerIdHelpers from "../PeerIdHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
-import { SEQUENCER_TOPIC_MODULES } from '../gossip/index.js';
-
-async function addSequencerEventListeners(node) {
-  for (const module of SEQUENCER_TOPIC_MODULES) {
-    node.services.pubsub.subscribe(module.TOPIC);
-  }
-  node.services.pubsub.addEventListener("message", (message) => {
-    const topic = message.detail.topic;
-    for (const module of SEQUENCER_TOPIC_MODULES) {
-      if (topic === module.TOPIC) {
-        module.handler(message);
-      }
-    }
-  });
-}
+import { addSequencerEventListeners } from "../gossip/index.js";
 
 async function addPeerDiscoveryEventListeners(node) {
   node.addEventListener("peer:connect", (evt) => {

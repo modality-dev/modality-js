@@ -5,6 +5,10 @@ import * as Uint8ArrayHelpers from "uint8arrays";
 import SafeJSON from "@modality-tools/utils/SafeJSON";
 
 import * as Consensus_SignVertex from './consensus/sign_vertex.js';
+import * as Consensus_Status from './consensus/status.js';
+import * as SubmitCommits from './consensus/submit_commits.js';
+
+const REQRES_MODULES = [Consensus_SignVertex, Consensus_Status, SubmitCommits];
 
 export function asReqResProtocol(func) {
   return ({ stream }) => {
@@ -46,12 +50,13 @@ export class ReqResService {
     this.handleMessage = this.handleMessage.bind(this)
   }
 
-  async handleRequest(peer, path, data) {
-    if (path === Consensus_SignVertex.PATH) {
-      return Consensus_SignVertex.handler({ peer, path, data });
-    } else {
-      throw new CodeError('invalid path', ERR_INVALID_PARAMETERS);
+  static async handleRequest(peer, path, data) {
+    for (const module of REQRES_MODULES) {
+      if (path === module.PATH) {
+        return module.handler({ peer, path, data });
+      }
     }
+    throw new CodeError('invalid path', ERR_INVALID_PARAMETERS);
   }
 
   async start () {
@@ -86,7 +91,7 @@ export class ReqResService {
     const jsonString = Uint8ArrayHelpers.toString(req_data);
     const req = SafeJSON.parse(jsonString);
     this.log('incoming req', data.connection.remotePeer, req.path, req.data);
-    const res = await this.handleRequest(data.connection.remotePeer, req.path, req.data);
+    const res = await this.constructor.handleRequest(data.connection.remotePeer, req.path, req.data);
     this.log('incoming reqres from %p complete in %dms', data.connection.remotePeer, Date.now() - start);
     const res_text = JSON.stringify(res); 
     return await pipe(
