@@ -1,6 +1,5 @@
-
-import PeerIdHelpers from "../src/PeerIdHelpers";
-import { ReqResService as SourceReqResService } from '../src/reqres/index.js';
+import PeerIdHelpers from "../src/PeerIdHelpers.js";
+import { ReqResService as SourceReqResService } from "../src/reqres/index.js";
 
 class TestPeers {
   static peers_by_peerId = new Map();
@@ -37,7 +36,9 @@ class GossipSub extends EventTarget {
   async publish(topic, data) {
     const peer_set = this.constructor.topics_to_peers_set.get(topic) || new Set();
     for (const peerId of peer_set) {
-      if (this.peerId === peerId) { continue; }
+      if (this.peerId === peerId) {
+        continue;
+      }
       const peer = this.peers.byPeerId(peerId);
       await peer.services.pubsub.doDispatchEvent({ topic, data });
     }
@@ -49,8 +50,8 @@ class GossipSub extends EventTarget {
     this.constructor.topics_to_peers_set.set(topic, peer_set);
   }
 
-  doDispatchEvent({topic, data}) {
-    this.dispatchEvent(new CustomEvent('message', { detail: {topic, data} }));
+  doDispatchEvent({ topic, data }) {
+    this.dispatchEvent(new CustomEvent("message", { detail: { topic, data } }));
   }
 }
 
@@ -72,7 +73,9 @@ class ReqResService {
 
   async call(peerId, path, data) {
     const target_node = this.peers.peers_by_peerId.get(peerId.toString());
-    if (!target_node) { throw new Error(`peer not found`); }
+    if (!target_node) {
+      throw new Error(`peer not found`);
+    }
     const r = await target_node.services.reqres.handleRequest(peerId, path, data);
     return r;
   }
@@ -82,12 +85,7 @@ function reqres(peers, multiaddr, peerId) {
   return new ReqResService(peers, multiaddr, peerId);
 }
 
-export default async function createTestNode({
-  keypair,
-  listen,
-  ...options
-} = {}) {
-
+export default async function createTestNode({ keypair, listen, ...options } = {}) {
   const peerId = await PeerIdHelpers.createFromJSON(keypair);
   const multiaddr = listen;
 
@@ -96,11 +94,11 @@ export default async function createTestNode({
   const node = {
     services: {
       pubsub: gossipsub(TestPeers, multiaddr, peerId),
-      reqres: reqres(TestPeers, multiaddr, peerId), 
+      reqres: reqres(TestPeers, multiaddr, peerId),
     },
     peerId,
-    addresses: { listen: [multiaddr] }
-  }
+    addresses: { listen: [multiaddr] },
+  };
 
   TestPeers.addPeer(peerId.toString(), multiaddr, node);
 
