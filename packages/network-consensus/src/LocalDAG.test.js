@@ -27,9 +27,9 @@ describe("LocalDAG", () => {
       await w2.addVertexFromValues(v_3);
       await w3.addVertexFromValues(v_3);
 
-      w1.bumpRound();
-      w2.bumpRound();
-      w3.bumpRound();
+      await w1.bumpRound();
+      await w2.bumpRound();
+      await w3.bumpRound();
     }
 
     const r1v = await w1.getKnownVerticesIdsOfRound(1);

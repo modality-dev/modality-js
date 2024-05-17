@@ -43,8 +43,24 @@ export default class LocalDAG {
     return new LocalDAG(datastore);
   }
 
+  async getDataByKey(key) {
+    try {
+      return await this.datastore.get(key);
+    } catch (e) {
+      if (e.code !== "ERR_NOT_FOUND") {
+        throw e;
+      }
+    }
+  }
+
+  async setDataByKey(key, value) {
+    await this.datastore.put(key, value.toString());
+
+  }
+
   async setup({ keypair, round, vertices } = {}) {
-    this.round = round || 1;
+    let status_round = await this.getDataByKey(`/status/round`);
+    this.round = round || status_round || 1;
 
     if (!keypair) {
       keypair = await Keypair.generate();
@@ -56,15 +72,18 @@ export default class LocalDAG {
       for (const values of vertices) {
         await this.addVertexFromValues(values);
       }
-      const max_round = Math.max(
-        ...vertices
-          .map((i) => i.round)
-      );
+      const max_round = Math.max(...vertices.map((i) => i.round));
       this.round = max_round + 1;
     }
   }
 
-  bumpRound() {
+  async jumpToRound(round) {
+    await this.setDataByKey(`/status/round`, round);
+    this.round = round;
+  }
+
+  async bumpRound() {
+    await this.setDataByKey(`/status/round`, this.round + 1);
     this.round = this.round + 1;
   }
 
@@ -115,16 +134,12 @@ export default class LocalDAG {
   }
 
   async findPathBetweenVertices(firstSequencerVertexId, lastSequencerVertexId) {
-    const firstSequencerVertexJSONString = await this.datastore.get(
-      firstSequencerVertexId
-    );
+    const firstSequencerVertexJSONString = await this.datastore.get(firstSequencerVertexId);
     if (!firstSequencerVertexJSONString) {
       return null;
     }
     const firstSequencerVertex = JSON.parse(firstSequencerVertexJSONString);
-    const lastSequencerVertexJSONString = await this.datastore.get(
-      lastSequencerVertexId
-    );
+    const lastSequencerVertexJSONString = await this.datastore.get(lastSequencerVertexId);
     if (!lastSequencerVertexJSONString) {
       return null;
     }
@@ -134,38 +149,25 @@ export default class LocalDAG {
     }
 
     // assume densely connected, trace paths one at a time
-    const exploringRoundEdges = [
-      ...lastSequencerVertex.timelyEdges || [],
-      ...lastSequencerVertex.lateEdges || [],
-    ];
+    const exploringRoundEdges = [...(lastSequencerVertex.timelyEdges || []), ...(lastSequencerVertex.lateEdges || [])];
     if (exploringRoundEdges.find((i) => i === firstSequencerVertexId)) {
       return [lastSequencerVertexId, firstSequencerVertexId];
     }
     for (const timelyEdgeId of exploringRoundEdges) {
-      const p = await this.findTimelyPathBetweenVertices(
-        firstSequencerVertexId,
-        timelyEdgeId
-      );
+      const p = await this.findTimelyPathBetweenVertices(firstSequencerVertexId, timelyEdgeId);
       if (p) {
         return [lastSequencerVertexId, ...p];
       }
     }
   }
 
-  async findTimelyPathBetweenVertices(
-    firstSequencerVertexId,
-    lastSequencerVertexId
-  ) {
-    const firstSequencerVertexJSONString = await this.datastore.get(
-      firstSequencerVertexId
-    );
+  async findTimelyPathBetweenVertices(firstSequencerVertexId, lastSequencerVertexId) {
+    const firstSequencerVertexJSONString = await this.datastore.get(firstSequencerVertexId);
     if (!firstSequencerVertexJSONString) {
       return null;
     }
     const firstSequencerVertex = JSON.parse(firstSequencerVertexJSONString);
-    const lastSequencerVertexJSONString = await this.datastore.get(
-      lastSequencerVertexId
-    );
+    const lastSequencerVertexJSONString = await this.datastore.get(lastSequencerVertexId);
     if (!lastSequencerVertexJSONString) {
       return null;
     }
@@ -180,10 +182,7 @@ export default class LocalDAG {
       return [lastSequencerVertexId, firstSequencerVertexId];
     }
     for (const timelyEdgeId of exploringRoundTimelyEdges) {
-      const p = await this.findTimelyPathBetweenVertices(
-        firstSequencerVertexId,
-        timelyEdgeId
-      );
+      const p = await this.findTimelyPathBetweenVertices(firstSequencerVertexId, timelyEdgeId);
       if (p) {
         return [lastSequencerVertexId, ...p];
       }
@@ -194,10 +193,7 @@ export default class LocalDAG {
     const lastIds = await this.getKnownVerticesIdsOfRound(round);
     const r = [];
     for (const lastId of lastIds) {
-      const path = await this.findTimelyPathBetweenVertices(
-        firstVertexId,
-        lastId
-      );
+      const path = await this.findTimelyPathBetweenVertices(firstVertexId, lastId);
       r.push(path);
     }
     return r;
@@ -206,19 +202,10 @@ export default class LocalDAG {
   async findAllVerticesWithPathFromLaterVertex(vertexId, sinceRound = 0) {
     const vertex = await this.getVertexById(vertexId);
     const r = [];
-    for (
-      let workingRound = sinceRound + 1;
-      workingRound < vertex.round;
-      workingRound++
-    ) {
-      const roundVertexIds = await this.getKnownVerticesIdsOfRound(
-        workingRound
-      );
+    for (let workingRound = sinceRound + 1; workingRound < vertex.round; workingRound++) {
+      const roundVertexIds = await this.getKnownVerticesIdsOfRound(workingRound);
       for (const roundVertexId of roundVertexIds) {
-        const path = await this.findPathBetweenVertices(
-          roundVertexId,
-          vertexId
-        );
+        const path = await this.findPathBetweenVertices(roundVertexId, vertexId);
         if (path) {
           r.push(roundVertexId);
         }
@@ -243,7 +230,7 @@ export default class LocalDAG {
       const v = await this.getVertexById(keypair.toString());
       r.push(v.sequencer);
     }
-    return r; 
+    return r;
   }
 
   async getKnownVerticesIdsOfRound(round) {
