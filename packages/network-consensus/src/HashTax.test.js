@@ -1,16 +1,17 @@
 import { jest, expect, describe, test } from "@jest/globals";
-import * as Hashcash from "./Hashcash";
+import * as HashTax from "./HashTax";
 
-describe("Hashcash", () => {
+describe("HashTax", () => {
   it("should work", async () => {
     const data = "data";
     const difficulty = 500;
-    const nonce = await Hashcash.mine({
+    const nonce = await HashTax.mine({
       data,
       difficulty,
     });
     expect(nonce).toBeTruthy();
-    const validated = await Hashcash.validateNonce({
+    expect(nonce).toBe(2401)
+    const validated = await HashTax.validateNonce({
       data,
       difficulty,
       nonce,

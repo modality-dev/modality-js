@@ -46,10 +46,8 @@ function difficultyToTargetHash({
   exponent = BigInt(exponent);
   base = BigInt(base);
   const max_target = (coefficient << (exponent * base));
-  // const max_target_hex = max_target.toString(16).padStart(hexLength, "0");
-  // console.log({ max_target, max_target_hex });
-  const targetHash = (BigInt(max_target) / BigInt(difficulty)).toString(16).padStart(hexLength, "0");
-  // console.log({targetHash});
+  const targetBigNum = (BigInt(max_target) / BigInt(difficulty));
+  const targetHash = targetBigNum.toString(16).padStart(hexLength, "0");
   return targetHash;
 }
 
