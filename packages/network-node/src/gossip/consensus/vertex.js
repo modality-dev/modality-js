@@ -1,4 +1,4 @@
-import SafeJSON from "@modality-tools/utils/SafeJSON";
+import SafeJSON from "@modality-dev/utils/SafeJSON";
 import PeerIdHelpers from "../../PeerIdHelpers.js";
 
 export const TOPIC = "/consensus/vertex";

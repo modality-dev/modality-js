@@ -2,7 +2,7 @@ import { LevelDatastore } from "datastore-level";
 import LevelMem from "level-mem";
 import LevelRocksDb from "level-rocksdb";
 
-import Keypair from "@modality-tools/utils/Keypair";
+import Keypair from "@modality-dev/utils/Keypair";
 
 export default class NetworkDatastore {
   constructor() {

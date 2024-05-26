@@ -2,7 +2,7 @@ import { CodeError, ERR_INVALID_MESSAGE, ERR_INVALID_PARAMETERS, ERR_TIMEOUT, se
 import { pipe } from "it-pipe";
 import all from 'it-all';
 import * as Uint8ArrayHelpers from "uint8arrays";
-import SafeJSON from "@modality-tools/utils/SafeJSON";
+import SafeJSON from "@modality-dev/utils/SafeJSON";
 
 import * as Consensus_SignVertex from './consensus/sign_vertex.js';
 import * as Consensus_Status from './consensus/status.js';

@@ -1,5 +1,5 @@
-import LocalDAG from "@modality-tools/network-consensus/LocalDAG";
-import Keypair from "@modality-tools/utils/Keypair";
+import LocalDAG from "@modality-dev/network-consensus/LocalDAG";
+import Keypair from "@modality-dev/utils/Keypair";
 
 export async function addLocalDAGStorage(node, conf) {
   node.storage ||= {};

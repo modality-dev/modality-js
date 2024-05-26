@@ -65,7 +65,7 @@ importers:
 
   packages/network-consensus:
     dependencies:
-      '@modality-tools/utils':
+      '@modality-dev/utils':
         specifier: workspace:^
         version: link:../utils
       datastore-level:
@@ -134,10 +134,10 @@ importers:
       '@libp2p/websockets':
         specifier: ^8.0.22
         version: 8.0.22
-      '@modality-tools/network-consensus':
+      '@modality-dev/network-consensus':
         specifier: workspace:^
         version: link:../network-consensus
-      '@modality-tools/utils':
+      '@modality-dev/utils':
         specifier: workspace:^
         version: link:../utils
       '@multiformats/multiaddr':

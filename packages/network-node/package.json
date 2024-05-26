@@ -1,5 +1,5 @@
 {
-  "name": "@modality-tools/network-node",
+  "name": "@modality-dev/network-node",
   "version": "0.0.0",
   "description": "",
   "main": "src/index.js",
@@ -32,8 +32,8 @@
     "@libp2p/tcp": "^9.0.24",
     "@libp2p/webrtc": "^4.0.31",
     "@libp2p/websockets": "^8.0.22",
-    "@modality-tools/network-consensus": "workspace:^",
-    "@modality-tools/utils": "workspace:^",
+    "@modality-dev/network-consensus": "workspace:^",
+    "@modality-dev/utils": "workspace:^",
     "@multiformats/multiaddr": "^12.2.1",
     "@noble/hashes": "^1.4.0",
     "cli-calls": "^1.0.0",

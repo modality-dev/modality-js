@@ -1,4 +1,4 @@
-import SafeJSON from "@modality-tools/utils/SafeJSON";
+import SafeJSON from "@modality-dev/utils/SafeJSON";
 
 export const TOPIC = "/consensus/vertex_certificate";
 
