@@ -5,8 +5,8 @@ import LevelRocksDb from "level-rocksdb";
 import Keypair from "@modality-dev/utils/Keypair";
 
 export default class NetworkDatastore {
-  constructor() {
-    this.datastore = null;
+  constructor(datastore) {
+    this.datastore = datastore;
     return this;
   }
 
@@ -23,7 +23,7 @@ export default class NetworkDatastore {
       db: LevelMem,
     });
     await datastore.open();
-    return new LocalDAG(datastore);
+    return new NetworkDatastore(datastore);
   }
 
   static async createInDirectory(path) {
@@ -31,7 +31,7 @@ export default class NetworkDatastore {
       db: LevelRocksDb,
     });
     await datastore.open();
-    return new LocalDAG(datastore);
+    return new NetworkDatastore(datastore);
   }
 
   async getDataByKey(key) {
@@ -46,5 +46,17 @@ export default class NetworkDatastore {
 
   async setDataByKey(key, value) {
     await this.datastore.put(key, value.toString());
+  }
+
+  get(key) {
+    return this.datastore.get(key);
+  }
+
+  put(key, value) {
+    return this.datastore.put(key, value);
+  }
+
+  queryKeys(opts) {
+    return this.datastore.queryKeys(opts);
   }
 }

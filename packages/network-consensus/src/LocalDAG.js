@@ -1,7 +1,4 @@
-import { LevelDatastore } from "datastore-level";
-import LevelMem from "level-mem";
-import LevelRocksDb from "level-rocksdb";
-
+import NetworkDatastore from "@modality-dev/network-datastore";
 import Keypair from "@modality-dev/utils/Keypair";
 import SequencerVertex from "./SequencerVertex.js";
 
@@ -14,52 +11,26 @@ export default class LocalDAG {
     return this;
   }
 
-  static async createWith({ datastore, storage_type, storage_path }) {
-    if (datastore) {
-      await datastore.open();
-      return new LocalDAG(datastore);
-    }
+  static async create(datastore) {
+    const ld = new LocalDAG(datastore);
+    return ld;
+  }
 
+  static async createWith({ storage_type, storage_path }) {
     if (storage_type === "directory" && storage_path) {
-      return this.createInDirectory(storage_path);
+      return NetworkDatastore.createInDirectory(storage_path);
     } else {
-      return this.createInMemory();
+      return NetworkDatastore.createInMemory();
     }
   }
 
   static async createInMemory() {
-    const datastore = new LevelDatastore(`:memory:`, {
-      db: LevelMem,
-    });
-    await datastore.open();
-    return new LocalDAG(datastore);
-  }
-
-  static async createInDirectory(path) {
-    const datastore = new LevelDatastore(path, {
-      db: LevelRocksDb,
-    });
-    await datastore.open();
-    return new LocalDAG(datastore);
-  }
-
-  async getDataByKey(key) {
-    try {
-      return await this.datastore.get(key);
-    } catch (e) {
-      if (e.code !== "ERR_NOT_FOUND") {
-        throw e;
-      }
-    }
-  }
-
-  async setDataByKey(key, value) {
-    await this.datastore.put(key, value.toString());
-
+    const datastore = await NetworkDatastore.createInMemory();
+    return this.create(datastore);
   }
 
   async setup({ keypair, round, vertices } = {}) {
-    let status_round = await this.getDataByKey(`/status/round`);
+    let status_round = await this.datastore.getDataByKey(`/status/round`);
     this.round = round || status_round || 1;
 
     if (!keypair) {
@@ -78,12 +49,12 @@ export default class LocalDAG {
   }
 
   async jumpToRound(round) {
-    await this.setDataByKey(`/status/round`, round);
+    await this.datastore.setDataByKey(`/status/round`, round);
     this.round = round;
   }
 
   async bumpRound() {
-    await this.setDataByKey(`/status/round`, this.round + 1);
+    await this.datastore.setDataByKey(`/status/round`, this.round + 1);
     this.round = this.round + 1;
   }
 

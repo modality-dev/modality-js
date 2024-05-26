@@ -33,6 +33,7 @@
     "@libp2p/webrtc": "^4.0.31",
     "@libp2p/websockets": "^8.0.22",
     "@modality-dev/network-consensus": "workspace:^",
+    "@modality-dev/network-datastore": "workspace:^",
     "@modality-dev/utils": "workspace:^",
     "@multiformats/multiaddr": "^12.2.1",
     "@noble/hashes": "^1.4.0",
