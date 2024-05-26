@@ -138,7 +138,7 @@ export class ReqResService {
           for await (const data of source) {
             r.push(Uint8ArrayHelpers.toString(data.subarray()));
           }
-          return JSON.parse(r.join('\n'));
+          return SafeJSON.parse(r.join('\n'));
         }
       );
       this.log('response', r);
