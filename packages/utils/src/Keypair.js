@@ -247,6 +247,11 @@ export default class Keypair {
     return await this.verifySignatureForBytes(signature, bytes);
   }
 
+  async verifyJSON(signature, json) {
+    const str = JSONStringifyDeterministic(json);
+    return await this.verifySignatureForString(signature, str);
+  }
+
   async verifySignatureForJson(signature, json) {
     const str = JSONStringifyDeterministic(json);
     return await this.verifySignatureForString(signature, str);
