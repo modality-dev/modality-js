@@ -1,6 +1,7 @@
 import { LevelDatastore } from "datastore-level";
 import LevelMem from "level-mem";
 import LevelRocksDb from "level-rocksdb";
+import SafeJSON from "@modality-dev/utils/SafeJSON";
 
 import Keypair from "@modality-dev/utils/Keypair";
 
@@ -50,6 +51,14 @@ export default class NetworkDatastore {
 
   get(key) {
     return this.datastore.get(key);
+  }
+
+  async getString(key) {
+    return (await this.datastore.get(key)).toString();
+  }
+
+  async getJSON(key) {
+    return SafeJSON.parse((await this.datastore.get(key)).toString());
   }
 
   put(key, value) {

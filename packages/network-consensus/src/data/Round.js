@@ -2,9 +2,9 @@ import SafeJSON from '@modality-dev/utils/SafeJSON';
 import Keypair from '@modality-dev/utils/Keypair';
 
 export default class Round {
-  constructor({ round, procedures = {} }) {
+  constructor({ round, scribes = [] }) {
     this.round = round;
-    this.procedures = procedures;
+    this.scribes = scribes;
     return this;
   }
 
@@ -16,6 +16,14 @@ export default class Round {
     return this.constructor.getIdFor({
       round: this.round,
     });
+  }
+
+  addScribe(scribe_peer_id) {
+    this.scribes.push(scribe_peer_id);
+  }
+
+  removeScribe(scribe_peer_id) {
+    this.scribes = this.scribes.filter((s) => s !== scribe_peer_id);
   }
 
   static fromJSON(json) {
@@ -35,7 +43,7 @@ export default class Round {
   toJSON() {
     return JSON.stringify({
       round: this.round,
-      producers: this.producers,
+      scribes: this.scribes,
     });
   }
 }

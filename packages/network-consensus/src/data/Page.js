@@ -1,14 +1,14 @@
 import SafeJSON from '@modality-dev/utils/SafeJSON';
 import Keypair from '@modality-dev/utils/Keypair';
 
-// Narwhal style blocks
-export default class Block {
-  constructor({producer, round, events = [], hash, sig, acks = {}, late_acks = {}, cert}) {
-    this.producer = producer;
+// Narwhal style vertices
+export default class Page {
+  constructor({scribe, round, events = [], hash, sig, acks = {}, late_acks = {}, cert}) {
+    this.scribe = scribe;
     this.round = round;
     this.events = events;
 
-    // producer
+    // scribe
     this.hash = hash;
     this.sig = sig;
 
@@ -22,22 +22,22 @@ export default class Block {
 
   static fromJSON(json) {
     if (!json) return null;
-    return new Block(SafeJSON.parse(json));
+    return new Page(SafeJSON.parse(json));
   }
 
-  static getIdFor({ round, producer }) {
-    return `/consensus/blocks/round/${round}/producer/${producer}`;
+  static getIdFor({ round, scribe }) {
+    return `/consensus/round/${round}/scribe/${scribe}`;
   }
 
   getId() {
     return this.constructor.getIdFor({
       round: this.round,
-      producer: this.producer,
+      scribe: this.scribe,
     });
   }
 
-  static async findOne({ datastore, round, producer }) {
-    const v = await datastore.get(this.getIdFor({ round, producer })); 
+  static async findOne({ datastore, round, scribe }) {
+    const v = await datastore.get(this.getIdFor({ round, scribe })); 
     return this.fromJSON(v.toString());
   }
 
@@ -47,7 +47,7 @@ export default class Block {
 
   toJSON() {
     return JSON.stringify({
-      producer: this.producer,
+      scribe: this.scribe,
       round: this.round,
       events: this.events,
       hash: this.hash,
@@ -64,7 +64,7 @@ export default class Block {
 
   async generateSig(keypair) {
     this.sig = await keypair.signJSON({
-      producer: this.producer,
+      scribe: this.scribe,
       round: this.round,
       events: this.events,
     });
@@ -72,9 +72,9 @@ export default class Block {
   }
 
   validateSig() {
-    const keypair = Keypair.fromPublicKey(this.producer);
+    const keypair = Keypair.fromPublicKey(this.scribe);
     return keypair.verifyJSON(this.sig, {
-      producer: this.producer,
+      scribe: this.scribe,
       round: this.round,
       events: this.events,
     });
@@ -83,7 +83,7 @@ export default class Block {
   async generateAck(keypair) {
     const peer_id = await keypair.asPublicAddress();
     const facts = {
-      producer: this.producer,
+      scribe: this.scribe,
       round: this.round,
       events: this.events,
       sig: this.sig,
@@ -95,7 +95,7 @@ export default class Block {
   async validateAck(ack) {
     const keypair = Keypair.fromPublicKey(ack[0]);
     const facts = {
-      producer: this.producer,
+      scribe: this.scribe,
       round: this.round,
       events: this.events,
       sig: this.sig,
@@ -115,7 +115,7 @@ export default class Block {
     for (const [peer_id, sig] of Object.entries(this.acks)) {
       const keypair = Keypair.fromPublicKey(peer_id);
       if (!keypair.verifyJSON(sig, {
-        producer: this.producer,
+        scribe: this.scribe,
         round: this.round,
         events: this.events,
         sig: this.sig,
@@ -131,7 +131,7 @@ export default class Block {
     for (const [peer_id, sig] of Object.entries(this.acks)) {
       const keypair = Keypair.fromPublicKey(peer_id);
       if (keypair.verifyJSON(sig, {
-        producer: this.producer,
+        scribe: this.scribe,
         round: this.round,
         events: this.events,
         sig: this.sig,
@@ -147,7 +147,7 @@ export default class Block {
 
   async generateCert(keypair) {
     this.cert = await keypair.signJSON({
-      producer: this.producer,
+      scribe: this.scribe,
       round: this.round,
       events: this.events,
       acks: this.acks,
@@ -156,9 +156,9 @@ export default class Block {
   }
 
   async validateCert() {
-    const keypair = Keypair.fromPublicKey(this.producer);
+    const keypair = Keypair.fromPublicKey(this.scribe);
     return keypair.verifyJSON(this.cert, {
-      producer: this.producer,
+      scribe: this.scribe,
       round: this.round,
       events: this.events,
       acks: this.acks,

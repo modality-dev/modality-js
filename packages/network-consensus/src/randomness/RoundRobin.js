@@ -1,11 +1,9 @@
 export default class RoundRobin {
-  constructor({index = 0}) {
-    this.index = index;
+  constructor() {
   }
 
-  async pickOne({options}) {
-    const i = this.index % options.length;
-    this.index = this.index + 1;
+  async pickOne({options, input}) {
+    const i = parseInt(input) % options.length;
     return options[i];
   }
 }
