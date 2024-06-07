@@ -1,26 +1,32 @@
 # modality-js
 
+A modular framework for running and managing nodes with efficient communication between them.
+
 ## Installation
+
+To install the necessary dependencies, run:
 
 ```bash
 pnpm i
 ```
 
-## Running a node
+## Running a Node
 
-To run a node you'll find configs in `packages/fixtures/network-node/fixtures/config`
+To run a node, you'll find the configurations in `packages/fixtures/network-node/fixtures/config`.
+
+Execute the following command:
 
 ```bash
 node packages/network-node/src/cmds/run_sequencer.js --config packages/network-node/fixtures/configs/node1.json
 ```
 
-You should now see in the terminal that you are now listening on the addresses set in the config `node1.json`
+You should now see in the terminal that you are listening on the addresses set in the `node1.json` config.
 
-## Communication between nodes
+## Communication Between Nodes
 
 ### Ping
 
-To start a 2nd node and ping node 1 from node 2 you can run passing in for `target` the addresses you are listening to from when you started `node1`
+To start a second node and ping node 1 from node 2, use the `target` address from when you started `node1`:
 
 ```bash
 node packages/network-node/src/cmds/ping.js --config packages/network-node/fixtures/configs/node2.json --target /ip4/127.0.0.1/tcp/10001/ws/p2p/12D3KooWPBRNBzgceXh7Z27wGoyYYz9ggwaYg2dWiwXXe8ieyFCN --times 10
@@ -28,14 +34,18 @@ node packages/network-node/src/cmds/ping.js --config packages/network-node/fixtu
 
 ### ReqRes
 
-You can communicate directly between nodes and pass data by running ReqRes command and passing in a `path` and `data`
+You can communicate directly between nodes and pass data by running the ReqRes command and specifying a `path` and `data`.
 
 #### Valid Paths
 
-- /consensus/status
-- /consensus/sign_vertex
-- /consensus/submit_commits
+- `/consensus/status`
+- `/consensus/sign_vertex`
+- `/consensus/submit_commits`
+
+Example command:
 
 ```bash
 node packages/network-node/src/cmds/request.js --config packages/network-node/fixtures/configs/node2.json --target /ip4/127.0.0.1/tcp/10001/ws/p2p/12D3KooWPBRNBzgceXh7Z27wGoyYYz9ggwaYg2dWiwXXe8ieyFCN --path "/consensus/status" --data "{\"hello\": \"world\"}"
 ```
+
+Feel free to reach out for any issues or contributions!
