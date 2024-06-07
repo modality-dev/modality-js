@@ -1,6 +1,6 @@
 import Binder from "./Binder";
 
-export const NAME = 'Bullshark';
+export const NAME = "Bullshark";
 
 // like DAGRider, but during periods of synchrony, leaders are chosen twice per wave
 export default class Bullshark extends Binder {
@@ -73,7 +73,7 @@ export default class Bullshark extends Binder {
       prev_pages = new Set([...next_pages]);
       next_pages = new Set();
     }
-    if (prev_pages.size < Math.ceil(2 / 3 * scribes.length)) {
+    if (prev_pages.size < Math.ceil((2 / 3) * scribes.length)) {
       return null;
     }
 

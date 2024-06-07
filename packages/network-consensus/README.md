@@ -10,4 +10,4 @@ Processes called Binders work under Scribes. Binders are responsible for orderin
 
 The secondary purpose of Modality network consensus is to logically validate commits. Logical validation is optional unless a commit affects the validity of another contract. When a commit affects the validity of another contract, the source contract requires validation through its history up until the affecting commits.
 
-Nodes called Validators work together to validate commits. 
+Nodes called Validators work together to validate commits.

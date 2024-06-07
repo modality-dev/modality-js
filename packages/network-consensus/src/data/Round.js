@@ -1,5 +1,5 @@
-import SafeJSON from '@modality-dev/utils/SafeJSON';
-import Keypair from '@modality-dev/utils/Keypair';
+import SafeJSON from "@modality-dev/utils/SafeJSON";
+import Keypair from "@modality-dev/utils/Keypair";
 
 export default class Round {
   constructor({ round, scribes = [] }) {
@@ -32,7 +32,7 @@ export default class Round {
   }
 
   static async findOne({ datastore, round }) {
-    const v = await datastore.get(this.getIdFor({ round })); 
+    const v = await datastore.get(this.getIdFor({ round }));
     return this.fromJSON(v.toString());
   }
 

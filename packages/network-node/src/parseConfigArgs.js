@@ -1,8 +1,8 @@
-import JSONFile from "@modality-dev/utils/JSONFile"
+import JSONFile from "@modality-dev/utils/JSONFile";
 import PeerIdHelpers from "./PeerIdHelpers.js";
 
-export function parseConfigArgs({config, keypair, listen, storage}) {
-  let c = {keypair, listen, storage};
+export function parseConfigArgs({ config, keypair, listen, storage }) {
+  let c = { keypair, listen, storage };
   if (config) {
     c = JSONFile.readSync(config);
   }

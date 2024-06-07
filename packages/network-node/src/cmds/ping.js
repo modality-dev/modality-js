@@ -35,7 +35,16 @@ export default async function main({ config, keypair, listen, storage, target, t
     console.timeEnd("pinged in");
   }
   await stream.close();
-  console.log('pinged', times, 'times in', Date.now() - start, 'ms', '(', times / (Date.now() - start) * 1000, 'pings/s )');
+  console.log(
+    "pinged",
+    times,
+    "times in",
+    Date.now() - start,
+    "ms",
+    "(",
+    (times / (Date.now() - start)) * 1000,
+    "pings/s )"
+  );
 
   await node.stop();
 }

@@ -1,8 +1,7 @@
 export default class RoundRobin {
-  constructor() {
-  }
+  constructor() {}
 
-  async pickOne({options, input}) {
+  async pickOne({ options, input }) {
     const i = parseInt(input) % options.length;
     return options[i];
   }

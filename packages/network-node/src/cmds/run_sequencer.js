@@ -5,15 +5,14 @@ import { parseConfigArgs } from "../parseConfigArgs.js";
 import { addSequencerEventListeners } from "../gossip/index.js";
 import { addLocalDAGStorage } from "../storage.js";
 
-
 async function addPeerDiscoveryEventListeners(node) {
   node.addEventListener("peer:connect", (evt) => {
     console.log("connected to: ", evt.detail.toString());
   });
 
-  node.addEventListener('peer:discovery', (evt) => {
-    console.log('found peer: ', evt.detail.toString())
-  })
+  node.addEventListener("peer:discovery", (evt) => {
+    console.log("found peer: ", evt.detail.toString());
+  });
 }
 
 export default async function run({ config, keypair, listen, storage }) {

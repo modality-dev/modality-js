@@ -14,7 +14,7 @@ describe("DevnetStatic1", () => {
     // setup sequencer
     const local_dag = await LocalDAG.createInMemory();
     const keypair = await Keypair.fromJSON(devnet_static1_keys[0]);
-    await local_dag.setup({keypair});
+    await local_dag.setup({ keypair });
 
     // TODO submit events to sequencer
   });

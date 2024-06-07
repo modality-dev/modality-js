@@ -1,9 +1,5 @@
 import { writeFileSync, readFileSync } from "fs";
-import {
-  generateKeyPair,
-  unmarshalPublicKey,
-  unmarshalPrivateKey,
-} from "@libp2p/crypto/keys";
+import { generateKeyPair, unmarshalPublicKey, unmarshalPrivateKey } from "@libp2p/crypto/keys";
 import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
 import { base58btc } from "multiformats/bases/base58";
@@ -44,17 +40,8 @@ export default class Keypair {
 
   static fromSSHDotPub(public_key_str, type = "ed25519") {
     const inner_pubkey_str = public_key_str.split(" ")[1];
-    const inner_pubkey_uint8a = uint8ArrayFromString(
-      inner_pubkey_str,
-      "base64"
-    );
-    const pubkey_uint8a = new Uint8Array([
-      8,
-      1,
-      18,
-      32,
-      ...inner_pubkey_uint8a.subarray(19),
-    ]);
+    const inner_pubkey_uint8a = uint8ArrayFromString(inner_pubkey_str, "base64");
+    const pubkey_uint8a = new Uint8Array([8, 1, 18, 32, ...inner_pubkey_uint8a.subarray(19)]);
     const public_key_id = Keypair.uint8ArrayAsBase58Identity(pubkey_uint8a);
     return this.fromPublicMultiaddress(`/${type}-pub/${public_key_id}`);
   }
@@ -136,14 +123,10 @@ export default class Keypair {
 
   static async fromJSON({ id, public_key, private_key }) {
     if (private_key) {
-      const key = await unmarshalPrivateKey(
-        uint8ArrayFromString(private_key, "base64pad")
-      );
+      const key = await unmarshalPrivateKey(uint8ArrayFromString(private_key, "base64pad"));
       return new Keypair(key);
     } else if (public_key) {
-      const key = await unmarshalPrivateKey(
-        uint8ArrayFromString(public_key, "base64pad")
-      );
+      const key = await unmarshalPrivateKey(uint8ArrayFromString(public_key, "base64pad"));
       return new Keypair(key);
     }
   }
@@ -258,9 +241,7 @@ export default class Keypair {
   }
 
   async verifySignaturesInJson(json, suffix = ".signature") {
-    const suffix_for_regex = suffix
-      .replace(/[|\\{}()[\]^$+*?.]/g, "\\$&")
-      .replace(/-/g, "\\x2d");
+    const suffix_for_regex = suffix.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&").replace(/-/g, "\\x2d");
     const suffix_regex = `(.+)${suffix_for_regex}$`;
     for (const name in json) {
       const m = name.match(suffix_regex);

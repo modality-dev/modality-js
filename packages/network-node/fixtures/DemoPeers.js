@@ -4,9 +4,7 @@ export const PEER_1 = {
     pubKey: "CAESIMaMvgYh7vRpJj669gb6OLMOmTF0uE5zr4NFT9wxYvd7",
     privKey: "CAESQOf+u8qrRXj0KnDcz+CjCveXh3xFKsj38B+LJuoWZqq5xoy+BiHu9GkmPrr2Bvo4sw6ZMXS4TnOvg0VP3DFi93s=",
   },
-  listeners: [
-    "/ip4/0.0.0.0/tcp/10333/ws"
-  ],
+  listeners: ["/ip4/0.0.0.0/tcp/10333/ws"],
 };
 
 export const PEER_2 = {

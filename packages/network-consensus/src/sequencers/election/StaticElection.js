@@ -1,5 +1,5 @@
 export default class StaticElection {
-  static name = 'static';
+  static name = "static";
 
   constructor({ initial_sequencers }) {
     this.sequencers = initial_sequencers;

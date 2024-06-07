@@ -4,10 +4,10 @@ import Keypair from "@modality-dev/utils/Keypair";
 import NetworkDatastore from "@modality-dev/network-datastore";
 
 import Page from "../data/Page";
-import Round from '../data/Round';
-import RoundRobin from '../randomness/RoundRobin';
+import Round from "../data/Round";
+import RoundRobin from "../randomness/RoundRobin";
 
-import DatastoreBuilder from '../../fixtures/datastores/DatastoreBuilder';
+import DatastoreBuilder from "../../fixtures/datastores/DatastoreBuilder";
 
 import DAGRider from "./DAGRider";
 
@@ -24,7 +24,7 @@ describe("DAGRider", () => {
     const ds_builder = await DatastoreBuilder.createInMemory();
 
     const randomness = new RoundRobin();
-    const binder = new DAGRider({datastore: ds_builder.datastore, randomness});
+    const binder = new DAGRider({ datastore: ds_builder.datastore, randomness });
 
     ds_builder.scribes = scribes;
     for (let i = 0; i < 12; i++) {
@@ -48,12 +48,12 @@ describe("DAGRider", () => {
     pages = await binder.findOrderedPagesInChapter(null, 1);
     expect(pages.length).toBe(1); // first chapter is only one page
     expect(pages.at(-1).scribe).toBe(page1.scribe);
-    
+
     pages = await binder.findOrderedPagesInChapter(1, 5);
-    expect(pages.length).toBe(4*3);
+    expect(pages.length).toBe(4 * 3);
     expect(pages.at(-1).scribe).toBe(page.scribe);
 
     pages = await binder.findOrderedPagesInChapter(5, 9);
-    expect(pages.length).toBe(4*3);
+    expect(pages.length).toBe(4 * 3);
   });
 });

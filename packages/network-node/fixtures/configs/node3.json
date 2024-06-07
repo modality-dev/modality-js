@@ -6,7 +6,5 @@
   },
   "listen": "/ip4/0.0.0.0/tcp/10003/ws",
   "storage": "/tmp/modality-fixtures/storage/node3",
-  "bootstrappers": [
-    "/ip4/127.0.0.1/tcp/10001/ws/p2p/12D3KooWPBRNBzgceXh7Z27wGoyYYz9ggwaYg2dWiwXXe8ieyFCN"
-  ]
+  "bootstrappers": ["/ip4/127.0.0.1/tcp/10001/ws/p2p/12D3KooWPBRNBzgceXh7Z27wGoyYYz9ggwaYg2dWiwXXe8ieyFCN"]
 }

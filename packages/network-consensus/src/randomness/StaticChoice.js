@@ -3,7 +3,7 @@ export default class StaticChoice {
     this.index = index;
   }
 
-  async pickOne({options}) {
+  async pickOne({ options }) {
     return options[this.index % options.length];
   }
 }

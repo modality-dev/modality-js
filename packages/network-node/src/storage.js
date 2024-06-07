@@ -9,5 +9,5 @@ export async function addLocalDAGStorage(node, conf) {
   });
   const keypair = await Keypair.fromJSON(conf.keypair);
   node.storage.local_dag = await LocalDAG.create(node.storage.datastore);
-  await node.storage.local_dag.setup({keypair});
+  await node.storage.local_dag.setup({ keypair });
 }

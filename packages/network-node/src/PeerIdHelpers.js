@@ -1,5 +1,5 @@
-import { readFileSync } from 'fs';
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { readFileSync } from "fs";
+import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 import { createEd25519PeerId } from "@libp2p/peer-id-factory";
 import { createFromJSON as _createFromJSON } from "@libp2p/peer-id-factory";
 
@@ -27,11 +27,11 @@ export async function create() {
 export function exportToJSON(peerId, excludePrivateKey = false) {
   return {
     id: peerId.toString(),
-    public_key: uint8ArrayToString(peerId.publicKey, 'base64pad'),
+    public_key: uint8ArrayToString(peerId.publicKey, "base64pad"),
     private_key:
       excludePrivateKey === true || peerId.privateKey == null
         ? undefined
-        : uint8ArrayToString(peerId.privateKey, 'base64pad'),
+        : uint8ArrayToString(peerId.privateKey, "base64pad"),
   };
 }
 
@@ -40,7 +40,7 @@ export function exportToJSONString(peerId, excludePrivateKey = false) {
 }
 
 export function createFromJSONFile(path) {
-  const json = readFileSync(path, 'utf-8');
+  const json = readFileSync(path, "utf-8");
   return createFromJSONString(json);
 }
 
@@ -50,5 +50,5 @@ export default {
   create,
   createFromJSONString,
   createFromJSONFile,
-  createFromJSON
-}
+  createFromJSON,
+};

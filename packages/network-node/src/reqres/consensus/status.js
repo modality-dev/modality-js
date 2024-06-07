@@ -1,5 +1,5 @@
-export const PATH = '/consensus/status';
+export const PATH = "/consensus/status";
 
-export function handler({peer, data}) {
-  return {ok: true};
+export function handler({ peer, data }) {
+  return { ok: true };
 }

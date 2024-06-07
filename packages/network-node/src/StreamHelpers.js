@@ -6,7 +6,7 @@ import map from "it-map";
 import { fromString as uint8ArrayFromString } from "uint8arrays/from-string";
 import { toString as uint8ArrayToString } from "uint8arrays/to-string";
 
-export function stdinToDuplex(stream, prefix = '') {
+export function stdinToDuplex(stream, prefix = "") {
   // Read utf-8 from stdin
   process.stdin.setEncoding("utf8");
   pipe(

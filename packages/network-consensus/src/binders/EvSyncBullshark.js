@@ -73,7 +73,7 @@ export default class EvSyncBullshark extends Binder {
       prev_pages = new Set([...next_pages]);
       next_pages = new Set();
     }
-    if (prev_pages.size < Math.ceil(2 / 3 * scribes.length)) {
+    if (prev_pages.size < Math.ceil((2 / 3) * scribes.length)) {
       return null;
     }
 

@@ -10,7 +10,7 @@ describe("HashTax", () => {
       difficulty,
     });
     expect(nonce).toBeTruthy();
-    expect(nonce).toBe(2401)
+    expect(nonce).toBe(2401);
     const validated = await HashTax.validateNonce({
       data,
       difficulty,

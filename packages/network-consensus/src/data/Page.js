@@ -1,9 +1,9 @@
-import SafeJSON from '@modality-dev/utils/SafeJSON';
-import Keypair from '@modality-dev/utils/Keypair';
+import SafeJSON from "@modality-dev/utils/SafeJSON";
+import Keypair from "@modality-dev/utils/Keypair";
 
 // Narwhal style vertices
 export default class Page {
-  constructor({scribe, round, events = [], hash, sig, acks = {}, late_acks = {}, cert}) {
+  constructor({ scribe, round, events = [], hash, sig, acks = {}, late_acks = {}, cert }) {
     this.scribe = scribe;
     this.round = round;
     this.events = events;
@@ -37,7 +37,7 @@ export default class Page {
   }
 
   static async findOne({ datastore, round, scribe }) {
-    const v = await datastore.get(this.getIdFor({ round, scribe })); 
+    const v = await datastore.get(this.getIdFor({ round, scribe }));
     return this.fromJSON(v.toString());
   }
 
@@ -114,12 +114,14 @@ export default class Page {
   validateAcks() {
     for (const [peer_id, sig] of Object.entries(this.acks)) {
       const keypair = Keypair.fromPublicKey(peer_id);
-      if (!keypair.verifyJSON(sig, {
-        scribe: this.scribe,
-        round: this.round,
-        events: this.events,
-        sig: this.sig,
-      })) {
+      if (
+        !keypair.verifyJSON(sig, {
+          scribe: this.scribe,
+          round: this.round,
+          events: this.events,
+          sig: this.sig,
+        })
+      ) {
         return false;
       }
     }
@@ -130,20 +132,21 @@ export default class Page {
     let valid_acks = 0;
     for (const [peer_id, sig] of Object.entries(this.acks)) {
       const keypair = Keypair.fromPublicKey(peer_id);
-      if (keypair.verifyJSON(sig, {
-        scribe: this.scribe,
-        round: this.round,
-        events: this.events,
-        sig: this.sig,
-      })) {
+      if (
+        keypair.verifyJSON(sig, {
+          scribe: this.scribe,
+          round: this.round,
+          events: this.events,
+          sig: this.sig,
+        })
+      ) {
         valid_acks += 1;
       }
     }
     return valid_acks;
   }
 
-  addLateAck(ack, round_seen) {
-  }
+  addLateAck(ack, round_seen) {}
 
   async generateCert(keypair) {
     this.cert = await keypair.signJSON({

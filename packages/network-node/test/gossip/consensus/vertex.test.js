@@ -18,7 +18,7 @@ describe("gossip /gossip/vertex", () => {
     await addLocalDAGStorage(node2, node2_config);
 
     const mockListener = jest.fn();
-    node2.services.pubsub.addEventListener('message', mockListener);  
+    node2.services.pubsub.addEventListener("message", mockListener);
 
     const vertex = await node1.storage.local_dag.createVertex([{}, {}, {}]);
     await node1.services.pubsub.publish("/consensus/vertex", new TextEncoder().encode(JSON.stringify(vertex)));

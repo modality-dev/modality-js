@@ -1,6 +1,6 @@
 import Binder from "./Binder";
 
-export const NAME = 'DAGRider';
+export const NAME = "DAGRider";
 
 export default class DAGRider extends Binder {
   constructor({ datastore, randomness, first_round = 1 }) {
@@ -68,7 +68,7 @@ export default class DAGRider extends Binder {
       prev_pages = new Set([...next_pages]);
       next_pages = new Set();
     }
-    if (prev_pages.size < Math.ceil(2 / 3 * scribes.length)) {
+    if (prev_pages.size < Math.ceil((2 / 3) * scribes.length)) {
       return null;
     }
 

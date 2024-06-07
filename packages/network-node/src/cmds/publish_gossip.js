@@ -5,13 +5,13 @@ import { randomBytes } from "@noble/hashes/utils";
 import { pipe } from "it-pipe";
 import map from "it-map";
 import * as lp from "it-length-prefixed";
-import delay from 'delay';
-import pWaitFor from 'p-wait-for';
+import delay from "delay";
+import pWaitFor from "p-wait-for";
 
 import { streamToConsole } from "../StreamHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
-export default async function main({ config, keypair, listen, storage, topic, message}) {
+export default async function main({ config, keypair, listen, storage, topic, message }) {
   const conf = parseConfigArgs({ config, keypair, listen, storage });
   const peerId = await PeerIdHelpers.createFromJSON(conf.keypair);
   const node = await createLibp2pNode({
@@ -21,10 +21,10 @@ export default async function main({ config, keypair, listen, storage, topic, me
 
   await pWaitFor(() => {
     return !!node.services.pubsub.getPeers().length;
-  })
+  });
   await delay(1000);
   await node.services.pubsub.publish(topic, new TextEncoder().encode(message));
-  
+
   await node.stop();
 }
 
