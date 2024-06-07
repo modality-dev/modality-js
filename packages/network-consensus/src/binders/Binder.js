@@ -72,10 +72,14 @@ export default class Binder {
     r.push({round: last_page.round, scribe: last_page.scribe});
     let page;
     let round = last_page.round - 1;
+
+    // TODO prioritize pages by MIN(ack_count, 2f+1), then by leader-first-lexicographic order,
+    // recursively causally order their ack linked pages with the same prioritization strategy.
+    // with some binders, this prevents a scribe from silently self-acking as means of prioritizing a commit
+
     let ack_set = new Set([...Object.values(last_page.acks).map(i => i.scribe)]);
     while (ack_set.size && round >= 1) {
       const new_ack_set = new Set();
-
       // prioritize pages lexographically ordered starting at leader scribe
       const acks_list_lexiordered = [...ack_set].sort();
       const acks_list_start = Math.max(0, acks_list_lexiordered.findIndex(i => i.localeCompare(last_page.scribe) > 0));

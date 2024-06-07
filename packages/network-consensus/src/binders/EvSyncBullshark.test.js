@@ -7,12 +7,12 @@ import Page from "../data/Page";
 import Round from '../data/Round';
 import RoundRobin from '../randomness/RoundRobin';
 
-import DatastoreBuilder from '../../fixtures/datastores/DatastoreBuilder';
+import EvSyncBullshark from "./EvSyncBullshark";
 
-import DAGRider from "./DAGRider";
-
-describe("DAGRider", () => {
+describe("EvSyncBullshark", () => {
   it("should work", async () => {
+    const datastore = await NetworkDatastore.createInMemory();
+
     const keypair1 = await Keypair.generate();
     const keypair1_pubkey = await keypair1.asPublicAddress();
     const keypair2 = await Keypair.generate();
@@ -21,16 +21,31 @@ describe("DAGRider", () => {
     const keypair3_pubkey = await keypair3.asPublicAddress();
     const scribes = [keypair1_pubkey, keypair2_pubkey, keypair3_pubkey];
 
-    const ds_builder = await DatastoreBuilder.createInMemory();
+    const round1 = new Round({round: 1});
+    round1.scribes = [...scribes];
+    await round1.save({datastore});
 
     const randomness = new RoundRobin();
-    const binder = new DAGRider({datastore: ds_builder.datastore, randomness});
+    const binder = new EvSyncBullshark({datastore, randomness});
 
-    ds_builder.scribes = scribes;
-    for (let i = 0; i < 12; i++) {
-      await ds_builder.addSimpleRound();
+    for (const round_num of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) {
+      const round = new Round({round: round_num});
+      round.scribes = [...scribes];
+      await round.save({datastore});
+      for (const scribe of scribes) {
+        const page = new Page({scribe, round: round_num, events: []});
+        if (round_num > 1) {
+          for (const peer_scribe of scribes) {
+            const peer_prev_page = await Page.findOne({datastore, round: round_num - 1, scribe: peer_scribe});
+            page.acks[peer_scribe] = {
+              round: peer_prev_page?.round,
+              scribe: peer_scribe,
+            }
+          }
+        }
+        await page.save({datastore});
+      }
     }
-
     let page;
     let page1 = await binder.findLeaderInRound(1);
     expect(page1).not.toBeNull();

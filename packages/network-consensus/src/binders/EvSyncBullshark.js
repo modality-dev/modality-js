@@ -1,8 +1,9 @@
 import Binder from "./Binder";
 
-export const NAME = 'DAGRider';
-
-export default class DAGRider extends Binder {
+// like Bullshark, but instead of a fallback leader
+// unordered pages from sufficiently older rounds are discarded.
+// requiring resubmission of discarded commits, but bounds memory usage
+export default class EvSyncBullshark extends Binder {
   constructor({ datastore, randomness, first_round = 1 }) {
     super({ datastore, randomness, first_round });
   }
@@ -33,6 +34,10 @@ export default class DAGRider extends Binder {
     };
   }
 
+  /// bullshark has:
+  /// * wave round 1 leader (based on predefined randomness)
+  /// * wave round 1 fallback leader (based on randomness of wave round 4, only used during asynchrony)
+  /// * wave round 3 leader (based on predefined randomness)
   async findLeaderInRound(round) {
     const round_props = this.constructor.getRoundProps(round, this.first_round);
 
