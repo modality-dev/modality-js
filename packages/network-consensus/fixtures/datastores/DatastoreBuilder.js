@@ -58,33 +58,4 @@ export default class DatastoreBuilder {
       await page.save({ datastore: this.datastore });
     }
   }
-
-  async addSimpleRound({ failures = 0 } = {}) {
-    const round_num = ++this.round_num;
-    const round = new Round({ round: round_num });
-    round.scribes = [...this.scribes];
-    await round.save({ datastore: this.datastore });
-    const scribes = shuffleArray(this.scribes);
-    for (const scribe of scribes) {
-      if (failures > 0) {
-        failures--;
-        continue;
-      }
-      const page = new Page({ scribe, round: round_num, events: [] });
-      if (round_num > 1) {
-        for (const peer_scribe of scribes) {
-          const peer_prev_page = await Page.findOne({
-            datastore: this.datastore,
-            round: round_num - 1,
-            scribe: peer_scribe,
-          });
-          page.acks[peer_scribe] = {
-            round: peer_prev_page?.round,
-            scribe: peer_scribe,
-          };
-        }
-      }
-      await page.save({ datastore: this.datastore });
-    }
-  }
 }

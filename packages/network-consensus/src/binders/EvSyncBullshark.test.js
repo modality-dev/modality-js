@@ -1,4 +1,4 @@
-import { jest, expect, describe, test } from "@jest/globals";
+import { jest, expect, describe, test, it } from "@jest/globals";
 
 import Keypair from "@modality-dev/utils/Keypair";
 import NetworkDatastore from "@modality-dev/network-datastore";
@@ -36,7 +36,11 @@ describe("EvSyncBullshark", () => {
         const page = new Page({ scribe, round: round_num, events: [] });
         if (round_num > 1) {
           for (const peer_scribe of scribes) {
-            const peer_prev_page = await Page.findOne({ datastore, round: round_num - 1, scribe: peer_scribe });
+            const peer_prev_page = await Page.findOne({
+              datastore,
+              round: round_num - 1,
+              scribe: peer_scribe,
+            });
             page.acks[peer_scribe] = {
               round: peer_prev_page?.round,
               scribe: peer_scribe,

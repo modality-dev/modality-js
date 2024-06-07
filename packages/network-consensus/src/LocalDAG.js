@@ -79,7 +79,9 @@ export default class LocalDAG {
     const id = vertex.getId();
     await this.datastore.put(id, JSON.stringify(vertex.getValues()));
     if (noteIfLate & (vertex.round < this.round - 1)) {
-      await this.datastore.put(`/consensus/late/${id}`, { seen_at_round: this.round });
+      await this.datastore.put(`/consensus/late/${id}`, {
+        seen_at_round: this.round,
+      });
     }
   }
 
@@ -105,12 +107,16 @@ export default class LocalDAG {
   }
 
   async findPathBetweenVertices(firstSequencerVertexId, lastSequencerVertexId) {
-    const firstSequencerVertexJSONString = await this.datastore.get(firstSequencerVertexId);
+    const firstSequencerVertexJSONString = await this.datastore.get(
+      firstSequencerVertexId
+    );
     if (!firstSequencerVertexJSONString) {
       return null;
     }
     const firstSequencerVertex = JSON.parse(firstSequencerVertexJSONString);
-    const lastSequencerVertexJSONString = await this.datastore.get(lastSequencerVertexId);
+    const lastSequencerVertexJSONString = await this.datastore.get(
+      lastSequencerVertexId
+    );
     if (!lastSequencerVertexJSONString) {
       return null;
     }
@@ -120,25 +126,38 @@ export default class LocalDAG {
     }
 
     // assume densely connected, trace paths one at a time
-    const exploringRoundEdges = [...(lastSequencerVertex.timelyEdges || []), ...(lastSequencerVertex.lateEdges || [])];
+    const exploringRoundEdges = [
+      ...(lastSequencerVertex.timelyEdges || []),
+      ...(lastSequencerVertex.lateEdges || []),
+    ];
     if (exploringRoundEdges.find((i) => i === firstSequencerVertexId)) {
       return [lastSequencerVertexId, firstSequencerVertexId];
     }
     for (const timelyEdgeId of exploringRoundEdges) {
-      const p = await this.findTimelyPathBetweenVertices(firstSequencerVertexId, timelyEdgeId);
+      const p = await this.findTimelyPathBetweenVertices(
+        firstSequencerVertexId,
+        timelyEdgeId
+      );
       if (p) {
         return [lastSequencerVertexId, ...p];
       }
     }
   }
 
-  async findTimelyPathBetweenVertices(firstSequencerVertexId, lastSequencerVertexId) {
-    const firstSequencerVertexJSONString = await this.datastore.get(firstSequencerVertexId);
+  async findTimelyPathBetweenVertices(
+    firstSequencerVertexId,
+    lastSequencerVertexId
+  ) {
+    const firstSequencerVertexJSONString = await this.datastore.get(
+      firstSequencerVertexId
+    );
     if (!firstSequencerVertexJSONString) {
       return null;
     }
     const firstSequencerVertex = JSON.parse(firstSequencerVertexJSONString);
-    const lastSequencerVertexJSONString = await this.datastore.get(lastSequencerVertexId);
+    const lastSequencerVertexJSONString = await this.datastore.get(
+      lastSequencerVertexId
+    );
     if (!lastSequencerVertexJSONString) {
       return null;
     }
@@ -153,7 +172,10 @@ export default class LocalDAG {
       return [lastSequencerVertexId, firstSequencerVertexId];
     }
     for (const timelyEdgeId of exploringRoundTimelyEdges) {
-      const p = await this.findTimelyPathBetweenVertices(firstSequencerVertexId, timelyEdgeId);
+      const p = await this.findTimelyPathBetweenVertices(
+        firstSequencerVertexId,
+        timelyEdgeId
+      );
       if (p) {
         return [lastSequencerVertexId, ...p];
       }
@@ -164,7 +186,10 @@ export default class LocalDAG {
     const lastIds = await this.getKnownVerticesIdsOfRound(round);
     const r = [];
     for (const lastId of lastIds) {
-      const path = await this.findTimelyPathBetweenVertices(firstVertexId, lastId);
+      const path = await this.findTimelyPathBetweenVertices(
+        firstVertexId,
+        lastId
+      );
       r.push(path);
     }
     return r;
@@ -173,10 +198,19 @@ export default class LocalDAG {
   async findAllVerticesWithPathFromLaterVertex(vertexId, sinceRound = 0) {
     const vertex = await this.getVertexById(vertexId);
     const r = [];
-    for (let workingRound = sinceRound + 1; workingRound < vertex.round; workingRound++) {
-      const roundVertexIds = await this.getKnownVerticesIdsOfRound(workingRound);
+    for (
+      let workingRound = sinceRound + 1;
+      workingRound < vertex.round;
+      workingRound++
+    ) {
+      const roundVertexIds = await this.getKnownVerticesIdsOfRound(
+        workingRound
+      );
       for (const roundVertexId of roundVertexIds) {
-        const path = await this.findPathBetweenVertices(roundVertexId, vertexId);
+        const path = await this.findPathBetweenVertices(
+          roundVertexId,
+          vertexId
+        );
         if (path) {
           r.push(roundVertexId);
         }

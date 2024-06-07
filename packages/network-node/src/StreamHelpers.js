@@ -13,7 +13,8 @@ export function stdinToDuplex(stream, prefix = "") {
     // Read from stdin (the source)
     process.stdin,
     // Turn strings into buffers
-    (source) => map(source, (string) => uint8ArrayFromString(`${prefix}${string}`)),
+    (source) =>
+      map(source, (string) => uint8ArrayFromString(`${prefix}${string}`)),
     // Encode with length prefix (so receiving side knows how much data is coming)
     lp.encode(),
     // Write to the stream (the sink)
@@ -45,7 +46,7 @@ export function streamToConsole(stream, prefix = "") {
   );
 }
 
-export function streamToString(stream, join = "") {
+export function streamToString(stream, join = "", prefix = "") {
   pipe(
     // Read from the stream (the source)
     stream.source,

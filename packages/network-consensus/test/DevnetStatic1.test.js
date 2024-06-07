@@ -1,4 +1,4 @@
-import { jest, expect, describe, test } from "@jest/globals";
+import { jest, expect, describe, test, it } from "@jest/globals";
 
 import devnet_static1_config from "../fixtures/devnet-static1/config.json";
 import devnet_static1_keys from "../fixtures/devnet-static1/keys.json";

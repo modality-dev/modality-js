@@ -1,4 +1,4 @@
-import { jest, expect, describe, test } from "@jest/globals";
+import { jest, expect, describe, test, it } from "@jest/globals";
 import * as HashTax from "./HashTax";
 
 describe("HashTax", () => {

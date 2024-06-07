@@ -43,7 +43,10 @@ export default class DAGRider extends Binder {
 
     // use common coin to pick the leader
     const scribes = await this.findScribesInRound(round);
-    const scribe = await this.randomness.pickOne({ options: scribes, input: round });
+    const scribe = await this.randomness.pickOne({
+      options: scribes,
+      input: round,
+    });
 
     const leader = await this.findPage({ round, scribe });
     if (!leader) {
@@ -55,7 +58,10 @@ export default class DAGRider extends Binder {
     let next_pages = new Set();
     for (const i of [1, 2, 3]) {
       for (const i_scribe of scribes) {
-        const page = await this.findPage({ round: round + i, scribe: i_scribe });
+        const page = await this.findPage({
+          round: round + i,
+          scribe: i_scribe,
+        });
         if (page) {
           for (const prev_page of prev_pages) {
             if (page.acks[prev_page]) {

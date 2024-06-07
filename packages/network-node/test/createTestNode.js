@@ -34,7 +34,8 @@ class GossipSub extends EventTarget {
   }
 
   async publish(topic, data) {
-    const peer_set = this.constructor.topics_to_peers_set.get(topic) || new Set();
+    const peer_set =
+      this.constructor.topics_to_peers_set.get(topic) || new Set();
     for (const peerId of peer_set) {
       if (this.peerId === peerId) {
         continue;
@@ -45,7 +46,8 @@ class GossipSub extends EventTarget {
   }
 
   async subscribe(topic) {
-    const peer_set = this.constructor.topics_to_peers_set.get(topic) || new Set();
+    const peer_set =
+      this.constructor.topics_to_peers_set.get(topic) || new Set();
     peer_set.add(this.peerId.toString());
     this.constructor.topics_to_peers_set.set(topic, peer_set);
   }
@@ -76,7 +78,11 @@ class ReqResService {
     if (!target_node) {
       throw new Error(`peer not found`);
     }
-    const r = await target_node.services.reqres.handleRequest(peerId, path, data);
+    const r = await target_node.services.reqres.handleRequest(
+      peerId,
+      path,
+      data
+    );
     return r;
   }
 }
@@ -85,7 +91,11 @@ function reqres(peers, multiaddr, peerId) {
   return new ReqResService(peers, multiaddr, peerId);
 }
 
-export default async function createTestNode({ keypair, listen, ...options } = {}) {
+export default async function createTestNode({
+  keypair,
+  listen,
+  ...options
+} = {}) {
   const peerId = await PeerIdHelpers.createFromJSON(keypair);
   const multiaddr = listen;
 

@@ -52,37 +52,51 @@
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 2,
-      "timelyEdges": ["/consensus/round/1/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"]
+      "timelyEdges": [
+        "/consensus/round/1/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+      ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 3,
-      "timelyEdges": ["/consensus/round/2/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"]
+      "timelyEdges": [
+        "/consensus/round/2/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+      ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 4,
-      "timelyEdges": ["/consensus/round/3/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"]
+      "timelyEdges": [
+        "/consensus/round/3/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+      ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 5,
-      "timelyEdges": ["/consensus/round/4/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"]
+      "timelyEdges": [
+        "/consensus/round/4/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+      ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 6,
-      "timelyEdges": ["/consensus/round/5/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"]
+      "timelyEdges": [
+        "/consensus/round/5/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+      ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 7,
-      "timelyEdges": ["/consensus/round/6/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"]
+      "timelyEdges": [
+        "/consensus/round/6/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+      ]
     },
     {
       "witness": "12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm",
       "round": 8,
-      "timelyEdges": ["/consensus/round/7/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"]
+      "timelyEdges": [
+        "/consensus/round/7/witness/12D3KooWC25ZfwS4tcFxhrnZXvwqc1K1tufWKkhB8nJUWeyXgNdm"
+      ]
     }
   ],
   "consensus_method": {

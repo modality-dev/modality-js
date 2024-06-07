@@ -60,7 +60,9 @@ export default async function createLibp2pNode({
     };
   }
 
-  bootstrappers = bootstrappers?.filter((i) => !i.match(`p2p/${peerId.toString()}$`));
+  bootstrappers = bootstrappers?.filter(
+    (i) => !i.match(`p2p/${peerId.toString()}$`)
+  );
 
   const node = await createLibp2p({
     transports,
@@ -68,7 +70,11 @@ export default async function createLibp2pNode({
     streamMuxers: [yamux()],
     relay,
     nat,
-    peerDiscovery: [...(disableBootstrap || !bootstrappers?.length ? [] : [bootstrap({ list: bootstrappers })])],
+    peerDiscovery: [
+      ...(disableBootstrap || !bootstrappers?.length
+        ? []
+        : [bootstrap({ list: bootstrappers })]),
+    ],
     services: {
       identify: identify(),
       ping: ping(),

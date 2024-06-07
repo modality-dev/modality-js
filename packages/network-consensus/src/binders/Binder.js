@@ -28,7 +28,10 @@ export default class Binder {
   }
 
   async findScribesInRound(round_id) {
-    const round = await Round.findOne({ datastore: this.datastore, round: round_id });
+    const round = await Round.findOne({
+      datastore: this.datastore,
+      round: round_id,
+    });
     if (!round) throw new Error(`Round ${round_id} not found`);
     return round.scribes;
   }
@@ -36,14 +39,18 @@ export default class Binder {
   async findPage({ round, scribe }) {
     try {
       return await Page.findOne({ datastore: this.datastore, round, scribe });
-    } catch (e) {}
+    } catch (e) {
+      // noop
+    }
     return null;
   }
 
   async doesPageAckLinkToPage(later_page, earlier_page) {
     if (later_page.round <= earlier_page.round) return false;
     let round = later_page.round - 1;
-    let ack_set = new Set([...Object.values(later_page.acks).map((i) => i.scribe)]);
+    let ack_set = new Set([
+      ...Object.values(later_page.acks).map((i) => i.scribe),
+    ]);
     while (ack_set.size && round >= earlier_page.round) {
       if (round === earlier_page.round && ack_set.has(earlier_page.scribe)) {
         return true;
@@ -52,14 +59,16 @@ export default class Binder {
       for (const scribe of ack_set) {
         let page = await this.findPage({ round, scribe });
         if (!page) {
-          throw new Error(`Page ${scribe} ${round} not found. You must retrieve it first.`);
+          throw new Error(
+            `Page ${scribe} ${round} not found. You must retrieve it first.`
+          );
         }
         for (const i_ack of Object.values(page.acks)) {
           new_ack_set.add(i_ack.scribe);
         }
       }
       round = round - 1;
-      act_set = new_ack_set;
+      ack_set = new_ack_set;
     }
     return false;
   }
@@ -76,14 +85,18 @@ export default class Binder {
     // recursively causally order their ack linked pages with the same prioritization strategy.
     // with some binders, this prevents a scribe from silently self-acking as means of prioritizing a commit
 
-    let ack_set = new Set([...Object.values(last_page.acks).map((i) => i.scribe)]);
+    let ack_set = new Set([
+      ...Object.values(last_page.acks).map((i) => i.scribe),
+    ]);
     while (ack_set.size && round >= 1) {
       const new_ack_set = new Set();
       // prioritize pages lexographically ordered starting at leader scribe
       const acks_list_lexiordered = [...ack_set].sort();
       const acks_list_start = Math.max(
         0,
-        acks_list_lexiordered.findIndex((i) => i.localeCompare(last_page.scribe) > 0)
+        acks_list_lexiordered.findIndex(
+          (i) => i.localeCompare(last_page.scribe) > 0
+        )
       );
       const acks_list = [
         ...acks_list_lexiordered.slice(acks_list_start),
@@ -92,10 +105,15 @@ export default class Binder {
       for (const scribe of acks_list) {
         page = await this.findPage({ round, scribe });
         if (!page) {
-          throw new Error(`Page ${scribe} ${round} not found. You must retrieve it first.`);
+          throw new Error(
+            `Page ${scribe} ${round} not found. You must retrieve it first.`
+          );
         }
         if (after_page) {
-          if (page.scribe === after_page.scribe && page.round === after_page.round) {
+          if (
+            page.scribe === after_page.scribe &&
+            page.round === after_page.round
+          ) {
             continue;
           } else if (page.round < after_page.round) {
             if (await this.doesPageAckLinkToPage(after_page, page)) {

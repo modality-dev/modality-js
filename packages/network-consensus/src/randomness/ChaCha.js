@@ -16,7 +16,11 @@ export default class ChaCha {
     const nonce = utf8ToBytes(input);
     const data = utf8ToBytes(this.data);
     const result = chacha12(this.key, nonce, data);
-    const result_int = result[0] + result[1] * 16 + result[2] * 16 * 16 + result[3] * 16 * 16 * 16;
+    const result_int =
+      result[0] +
+      result[1] * 16 +
+      result[2] * 16 * 16 +
+      result[3] * 16 * 16 * 16;
     const i = result_int % options.length;
     return options[i];
   }

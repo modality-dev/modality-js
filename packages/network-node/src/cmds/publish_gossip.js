@@ -11,7 +11,14 @@ import pWaitFor from "p-wait-for";
 import { streamToConsole } from "../StreamHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
-export default async function main({ config, keypair, listen, storage, topic, message }) {
+export default async function main({
+  config,
+  keypair,
+  listen,
+  storage,
+  topic,
+  message,
+}) {
   const conf = parseConfigArgs({ config, keypair, listen, storage });
   const peerId = await PeerIdHelpers.createFromJSON(conf.keypair);
   const node = await createLibp2pNode({

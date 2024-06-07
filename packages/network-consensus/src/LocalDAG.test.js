@@ -1,3 +1,5 @@
+import { jest, expect, describe, test, it } from "@jest/globals";
+
 import LocalDAG from "./LocalDAG";
 
 describe("LocalDAG", () => {
@@ -41,7 +43,10 @@ describe("LocalDAG", () => {
     expect(r1v_to_r3v).toBeTruthy();
     expect(r1v_to_r3v.length).toBe(3);
 
-    const strong_r1v_to_r3v = await w1.findTimelyPathBetweenVertices(r1v[0], r3v[0]);
+    const strong_r1v_to_r3v = await w1.findTimelyPathBetweenVertices(
+      r1v[0],
+      r3v[0]
+    );
     expect(strong_r1v_to_r3v).toBeTruthy();
     expect(strong_r1v_to_r3v.length).toBe(3);
   });

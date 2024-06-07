@@ -9,7 +9,15 @@ import * as lp from "it-length-prefixed";
 import { streamToConsole } from "../StreamHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
-export default async function main({ config, keypair, listen, storage, target, path, data }) {
+export default async function main({
+  config,
+  keypair,
+  listen,
+  storage,
+  target,
+  path,
+  data,
+}) {
   const conf = parseConfigArgs({ config, keypair, listen, storage });
   const peerId = await PeerIdHelpers.createFromJSON(conf.keypair);
   const node = await createLibp2pNode({

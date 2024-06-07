@@ -44,14 +44,16 @@ function getDeclaredWidthDetailsFromBytes(bytes, declarationWidth = 4) {
 
 function unshiftDeclaredWidthBytesFromBytes(bytes_box, declarationWidth = 4) {
   const { bytes } = bytes_box;
-  const { bytes: content_bytes, full_length } = getDeclaredWidthDetailsFromBytes(bytes, declarationWidth);
+  const { bytes: content_bytes, full_length } =
+    getDeclaredWidthDetailsFromBytes(bytes, declarationWidth);
   bytes_box.bytes = bytes.subarray(full_length);
   return content_bytes;
 }
 
 function unshiftDeclaredWidthStringFromBytes(bytes_box, declarationWidth = 4) {
   const { bytes } = bytes_box;
-  const { bytes: content_bytes, full_length } = getDeclaredWidthDetailsFromBytes(bytes, declarationWidth);
+  const { bytes: content_bytes, full_length } =
+    getDeclaredWidthDetailsFromBytes(bytes, declarationWidth);
   const content = uint8ArrayToString(content_bytes);
   bytes_box.bytes = bytes.subarray(full_length);
   return content;
@@ -70,17 +72,26 @@ function pushBytesToBytes(bytes_box, bytes) {
 }
 
 function pushStringToBytes(bytes_box, str) {
-  bytes_box.bytes = new Uint8Array([...bytes_box.bytes, ...uint8ArrayFromString(str)]);
+  bytes_box.bytes = new Uint8Array([
+    ...bytes_box.bytes,
+    ...uint8ArrayFromString(str),
+  ]);
   return bytes_box.bytes;
 }
 
 function pushDeclaredWidthBytesToBytes(bytes_box, str, declarationWidth = 4) {
-  bytes_box.bytes = new Uint8Array([...bytes_box.bytes, ...declaredWidthBytes(str, declarationWidth)]);
+  bytes_box.bytes = new Uint8Array([
+    ...bytes_box.bytes,
+    ...declaredWidthBytes(str, declarationWidth),
+  ]);
   return bytes_box.bytes;
 }
 
 function pushDeclaredWidthStringToBytes(bytes_box, str, declarationWidth = 4) {
-  bytes_box.bytes = new Uint8Array([...bytes_box.bytes, ...declaredWidthString(str, declarationWidth)]);
+  bytes_box.bytes = new Uint8Array([
+    ...bytes_box.bytes,
+    ...declaredWidthString(str, declarationWidth),
+  ]);
   return bytes_box.bytes;
 }
 
@@ -120,7 +131,11 @@ export default class SSHPem {
     pushDeclaredWidthStringToBytes(bytes_box, this.kdfopts);
     pushFixedWidthIntToBytes(bytes_box, this.num_of_keys);
 
-    const pubkey_section_length = 4 + uint8ArrayFromString(`ssh-${this.key_type}`).length + 4 + this.public_key.length;
+    const pubkey_section_length =
+      4 +
+      uint8ArrayFromString(`ssh-${this.key_type}`).length +
+      4 +
+      this.public_key.length;
     pushFixedWidthIntToBytes(bytes_box, pubkey_section_length);
     pushDeclaredWidthStringToBytes(bytes_box, `ssh-${this.key_type}`);
     pushDeclaredWidthBytesToBytes(bytes_box, this.public_key);
@@ -138,7 +153,8 @@ export default class SSHPem {
       4 +
       uint8ArrayFromString(this.comment, "ascii").length;
     const BLOCKSIZE = 8;
-    const padding_length = BLOCKSIZE - (pk_section_length_sans_padding % BLOCKSIZE || BLOCKSIZE);
+    const padding_length =
+      BLOCKSIZE - (pk_section_length_sans_padding % BLOCKSIZE || BLOCKSIZE);
     const pk_section_length = pk_section_length_sans_padding + padding_length;
     pushFixedWidthIntToBytes(bytes_box, pk_section_length);
     pushBytesToBytes(bytes_box, checkints);
@@ -148,7 +164,9 @@ export default class SSHPem {
     pushDeclaredWidthBytesToBytes(bytes_box, this.private_key);
     pushDeclaredWidthStringToBytes(bytes_box, this.comment);
 
-    const final_bytes = new Uint8Array(Array.from({ length: 15 }, (_, i) => i + 1)).subarray(0, padding_length);
+    const final_bytes = new Uint8Array(
+      Array.from({ length: 15 }, (_, i) => i + 1)
+    ).subarray(0, padding_length);
     pushBytesToBytes(bytes_box, final_bytes);
 
     return `-----BEGIN OPENSSH PRIVATE KEY-----
@@ -224,7 +242,10 @@ ${uint8ArrayToString(bytes_box.bytes, "base64pad")
     pem.key_type = str_split[0].replace("ssh-", "");
 
     const inner_pubkey_str = str_split[1];
-    const inner_pubkey_uint8a = uint8ArrayFromString(inner_pubkey_str, "base64");
+    const inner_pubkey_uint8a = uint8ArrayFromString(
+      inner_pubkey_str,
+      "base64"
+    );
     const pubkey_uint8a = new Uint8Array([...inner_pubkey_uint8a.subarray(19)]);
     pem.public_key = pubkey_uint8a;
 

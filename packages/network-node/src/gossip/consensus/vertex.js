@@ -17,6 +17,10 @@ export async function handler(node, event) {
   // TODO check if sender is this epoch sequencer
   // TODO actually sign vertex
   const signed_vertex = { ...vertex };
-  await node.services.reqres.call(vertex.sequencer, "/consensus/sign_vertex", signed_vertex);
+  await node.services.reqres.call(
+    vertex.sequencer,
+    "/consensus/sign_vertex",
+    signed_vertex
+  );
   return vertex;
 }

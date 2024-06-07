@@ -1,4 +1,4 @@
-import { jest, expect, describe, test } from "@jest/globals";
+import { jest, expect, describe, test, it } from "@jest/globals";
 
 import Page from "./Page";
 import Keypair from "@modality-dev/utils/Keypair";
@@ -40,7 +40,11 @@ describe("Page", () => {
 
     result = b1.getId();
     expect(result).toBe(`/consensus/round/1/scribe/${node1_pubkey}`);
-    const b1r = await Page.findOne({ datastore, round: 1, scribe: node1_pubkey });
+    const b1r = await Page.findOne({
+      datastore,
+      round: 1,
+      scribe: node1_pubkey,
+    });
     expect(b1r.cert).toBe(b1.cert);
   });
 });

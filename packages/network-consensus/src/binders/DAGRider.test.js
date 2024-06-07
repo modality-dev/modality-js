@@ -1,4 +1,4 @@
-import { jest, expect, describe, test } from "@jest/globals";
+import { jest, expect, describe, test, it } from "@jest/globals";
 
 import Keypair from "@modality-dev/utils/Keypair";
 import NetworkDatastore from "@modality-dev/network-datastore";
@@ -24,7 +24,10 @@ describe("DAGRider", () => {
     const ds_builder = await DatastoreBuilder.createInMemory();
 
     const randomness = new RoundRobin();
-    const binder = new DAGRider({ datastore: ds_builder.datastore, randomness });
+    const binder = new DAGRider({
+      datastore: ds_builder.datastore,
+      randomness,
+    });
 
     ds_builder.scribes = scribes;
     for (let i = 0; i < 12; i++) {

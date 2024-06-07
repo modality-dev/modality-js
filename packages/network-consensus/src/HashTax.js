@@ -13,7 +13,12 @@ const DEFAULT_DIFFICULTY_COEFFICIENT = 0xffff;
 const DEFAULT_DIFFICULTY_EXPONENT = 0x1d;
 const DEFAULT_DIFFICULTY_BASE = 8;
 
-export async function mine({ data, difficulty, maxTries = DEFAULT_MAX_TRIES, hashFuncName = DEFAULT_HASH_FUNC_NAME }) {
+export async function mine({
+  data,
+  difficulty,
+  maxTries = DEFAULT_MAX_TRIES,
+  hashFuncName = DEFAULT_HASH_FUNC_NAME,
+}) {
   let nonce = 0;
 
   let tryCount = 0;
@@ -51,14 +56,23 @@ function difficultyToTargetHash({
   return targetHash;
 }
 
-export function isHashAcceptable({ hash, difficulty, hashFuncName = DEFAULT_HASH_FUNC_NAME }) {
+export function isHashAcceptable({
+  hash,
+  difficulty,
+  hashFuncName = DEFAULT_HASH_FUNC_NAME,
+}) {
   const targetHash = difficultyToTargetHash({ difficulty, hashFuncName });
   const targetBigInt = BigInt("0x" + targetHash);
   const hashBigInt = BigInt("0x" + hash);
   return hashBigInt < targetBigInt;
 }
 
-export async function validateNonce({ data, nonce, difficulty, hashFuncName = "sha256" }) {
+export async function validateNonce({
+  data,
+  nonce,
+  difficulty,
+  hashFuncName = "sha256",
+}) {
   const hash = await hashWithNonce({ data, nonce, hashFuncName });
   return isHashAcceptable({ hash, difficulty, hashFuncName });
 }

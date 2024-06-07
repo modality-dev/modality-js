@@ -1,4 +1,4 @@
-import { jest, expect, describe, test } from "@jest/globals";
+import { jest, expect, describe, test, it } from "@jest/globals";
 
 import createTestNode from "../../createTestNode";
 import node1_config from "../../../fixtures/configs/node1.json";
@@ -21,7 +21,10 @@ describe("gossip /gossip/vertex", () => {
     node2.services.pubsub.addEventListener("message", mockListener);
 
     const vertex = await node1.storage.local_dag.createVertex([{}, {}, {}]);
-    await node1.services.pubsub.publish("/consensus/vertex", new TextEncoder().encode(JSON.stringify(vertex)));
+    await node1.services.pubsub.publish(
+      "/consensus/vertex",
+      new TextEncoder().encode(JSON.stringify(vertex))
+    );
 
     expect(mockListener).toHaveBeenCalled();
   });

@@ -3,7 +3,16 @@ import Keypair from "@modality-dev/utils/Keypair";
 
 // Narwhal style vertices
 export default class Page {
-  constructor({ scribe, round, events = [], hash, sig, acks = {}, late_acks = {}, cert }) {
+  constructor({
+    scribe,
+    round,
+    events = [],
+    hash,
+    sig,
+    acks = {},
+    late_acks = {},
+    cert,
+  }) {
     this.scribe = scribe;
     this.round = round;
     this.events = events;

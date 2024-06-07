@@ -48,7 +48,9 @@ export class ReqResService {
     this.components = components;
     this.log = components.logger.forComponent("modality-network:reqres");
     this.started = false;
-    this.protocol = `/${init.protocolPrefix ?? PROTOCOL_PREFIX}/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`;
+    this.protocol = `/${
+      init.protocolPrefix ?? PROTOCOL_PREFIX
+    }/${PROTOCOL_NAME}/${PROTOCOL_VERSION}`;
     this.timeout = init.timeout ?? TIMEOUT;
     this.maxInboundStreams = init.maxInboundStreams ?? MAX_INBOUND_STREAMS;
     this.maxOutboundStreams = init.maxOutboundStreams ?? MAX_OUTBOUND_STREAMS;
@@ -96,8 +98,16 @@ export class ReqResService {
     const jsonString = Uint8ArrayHelpers.toString(req_data);
     const req = SafeJSON.parse(jsonString);
     this.log("incoming req", data.connection.remotePeer, req.path, req.data);
-    const res = await this.constructor.handleRequest(data.connection.remotePeer, req.path, req.data);
-    this.log("incoming reqres from %p complete in %dms", data.connection.remotePeer, Date.now() - start);
+    const res = await this.constructor.handleRequest(
+      data.connection.remotePeer,
+      req.path,
+      req.data
+    );
+    this.log(
+      "incoming reqres from %p complete in %dms",
+      data.connection.remotePeer,
+      Date.now() - start
+    );
     const res_text = JSON.stringify(res);
     return await pipe([Uint8ArrayHelpers.fromString(res_text)], stream);
   }
@@ -105,7 +115,10 @@ export class ReqResService {
   async call(peer, path, data, options) {
     this.log("peer %p", peer, path, data);
 
-    const connection = await this.components.connectionManager.openConnection(peer, options);
+    const connection = await this.components.connectionManager.openConnection(
+      peer,
+      options
+    );
     let signal;
     let stream;
     let onAbort = () => {};
@@ -133,13 +146,17 @@ export class ReqResService {
         data,
       });
 
-      const r = await pipe([Uint8ArrayHelpers.fromString(text)], stream, async function (source) {
-        const r = [];
-        for await (const data of source) {
-          r.push(Uint8ArrayHelpers.toString(data.subarray()));
+      const r = await pipe(
+        [Uint8ArrayHelpers.fromString(text)],
+        stream,
+        async function (source) {
+          const r = [];
+          for await (const data of source) {
+            r.push(Uint8ArrayHelpers.toString(data.subarray()));
+          }
+          return SafeJSON.parse(r.join("\n"));
         }
-        return SafeJSON.parse(r.join("\n"));
-      });
+      );
       this.log("response", r);
       return r;
     } catch (err) {
