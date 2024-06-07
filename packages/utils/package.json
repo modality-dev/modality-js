@@ -15,7 +15,7 @@
     "./*": "./src/*.js"
   },
   "author": "Foy Savas",
-  "license": "LGPL-3.0",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@libp2p/crypto": "^1.0.0",

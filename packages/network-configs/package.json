@@ -8,7 +8,7 @@
     "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "author": "Foy Savas",
-  "license": "LGPL-3.0",
+  "license": "MIT",
   "type": "module",
   "files": [
     "src",
