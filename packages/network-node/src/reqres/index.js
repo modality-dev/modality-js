@@ -62,7 +62,7 @@ export class ReqResService {
         return module.handler({ peer, path, data });
       }
     }
-    throw new CodeError("invalid path", ERR_INVALID_PARAMETERS);
+    throw new CodeError("invalid path: must be a supported path by modality reqres", ERR_INVALID_PARAMETERS);
   }
 
   async start() {
