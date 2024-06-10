@@ -10,7 +10,7 @@ export default class Page {
     hash,
     sig,
     acks = {},
-    late_acks = {},
+    late_acks = [],
     cert,
   }) {
     this.scribe = scribe;
@@ -98,10 +98,12 @@ export default class Page {
       sig: this.sig,
     };
     const sig = await keypair.signJSON(facts);
-    return [peer_id, sig];
+    return {scribe: peer_id, round: (this.round - 1), sig};
   }
 
   async validateAck(ack) {
+    // TODO
+    return true;
     const keypair = Keypair.fromPublicKey(ack[0]);
     const facts = {
       scribe: this.scribe,
@@ -115,16 +117,16 @@ export default class Page {
   async addAck(ack) {
     const is_valid = await this.validateAck(ack);
     if (is_valid) {
-      this.acks[ack[0]] = ack[1];
+      this.acks[ack.scribe] = ack;
       return true;
     }
   }
 
   validateAcks() {
-    for (const [peer_id, sig] of Object.entries(this.acks)) {
-      const keypair = Keypair.fromPublicKey(peer_id);
+    for (const ack of Object.values(this.acks)) {
+      const keypair = Keypair.fromPublicKey(ack.scribe);
       if (
-        !keypair.verifyJSON(sig, {
+        !keypair.verifyJSON(ack.sig, {
           scribe: this.scribe,
           round: this.round,
           events: this.events,
@@ -139,10 +141,10 @@ export default class Page {
 
   countValidAcks() {
     let valid_acks = 0;
-    for (const [peer_id, sig] of Object.entries(this.acks)) {
-      const keypair = Keypair.fromPublicKey(peer_id);
+    for (const ack of Object.values(this.acks)) {
+      const keypair = Keypair.fromPublicKey(ack.scribe);
       if (
-        keypair.verifyJSON(sig, {
+        keypair.verifyJSON(ack.sig, {
           scribe: this.scribe,
           round: this.round,
           events: this.events,
@@ -155,7 +157,18 @@ export default class Page {
     return valid_acks;
   }
 
-  addLateAck(ack, round_seen) {}
+  async validateLateAck(ack) {
+    // return true;
+    return true;
+  }
+
+  async addLateAck(ack) {
+    const is_valid = await this.validateAck(ack);
+    if (is_valid) {
+      this.late_acks.push(ack);
+      return true;
+    } 
+  }
 
   async generateCert(keypair) {
     this.cert = await keypair.signJSON({

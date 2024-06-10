@@ -27,7 +27,7 @@ describe("Page", () => {
 
     let ack1 = await b1.generateAck(node2_keypair);
     await b1.addAck(ack1);
-    expect(b1.acks[ack1[0]]).toBe(ack1[1]);
+    expect(b1.acks[ack1.scribe]).toBe(ack1);
     result = await b1.validateAcks();
     expect(result).toBe(true);
     result = await b1.countValidAcks(ack1);

@@ -12,7 +12,7 @@ import DatastoreBuilder from "../../fixtures/datastores/DatastoreBuilder";
 import DAGRider from "./DAGRider";
 
 describe("DAGRider", () => {
-  it("should work", async () => {
+  it("should work given fully connected rounds", async () => {
     const keypair1 = await Keypair.generate();
     const keypair1_pubkey = await keypair1.asPublicAddress();
     const keypair2 = await Keypair.generate();
@@ -31,7 +31,7 @@ describe("DAGRider", () => {
 
     ds_builder.scribes = scribes;
     for (let i = 0; i < 12; i++) {
-      await ds_builder.addSimpleRound();
+      await ds_builder.addFullyConnectedRound();
     }
 
     let page;
@@ -58,5 +58,52 @@ describe("DAGRider", () => {
 
     pages = await binder.findOrderedPagesInChapter(5, 9);
     expect(pages.length).toBe(4 * 3);
+  });
+
+  it("should work given consensus connected rounds", async () => {
+    const keypair1 = await Keypair.generate();
+    const keypair1_pubkey = await keypair1.asPublicAddress();
+    const keypair2 = await Keypair.generate();
+    const keypair2_pubkey = await keypair2.asPublicAddress();
+    const keypair3 = await Keypair.generate();
+    const keypair3_pubkey = await keypair3.asPublicAddress();
+    const keypair4 = await Keypair.generate();
+    const keypair4_pubkey = await keypair4.asPublicAddress();
+    const scribes = [keypair1_pubkey, keypair2_pubkey, keypair3_pubkey, keypair4_pubkey];
+    const consensus_threshold = DAGRider.consensusThresholdFor(scribes.length);
+
+    const ds_builder = await DatastoreBuilder.createInMemory();
+
+    const randomness = new RoundRobin();
+    const binder = new DAGRider({
+      datastore: ds_builder.datastore,
+      randomness,
+    });
+
+    ds_builder.scribes = scribes;
+    for (let i = 0; i < 12; i++) {
+      await ds_builder.addConsensusConnectedRound();
+    }
+
+    let page;
+    let page1 = await binder.findLeaderInRound(1);
+    expect(page1).not.toBeNull();
+    page = await binder.findLeaderInRound(2);
+    expect(page).toBeNull();
+    page = await binder.findLeaderInRound(3);
+    expect(page).toBeNull();
+    page = await binder.findLeaderInRound(4);
+    expect(page).toBeNull();
+    page = await binder.findLeaderInRound(5);
+    expect(page).not.toBeNull();
+
+    let pages;
+
+    pages = await binder.findOrderedPagesInChapter(null, 1);
+    expect(pages.length).toBe(1); // first chapter is only one page
+    expect(pages.at(-1).scribe).toBe(page1.scribe);
+
+    await binder.logRounds(1,5);
+    // TODO
   });
 });

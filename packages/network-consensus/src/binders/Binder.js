@@ -8,6 +8,14 @@ export default class Binder {
     this.first_round = first_round;
   }
 
+  static calculate2fplus1(num_of_peers) {
+    return Math.floor(num_of_peers * 2.0 / 3.0) + 1;
+  }
+
+  static consensusThresholdFor(num_of_peers) {
+    return this.calculate2fplus1(num_of_peers);
+  }
+
   // finds the first_page of a round as decided by common randomness
   // some rounds may not have a first page returning null
   async findFirstPageInRound(round) {
@@ -130,5 +138,43 @@ export default class Binder {
     }
 
     return r.reverse();
+  }
+
+  async logRound(round_num) {
+    const r = [`# Round #${round_num}`];
+    const round = await Round.findOne({
+      datastore: this.datastore,
+      round: round_num,
+    });
+    if (!round) {
+      console.log(r.join('\n'));
+      return;
+    }
+    for (const scribe of round.scribes) {
+      r.push(`## Scribe ${scribe}`);
+      const page = await this.findPage({ round: round_num, scribe });
+      if (page) {
+        for (const ack of Object.values(page.acks)) {
+          r.push(`* Ack from ${ack.scribe}`)
+        }
+        for (const ack of page.late_acks) {
+          r.push(`* Late Ack of Round #${ack.round+1} from ${ack.scribe}`);
+        }
+      }
+    }
+//     console.log(`
+// ${round.scribes.map(async scribe => {
+// return `## Scribe
+// ### Acks
+// ### Late Acks
+// `}).join('\n')}
+// `);
+    console.log(r.join('\n'));
+  }
+
+  async logRounds(start_round, end_round) {
+    for (let round = start_round; round <= end_round; round++) {
+      await this.logRound(round);
+    }
   }
 }
