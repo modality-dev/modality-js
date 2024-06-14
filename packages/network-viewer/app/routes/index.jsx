@@ -22,7 +22,7 @@ export default function Page() {
   }, []);
 
   const roundsToShow = Array.from(
-    { length: maxRound - minRound + 1 },
+    { length: maxRound === 0 ? 0 : maxRound - minRound + 1 },
     (_, i) => minRound + i
   ).reverse();
 

@@ -1,4 +1,4 @@
-import Binder from "./Binder";
+import Binder from "./Binder.js";
 
 export const NAME = "DAGRider";
 
