@@ -1,5 +1,6 @@
 import { setupServer } from "@thylacine-js/webapi-express";
 import NetworkDatastore from '@modality-dev/network-datastore';
+import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
 import { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -12,13 +13,22 @@ export default async function main({port, datastore}) {
 
   const server = await setupServer({ appDir, validateCors: () => true });
 
-  let _datastore;
-  if (_datastore) {
-    _datastore = await NetworkDatastore.createInDirectory(datastore);
+  if (datastore === 'mock') {
+    const builder = await NetworkDatastoreBuilder.createInMemory();
+    const scribes = await NetworkDatastoreBuilder.generateScribes(9);
+    builder.scribes = Object.keys(scribes);
+    await builder.addFullyConnectedRound();
+    await builder.addFullyConnectedRound();
+    await builder.addFullyConnectedRound();
+    await builder.addFullyConnectedRound();
+    await builder.addFullyConnectedRound();
+    server.datastore_builder = builder;
+    server.datastore = builder.datastore;
+  } else if (datastore) {
+    server.datastore = await NetworkDatastore.createInDirectory(datastore);
   } else {
-    _datastore = await NetworkDatastore.createInMemory();
+    server.datastore = await NetworkDatastore.createInMemory();
   }
-  server.datastore = _datastore;
   server.listen(port, () => {
     console.log(`listening on http://0.0.0.0:3001`);
   }); 
