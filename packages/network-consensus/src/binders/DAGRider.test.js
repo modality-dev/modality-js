@@ -3,11 +3,11 @@ import { jest, expect, describe, test, it } from "@jest/globals";
 import Keypair from "@modality-dev/utils/Keypair";
 import NetworkDatastore from "@modality-dev/network-datastore";
 
-import Page from "../data/Page";
-import Round from "../data/Round";
+import Page from "@modality-dev/network-datastore/data/Page";
+import Round from "@modality-dev/network-datastore/data/Round";
 import RoundRobin from "../randomness/RoundRobin";
 
-import DatastoreBuilder from "../../fixtures/datastores/DatastoreBuilder";
+import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
 import DAGRider from "./DAGRider";
 
@@ -21,7 +21,7 @@ describe("DAGRider", () => {
     const keypair3_pubkey = await keypair3.asPublicAddress();
     const scribes = [keypair1_pubkey, keypair2_pubkey, keypair3_pubkey];
 
-    const ds_builder = await DatastoreBuilder.createInMemory();
+    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
 
     const randomness = new RoundRobin();
     const binder = new DAGRider({
@@ -72,7 +72,7 @@ describe("DAGRider", () => {
     const scribes = [keypair1_pubkey, keypair2_pubkey, keypair3_pubkey, keypair4_pubkey];
     const consensus_threshold = DAGRider.consensusThresholdFor(scribes.length);
 
-    const ds_builder = await DatastoreBuilder.createInMemory();
+    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
 
     const randomness = new RoundRobin();
     const binder = new DAGRider({
@@ -103,7 +103,7 @@ describe("DAGRider", () => {
     expect(pages.length).toBe(1); // first chapter is only one page
     expect(pages.at(-1).scribe).toBe(page1.scribe);
 
-    await binder.logRounds(1,5);
+    // await binder.logRounds(1,5);
     // TODO
   });
 });

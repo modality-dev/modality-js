@@ -1,5 +1,5 @@
-import Page from "../data/Page";
-import Round from "../data/Round";
+import Page from "@modality-dev/network-datastore/data/Page";
+import Round from "@modality-dev/network-datastore/data/Round";
 
 export default class Binder {
   constructor({ datastore, randomness, first_round = 1 }) {

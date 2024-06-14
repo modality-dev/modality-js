@@ -3,8 +3,8 @@ import { jest, expect, describe, test, it } from "@jest/globals";
 import Keypair from "@modality-dev/utils/Keypair";
 import NetworkDatastore from "@modality-dev/network-datastore";
 
-import Page from "../data/Page";
-import Round from "../data/Round";
+import Page from "@modality-dev/network-datastore/data/Page";
+import Round from "@modality-dev/network-datastore/data/Round";
 import RoundRobin from "../randomness/RoundRobin";
 
 import Bullshark from "./Bullshark";

@@ -22,6 +22,9 @@ export default async function main({port, datastore}) {
     await builder.addFullyConnectedRound();
     await builder.addFullyConnectedRound();
     await builder.addFullyConnectedRound();
+    await builder.addFullyConnectedRound();
+    await builder.addFullyConnectedRound();
+    await builder.addFullyConnectedRound();
     server.datastore_builder = builder;
     server.datastore = builder.datastore;
   } else if (datastore) {

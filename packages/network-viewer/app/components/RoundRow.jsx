@@ -121,7 +121,7 @@ export default function  RoundRow({ round }) {
         <div>Scribes: {scribes.length}</div>
       </div>
       {scribes.map(scribe => (
-        <ScribePage round={round} scribe={scribe} />
+        <ScribePage key={scribe} round={round} scribe={scribe} />
       ))}
     </StyledDiv>
   );

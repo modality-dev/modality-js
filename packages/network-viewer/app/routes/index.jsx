@@ -9,23 +9,30 @@ export const layout = "HeaderFooter";
 
 export default function Page() {
   const [status, setStatus] = React.useState();
+  const [minRound, setMinRound] = React.useState(0);
+  const [maxRound, setMaxRound] = React.useState(0);
 
   React.useEffect(() => {
     (async () => {
       const r = await Backend.get("/");
       setStatus(r.data.status);
+      setMaxRound(r.data.status.round);
+      setMinRound(Math.max(r.data.status.round - 10, 1));
     })();
   }, []);
-  
+
+  const roundsToShow = Array.from(
+    { length: maxRound - minRound + 1 },
+    (_, i) => minRound + i
+  ).reverse();
+
   return (
     <StyledDiv>
       <div to={`/rounds/${status?.round}`}>
         <div className="RoundRows">
-          <RoundRow round={5} />
-          <RoundRow round={4} />
-          <RoundRow round={3} />
-          <RoundRow round={2} />
-          <RoundRow round={1} />
+          {roundsToShow.map((round) => (
+            <RoundRow key={round} round={round} />
+          ))}
         </div>
       </div>
     </StyledDiv>
