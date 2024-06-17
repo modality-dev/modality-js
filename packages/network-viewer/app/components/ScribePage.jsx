@@ -7,9 +7,11 @@ import Backend from '../lib/Backend.mjs';
 
 export const layout = "HeaderFooter";
 
-export default function ScribePage({round, scribe}) {
+export default function ScribePage({round, scribe, showLines = true}) {
 
   const [page, setPage] = React.useState([]);
+  const [lines, setLines] = React.useState([]);
+  const [isHovering, setIsHovering] = React.useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -26,11 +28,12 @@ export default function ScribePage({round, scribe}) {
         {round, scribe},
       ]
     ));
+    const _lines = [];
     for (const conn of connections) {
       const node1 = this.document.getElementById(`scribe-page-round-${conn[0].round}-scribe-${conn[0].scribe}`);
       const node2 = this.document.getElementById(`scribe-page-round-${conn[1].round}-scribe-${conn[1].scribe}`);
       if (node1 && node2) {
-        new LinkerLine({
+        let line = new LinkerLine({
           end: node1,
           start: node2,
           color: "blue",
@@ -39,14 +42,19 @@ export default function ScribePage({round, scribe}) {
           endSocket: "top",
           startPlug: "behind",
           endPlug: "arrow3",
-          path: 'straight'
+          path: 'straight',
         });
+        if (!showLines && !isHovering) {
+          line.hide();
+        }
+        _lines.push(line);
       }
     }
-  }, [page]);
+    setLines(_lines);
+  }, [page, showLines, isHovering]);
 
   return (
-    <StyledDiv id={`scribe-page-round-${round}-scribe-${scribe}`}>
+    <StyledDiv id={`scribe-page-round-${round}-scribe-${scribe}`} onMouseEnter={() => setIsHovering(true)} on onMouseLeave={() => setIsHovering(false)}>
       <Link to={`/rounds/${round}/scribes/${scribe}`}>
         <div className="Page">
           {page?.is_section_leader && <div className="section-leader">§</div>}
@@ -61,6 +69,9 @@ export default function ScribePage({round, scribe}) {
 
 const StyledDiv = styled.div/*css*/ `
   margin: 20px;
+  svg.linker-line {
+    stroke: green !important;
+  }
   .scribe-id {
     borer: 1px solid #ccc;
     width: 100%;
