@@ -97,6 +97,7 @@ export default class Binder {
       ...Object.values(last_page.acks).map((i) => i.scribe),
     ]);
     while (ack_set.size && round >= 1) {
+      // console.log(round, 'ack_set', ack_set);
       const new_ack_set = new Set();
       // prioritize pages lexographically ordered starting at leader scribe
       const acks_list_lexiordered = [...ack_set].sort();
@@ -117,20 +118,31 @@ export default class Binder {
             `Page ${scribe} ${round} not found. You must retrieve it first.`
           );
         }
+        let should_skip = false;
         if (after_page) {
           if (
             page.scribe === after_page.scribe &&
             page.round === after_page.round
           ) {
-            continue;
+            should_skip = true;
           } else if (page.round < after_page.round) {
             if (await this.doesPageAckLinkToPage(after_page, page)) {
-              continue;
+              // console.log(`
+              //   processing ${last_page.round}.${last_page.scribe}
+              //     skipping ${page.round}.${page.scribe}
+              //     because causally linked to
+              //     skipping ${after_page.round}.${after_page.scribe}
+              //   `)
+              should_skip = true;
             }
           }
         }
-        r.push({ round: page.round, scribe: page.scribe });
-        new_ack_set.add(scribe);
+        if (!should_skip) {
+          r.push({ round: page.round, scribe: page.scribe });
+          for (const ack of Object.values(page.acks || {})) {
+            new_ack_set.add(ack.scribe);
+          }
+        }
       }
 
       ack_set = new_ack_set;

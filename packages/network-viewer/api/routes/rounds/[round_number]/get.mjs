@@ -10,8 +10,8 @@ export default async function (req, res) {
     ok: true, data: {
       round: {
         ...round,
-        sequencing_method: 'dag_rider',
-        sequencing_settings: {}
+        sequencing_method: 'DAG Rider',
+        sequencing_options: ""
       }
     }
   });

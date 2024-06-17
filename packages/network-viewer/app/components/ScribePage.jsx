@@ -51,6 +51,7 @@ export default function ScribePage({round, scribe}) {
         <div className="Page">
           {page?.is_section_leader && <div className="section-leader">§</div>}
           {page?.is_certified && <div className="certified">✓</div>}
+          <div className="scribe-id">...{page.scribe?.substr(-6)}</div>
           {page?.page_number && <div className="sequenced">#</div>}
         </div>
       </Link>
@@ -59,8 +60,17 @@ export default function ScribePage({round, scribe}) {
 }
 
 const StyledDiv = styled.div/*css*/ `
-  & {
-    margin: 20px;
+  margin: 20px;
+  .scribe-id {
+    borer: 1px solid #ccc;
+    width: 100%;
+    margin: 0px auto;
+    margin-top: 45px;
+    text-align: center;
+    font-family: courier;
+    font-size: 13px;
+  }
+  .Page {
     border: 1px solid #ccc;
     width: 85px;
     height: 110px;

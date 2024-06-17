@@ -25,7 +25,10 @@ export default function Page() {
     <div>
       Scribe: {scribe_id}
     </div>
+    <br />
     <div>
+      Is Ordered: {page?.page_number ? 'true' : 'false'}
+      <br />
       Page Number: {page?.page_number}
     </div>
     <br />
@@ -34,14 +37,14 @@ export default function Page() {
       <br />
       <div>
         Acks:
-        {Object.values(page?.acks || {}).map(ack => (<div key={`${ack.scribe}`}>
-          * {ack.scribe}
+        {Object.values(page?.acks || {}).sort((a,b) => a.scribe.localeCompare(b.scribe)).map(ack => (<div key={`${ack.scribe}`}>
+          * <a href={`/rounds/${ack.round}/scribes/${ack.scribe}`}>{ack.scribe}</a>
         </div>))}
       </div>
       <br />
       <div>
         Late Acks:
-        {page?.late_acks?.map(ack => (<div key={`${ack.round}-${ack.scribe}`}>
+        {page?.late_acks?.sort((a,b) => a.scribe.localeCompare(b.scribe)).map(ack => (<div key={`${ack.round}-${ack.scribe}`}>
           * Round {ack.round} from {ack.scribe}
         </div>))}
       </div>
@@ -49,10 +52,6 @@ export default function Page() {
     <br />
     <div>
       Is Section Leader: {page?.is_section_leader ? 'true' : 'false'}
-    </div>
-    <br />
-    <div>
-      Is Ordered: {page?.is_ordered ? 'true' : 'false'}
     </div>
     <br />
   </StyledDiv>);

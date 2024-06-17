@@ -18,18 +18,18 @@ export default async function main({port, datastore}) {
 
   if (datastore === 'mock') {
     const builder = await NetworkDatastoreBuilder.createInMemory();
-    const scribes = await NetworkDatastoreBuilder.generateScribes(9);
+    const scribes = await NetworkDatastoreBuilder.generateScribes(5);
     builder.scribes = Object.keys(scribes);
     await builder.addFullyConnectedRound();
-    for (let i = 0; i < 12; i++) {
-      await builder.addFullyConnectedRound();
+    for (let i = 1; i < 24; i++) {
+      await builder.addConsensusConnectedRound();
     }
     const randomness = new RoundRobin();
     const binder = new DAGRider({
       datastore: builder.datastore,
       randomness,
     });
-    await binder.saveOrderedPageNumbers(1, 12);
+    await binder.saveOrderedPageNumbers(1, 24);
     server.datastore_builder = builder;
     server.datastore = builder.datastore;
   } else if (datastore) {

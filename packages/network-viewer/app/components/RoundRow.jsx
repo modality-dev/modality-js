@@ -7,25 +7,28 @@ import Backend from '../lib/Backend.mjs';
 
 export const layout = "HeaderFooter";
 
-export default function RoundRow({ round }) {
+export default function RoundRow({ round: round_number }) {
 
+  const [round, setRound] =  React.useState()
   const [scribes, setScribes] = React.useState([]);
 
   React.useEffect(() => {
     (async () => {
-      const r = await Backend.get(`/rounds/${round}`);
-      setScribes(r.data.round.scribes);
+      const r = await Backend.get(`/rounds/${round_number}`);
+      setRound(r.data.round);
+      setScribes(r.data.round.scribes.sort());
     })();
-  }, [round]);
+  }, [round_number]);
 
   return (
-    <StyledDiv className="RoundRow" id={`RoundRow-round-${round}`}>
+    <StyledDiv className="RoundRow" id={`RoundRow-round-${round_number}`}>
       <div className="RoundInfo">
-        <div><a href={`/rounds/${round}`}>Round {round}</a></div>
+        <div><a href={`/rounds/${round_number}`}>Round {round_number}</a></div>
         <div>Scribes: {scribes.length}</div>
+        <div>{round?.sequencing_method}</div>
       </div>
       {scribes.map(scribe => (
-        <ScribePage key={scribe} round={round} scribe={scribe} />
+        <ScribePage key={scribe} round={round_number} scribe={scribe} />
       ))}
       {scribes.length === 0 && <div className="not-available">
       </div>}
