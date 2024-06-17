@@ -51,7 +51,7 @@ export default function ScribePage({round, scribe}) {
         <div className="Page">
           {page?.is_section_leader && <div className="section-leader">§</div>}
           {page?.is_certified && <div className="certified">✓</div>}
-          {/* <div className="sequenced">#</div> */}
+          {page?.page_number && <div className="sequenced">#</div>}
         </div>
       </Link>
     </StyledDiv>

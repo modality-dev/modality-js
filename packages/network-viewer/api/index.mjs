@@ -2,6 +2,9 @@ import { setupServer } from "@thylacine-js/webapi-express";
 import NetworkDatastore from '@modality-dev/network-datastore';
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
+import DAGRider from "@modality-dev/network-consensus/binders/DAGRider";
+import RoundRobin from "@modality-dev/network-consensus/randomness/RoundRobin";
+
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -18,22 +21,15 @@ export default async function main({port, datastore}) {
     const scribes = await NetworkDatastoreBuilder.generateScribes(9);
     builder.scribes = Object.keys(scribes);
     await builder.addFullyConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
-    await builder.addConsensusConnectedRound();
+    for (let i = 0; i < 12; i++) {
+      await builder.addFullyConnectedRound();
+    }
+    const randomness = new RoundRobin();
+    const binder = new DAGRider({
+      datastore: builder.datastore,
+      randomness,
+    });
+    await binder.saveOrderedPageNumbers(1, 12);
     server.datastore_builder = builder;
     server.datastore = builder.datastore;
   } else if (datastore) {

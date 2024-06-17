@@ -25,6 +25,9 @@ export default function Page() {
     <div>
       Scribe: {scribe_id}
     </div>
+    <div>
+      Page Number: {page?.page_number}
+    </div>
     <br />
     <div>
       <div>Is Certified: {page?.is_certified ? 'true' : ''}</div>

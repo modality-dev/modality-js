@@ -64,15 +64,15 @@ describe("Bullshark", () => {
 
     let pages;
 
-    pages = await binder.findOrderedPagesInChapter(null, 1);
-    expect(pages.length).toBe(1); // first chapter is only one page
+    pages = await binder.findOrderedPagesInSection(null, 1);
+    expect(pages.length).toBe(1); // first section is only one page
     expect(pages.at(-1).scribe).toBe(page1.scribe);
 
-    pages = await binder.findOrderedPagesInChapter(1, 5);
+    pages = await binder.findOrderedPagesInSection(1, 5);
     expect(pages.length).toBe(4 * 3);
     expect(pages.at(-1).scribe).toBe(page.scribe);
 
-    pages = await binder.findOrderedPagesInChapter(5, 9);
+    pages = await binder.findOrderedPagesInSection(5, 9);
     expect(pages.length).toBe(4 * 3);
   });
 });

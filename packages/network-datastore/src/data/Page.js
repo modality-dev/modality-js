@@ -12,6 +12,11 @@ export default class Page {
     acks = {},
     late_acks = [],
     cert,
+    is_section_leader,
+    section_ending_round,
+    section_starting_round,
+    section_page_number,
+    page_number
   }) {
     this.scribe = scribe;
     this.round = round;
@@ -27,6 +32,13 @@ export default class Page {
 
     // final cert
     this.cert = cert;
+
+    // consensus related
+    this.is_section_leader = is_section_leader;
+    this.section_starting_round = section_starting_round;
+    this.section_ending_round = section_ending_round;
+    this.section_page_number = section_page_number;
+    this.page_number = page_number;
   }
 
   static fromJSON(json) {
@@ -64,11 +76,21 @@ export default class Page {
       acks: this.acks,
       late_acks: this.late_acks,
       cert: this.cert,
+      number: this.number,
+      is_section_leader: this.is_section_leader,
+      section_starting_round: this.section_starting_round,
+      section_ending_round: this.section_ending_round,
+      section_page_number: this.section_page_number,
+      page_number: this.page_number,
     });
   }
 
   addEvent(event) {
     this.events.push(event);
+  }
+
+  setNumber(number) {
+    this.number = number;
   }
 
   async generateSig(keypair) {

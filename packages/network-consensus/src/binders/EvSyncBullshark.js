@@ -86,7 +86,7 @@ export default class EvSyncBullshark extends Binder {
     return leader;
   }
 
-  async findOrderedPagesInChapter(start_round, end_round) {
+  async findOrderedPagesInSection(start_round, end_round) {
     const starting_leader = await this.findLeaderInRound(start_round);
     const ending_leader = await this.findLeaderInRound(end_round);
     return this.findCausallyLinkedPages(ending_leader, starting_leader);

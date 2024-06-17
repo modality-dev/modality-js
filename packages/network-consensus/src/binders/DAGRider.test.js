@@ -48,15 +48,15 @@ describe("DAGRider", () => {
 
     let pages;
 
-    pages = await binder.findOrderedPagesInChapter(null, 1);
-    expect(pages.length).toBe(1); // first chapter is only one page
+    pages = await binder.findOrderedPagesInSection(null, 1);
+    expect(pages.length).toBe(1); // first section is only one page
     expect(pages.at(-1).scribe).toBe(page1.scribe);
 
-    pages = await binder.findOrderedPagesInChapter(1, 5);
+    pages = await binder.findOrderedPagesInSection(1, 5);
     expect(pages.length).toBe(4 * 3);
     expect(pages.at(-1).scribe).toBe(page.scribe);
 
-    pages = await binder.findOrderedPagesInChapter(5, 9);
+    pages = await binder.findOrderedPagesInSection(5, 9);
     expect(pages.length).toBe(4 * 3);
   });
 
@@ -85,6 +85,7 @@ describe("DAGRider", () => {
       await ds_builder.addConsensusConnectedRound();
     }
 
+
     let page;
     let page1 = await binder.findLeaderInRound(1);
     expect(page1).not.toBeNull();
@@ -99,10 +100,14 @@ describe("DAGRider", () => {
 
     let pages;
 
-    pages = await binder.findOrderedPagesInChapter(null, 1);
-    expect(pages.length).toBe(1); // first chapter is only one page
+    pages = await binder.findOrderedPagesInSection(null, 1);
+    expect(pages.length).toBe(1); // first section is only one page
     expect(pages.at(-1).scribe).toBe(page1.scribe);
 
+    await binder.saveOrderedPageNumbers(1, 12);
+    page = await Page.findOne({datastore: binder.datastore, round: 5, scribe: keypair1_pubkey});
+    expect(page.page_number).not.toBeNull();
+    
     // await binder.logRounds(1,5);
     // TODO
   });

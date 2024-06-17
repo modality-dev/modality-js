@@ -9,7 +9,9 @@ export default async function (req, res) {
   return res.json({
     ok: true, data: {
       round: {
-        ...round
+        ...round,
+        sequencing_method: 'dag_rider',
+        sequencing_settings: {}
       }
     }
   });

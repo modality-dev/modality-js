@@ -31,7 +31,7 @@ export default class Binder {
   // connected to the end_round_first_page
   //
   // when end round does not have first page, this returns null
-  async findOrderedPagesInChapter(start_round, end_round) {
+  async findOrderedPagesInSection(start_round, end_round) {
     throw new Error("Not implemented");
   }
 
