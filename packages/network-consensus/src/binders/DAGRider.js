@@ -45,7 +45,7 @@ export default class DAGRider extends Binder {
     // use common coin to pick the leader
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
-      options: scribes,
+      options: scribes.sort(),
       input: round,
     });
 
