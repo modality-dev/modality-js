@@ -10,9 +10,9 @@ export default async function (req, res) {
 
   const datastore = req.app.datastore;
 
-  let next_round;
+  let prev_round;
   try {
-    next_round = await Round.findOne({round: round_number+1, datastore});
+    prev_round = await Round.findOne({round: round_number-1, datastore});
   } catch (e) {
     //
   }
@@ -21,14 +21,14 @@ export default async function (req, res) {
     datastore,
     randomness,
   });
-  const next_round_scribes_count = next_round?.scribes.length;
-  const next_round_threshold = Binder.consensusThresholdFor(next_round_scribes_count);
+  const prev_round_scribes_count = prev_round?.scribes.length;
+  const prev_round_threshold = Binder.consensusThresholdFor(prev_round_scribes_count);
   const leader = await binder.findLeaderInRound(round_number);
   const leader_scribe = leader?.scribe;
   const is_section_leader = leader_scribe === scribe_id;
 
   const page = await Page.findOne({round: round_number, scribe: scribe_id, datastore});
-  const is_certified = Object.keys(page.acks).length >= next_round_threshold;
+  const is_certified = Object.keys(page.acks).length >= prev_round_threshold;
 
   return res.json({
     ok: true, data: {

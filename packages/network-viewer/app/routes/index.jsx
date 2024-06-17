@@ -7,6 +7,9 @@ import RoundRow from "../components/RoundRow.jsx";
 
 export const layout = "HeaderFooter";
 
+const INITIAL_MAX_ROUNDS = 20;
+const SHOW_MORE_ROUNDS = 10;
+
 export default function Page() {
   const [status, setStatus] = React.useState();
   const [minRound, setMinRound] = React.useState(0);
@@ -17,7 +20,7 @@ export default function Page() {
       const r = await Backend.get("/");
       setStatus(r.data.status);
       setMaxRound(r.data.status.round);
-      setMinRound(Math.max(r.data.status.round - 10, 1));
+      setMinRound(Math.max(r.data.status.round - INITIAL_MAX_ROUNDS, 1));
     })();
   }, []);
 
@@ -34,6 +37,16 @@ export default function Page() {
             <RoundRow key={round} round={round} />
           ))}
         </div>
+        {minRound > 1 && (
+          <div
+            className="show-more-rows"
+            onClick={() => {
+              setMinRound(Math.max(1, minRound - SHOW_MORE_ROUNDS));
+            }}
+          >
+            show more
+          </div>
+        )}
       </div>
     </StyledDiv>
   );
@@ -43,10 +56,19 @@ const StyledDiv = styled.div/*css*/ `
   .RoundRows {
     display: flex;
     flex-direction: column;
+    position: relative;
   }
   .RoundRow {
     display: flex;
     flex-direction: row;
     margin-bottom: 20px;
+  }
+  .show-more-rows {
+    text-decoration: underline;
+    margin-left: 40px;
+    margin-right: 40px;
+    width: calc(100% - 80px);
+    cursor: pointer;
+    color: blue;
   }
 `;

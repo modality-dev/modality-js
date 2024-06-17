@@ -21,12 +21,14 @@ export default function RoundRow({ round }) {
   return (
     <StyledDiv className="RoundRow" id={`RoundRow-round-${round}`}>
       <div className="RoundInfo">
-        <div>Round: {round}</div>
+        <div><a href={`/rounds/${round}`}>Round {round}</a></div>
         <div>Scribes: {scribes.length}</div>
       </div>
       {scribes.map(scribe => (
         <ScribePage key={scribe} round={round} scribe={scribe} />
       ))}
+      {scribes.length === 0 && <div className="not-available">
+      </div>}
     </StyledDiv>
   );
 }
@@ -40,5 +42,9 @@ const StyledDiv = styled.div/*css*/ `
   justify-content: center;
   flex-direction: column;
   align-items: center;
+}
+.not-available {
+  width: 85px;
+  height: 110px;
 }
 `;

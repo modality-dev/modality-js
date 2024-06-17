@@ -14,7 +14,6 @@ export default function ScribePage({round, scribe}) {
   React.useEffect(() => {
     (async () => {
       const r = await Backend.get(`/rounds/${round}/scribes/${scribe}`);
-      console.log(r.data);
       setPage(r.data.page);
     })();
   }, [round]);
@@ -23,8 +22,8 @@ export default function ScribePage({round, scribe}) {
     const acks = Object.keys(page.acks || {});
     const connections = acks.map(awk_scribe => (
       [
+        {round: round-1, scribe: awk_scribe},
         {round, scribe},
-        {round: round+1, scribe: awk_scribe},
       ]
     ));
     for (const conn of connections) {
@@ -48,7 +47,7 @@ export default function ScribePage({round, scribe}) {
 
   return (
     <StyledDiv id={`scribe-page-round-${round}-scribe-${scribe}`}>
-      <Link to={`/rounds/${status?.round}/scribe/${"..."}`}>
+      <Link to={`/rounds/${round}/scribes/${scribe}`}>
         <div className="Page">
           {page?.is_section_leader && <div className="section-leader">§</div>}
           {page?.is_certified && <div className="certified">✓</div>}
