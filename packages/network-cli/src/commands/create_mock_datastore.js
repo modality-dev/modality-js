@@ -22,8 +22,7 @@ import DAGRider from '@modality-dev/network-consensus/binders/DAGRider';
 
 export async function handler({ dir = './tmp/datastore', scribes = 5, rounds = 12 }) {
   const builder = await NetworkDatastoreBuilder.createInDirectory(dir);
-  const _scribes = await NetworkDatastoreBuilder.generateScribes(scribes);
-  builder.scribes = Object.keys(_scribes);
+  await builder.generateScribes(scribes, true);
   await builder.addFullyConnectedRound();
   for (let i = 1; i < rounds; i++) {
     await builder.addConsensusConnectedRound();

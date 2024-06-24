@@ -4,6 +4,7 @@ import Page from "./data/Page.js";
 import Round from "./data/Round.js";
 
 import Keypair from "@modality-dev/utils/Keypair";
+import DevnetCommon from "../../network-configs/src/devnet-common/index.js";
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -17,19 +18,32 @@ export default class NetworkDatastoreBuilder {
   constructor() {
     this.datastore = null;
     this.round_num = 0;
+    this.scribe_keypairs = {};
     this.scribes = [];
     this.late_acks = {};
     this.next_round_late_acks = {};
   }
 
-  static async generateScribes(count) {
+  static async generateScribes(count, from_devnet_common = false) {
     const r = {};
-    for (let i = 1; i <= count; i++) {
-      const keypair = await Keypair.generate();
-      const keypair_pubkey = await keypair.asPublicAddress();
-      r[keypair_pubkey] = keypair;
+    if (from_devnet_common) {
+      const keypairs = Object.values(DevnetCommon.keypairs).slice(0, count)
+      for (const keypair of keypairs) {
+        r[keypair.id] = keypair;
+      }
+    } else {
+      for (let i = 1; i <= count; i++) {
+        const keypair = await Keypair.generate();
+        const keypair_pubkey = await keypair.asPublicAddress();
+        r[keypair_pubkey] = keypair;
+      }
     }
     return r;
+  }
+
+  async generateScribes(count, from_devnet_common = false) {
+    this.scribe_keypairs = await this.constructor.generateScribes(count, from_devnet_common);
+    this.scribes = Object.keys(this.scribe_keypairs);
   }
 
   static async createInMemory() {

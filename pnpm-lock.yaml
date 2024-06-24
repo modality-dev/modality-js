@@ -72,12 +72,18 @@ importers:
 
   packages/network-cli:
     dependencies:
+      '@modality-dev/network-configs':
+        specifier: workspace:^
+        version: link:../network-configs
       '@modality-dev/network-consensus':
         specifier: workspace:^
         version: link:../network-consensus
       '@modality-dev/network-datastore':
         specifier: workspace:^
         version: link:../network-datastore
+      '@modality-dev/utils':
+        specifier: workspace:^
+        version: link:../utils
       cli-calls:
         specifier: ^1.0.0
         version: 1.0.0
@@ -87,6 +93,9 @@ importers:
       jest:
         specifier: ^29.7
         version: 29.7.0(@types/node@20.14.2)
+      json-stringify-deterministic:
+        specifier: ^1.0.7
+        version: 1.0.12
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -138,6 +147,9 @@ importers:
 
   packages/network-datastore:
     dependencies:
+      '@modality-dev/network-configs':
+        specifier: workspace:^
+        version: link:../network-configs
       '@modality-dev/utils':
         specifier: workspace:^
         version: link:../utils

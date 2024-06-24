@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@modality-dev/utils": "workspace:^",
+    "@modality-dev/network-configs": "workspace:^",
     "datastore-level": "^8.0.0",
     "debug": "^4.3.4",
     "hash-wasm": "^4.11.0",
