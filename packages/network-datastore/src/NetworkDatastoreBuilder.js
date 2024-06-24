@@ -2,7 +2,7 @@ import NetworkDatastore from "./NetworkDatastore.js";
 
 import Page from "./data/Page.js";
 import Round from "./data/Round.js";
-
+import fs from "fs";
 import Keypair from "@modality-dev/utils/Keypair";
 import DevnetCommon from "../../network-configs/src/devnet-common/index.js";
 
@@ -27,7 +27,7 @@ export default class NetworkDatastoreBuilder {
   static async generateScribes(count, from_devnet_common = false) {
     const r = {};
     if (from_devnet_common) {
-      const keypairs = Object.values(DevnetCommon.keypairs).slice(0, count)
+      const keypairs = Object.values(DevnetCommon.keypairs).slice(0, count);
       for (const keypair of keypairs) {
         r[keypair.id] = keypair;
       }
@@ -42,7 +42,10 @@ export default class NetworkDatastoreBuilder {
   }
 
   async generateScribes(count, from_devnet_common = false) {
-    this.scribe_keypairs = await this.constructor.generateScribes(count, from_devnet_common);
+    this.scribe_keypairs = await this.constructor.generateScribes(
+      count,
+      from_devnet_common
+    );
     this.scribes = Object.keys(this.scribe_keypairs);
   }
 
@@ -53,6 +56,9 @@ export default class NetworkDatastoreBuilder {
   }
 
   static async createInDirectory(path) {
+    if (!fs.existsSync(path)) {
+      fs.mkdirSync(path, { recursive: true });
+    }
     const builder = new NetworkDatastoreBuilder();
     builder.datastore = await NetworkDatastore.createInDirectory(path);
     return builder;
@@ -93,7 +99,8 @@ export default class NetworkDatastoreBuilder {
     round.scribes = [...this.scribes];
     await round.save({ datastore: this.datastore });
     const scribes = shuffleArray(this.scribes);
-    const consensus_threshold = Math.floor(this.scribes.length * 2.0 / 3.0) + 1;
+    const consensus_threshold =
+      Math.floor((this.scribes.length * 2.0) / 3.0) + 1;
     for (const scribe of scribes) {
       if (failures > 0) {
         failures--;
@@ -102,7 +109,10 @@ export default class NetworkDatastoreBuilder {
       const page = new Page({ scribe, round: round_num, events: [] });
       if (round_num > 1) {
         // prioritize self ack
-        const acking_scribes = [scribe, ...shuffleArray([...scribes].filter(i => i !== scribe))];
+        const acking_scribes = [
+          scribe,
+          ...shuffleArray([...scribes].filter((i) => i !== scribe)),
+        ];
         let acks_so_far = 0;
         for (const peer_scribe of acking_scribes) {
           const peer_prev_page = await Page.findOne({
@@ -117,7 +127,7 @@ export default class NetworkDatastoreBuilder {
                 {
                   round: peer_prev_page?.round,
                   scribe: peer_scribe,
-                }
+                },
               ];
             } else {
               page.acks[peer_scribe] = {
