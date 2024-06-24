@@ -70,6 +70,33 @@ importers:
         specifier: ^3.0.0
         version: 3.1.1
 
+  packages/network-cli:
+    dependencies:
+      '@modality-dev/network-consensus':
+        specifier: workspace:^
+        version: link:../network-consensus
+      '@modality-dev/network-datastore':
+        specifier: workspace:^
+        version: link:../network-datastore
+      cli-calls:
+        specifier: ^1.0.0
+        version: 1.0.0
+      debug:
+        specifier: ^4.3.4
+        version: 4.3.5
+      jest:
+        specifier: ^29.7
+        version: 29.7.0(@types/node@20.14.2)
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+      uint8arrays:
+        specifier: ^3.0.0
+        version: 3.1.1
+      yargs:
+        specifier: ^17.7.2
+        version: 17.7.2
+
   packages/network-configs:
     dependencies:
       jest:

@@ -17,11 +17,13 @@ export default async function main({port, datastore}) {
   const server = await setupServer({ appDir, validateCors: () => true });
 
   if (datastore === 'mock') {
+    const SCRIBES = 5;
+    const ROUNDS = 12;
     const builder = await NetworkDatastoreBuilder.createInMemory();
-    const scribes = await NetworkDatastoreBuilder.generateScribes(5);
+    const scribes = await NetworkDatastoreBuilder.generateScribes(SCRIBES);
     builder.scribes = Object.keys(scribes);
     await builder.addFullyConnectedRound();
-    for (let i = 1; i < 24; i++) {
+    for (let i = 1; i < ROUNDS; i++) {
       await builder.addConsensusConnectedRound();
     }
     const randomness = new RoundRobin();
@@ -29,7 +31,7 @@ export default async function main({port, datastore}) {
       datastore: builder.datastore,
       randomness,
     });
-    await binder.saveOrderedPageNumbers(1, 24);
+    await binder.saveOrderedPageNumbers(1, ROUNDS);
     server.datastore_builder = builder;
     server.datastore = builder.datastore;
   } else if (datastore) {
