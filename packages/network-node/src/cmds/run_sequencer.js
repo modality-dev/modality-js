@@ -3,7 +3,7 @@ import PeerIdHelpers from "../PeerIdHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
 import { addSequencerEventListeners } from "../gossip/index.js";
-import { addLocalDAGStorage } from "../storage.js";
+import { attachDatastore } from "../storage.js";
 
 async function addPeerDiscoveryEventListeners(node) {
   node.addEventListener("peer:connect", (evt) => {
@@ -27,7 +27,7 @@ export default async function run({ config, keypair, listen, storage }) {
     bootstrappers: conf.bootstrappers,
   });
 
-  await addLocalDAGStorage(node, conf);
+  await attachDatastore(node, conf);
 
   await addPeerDiscoveryEventListeners(node);
   await addSequencerEventListeners(node);
