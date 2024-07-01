@@ -1,9 +1,9 @@
-import Binder from "./Binder";
+import Sequencer from "./Sequencer";
 
-// like Bullshark, but instead of a fallback leader
-// unordered pages from sufficiently older rounds are discarded.
-// requiring resubmission of discarded commits, but bounds memory usage
-export default class EvSyncBullshark extends Binder {
+export const NAME = "Bullshark";
+
+// like DAGRider, but during periods of synchrony, leaders are chosen twice per wave
+export default class Bullshark extends Sequencer {
   constructor({ datastore, randomness, first_round = 1 }) {
     super({ datastore, randomness, first_round });
   }

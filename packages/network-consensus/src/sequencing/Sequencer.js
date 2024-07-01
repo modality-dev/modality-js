@@ -1,7 +1,7 @@
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 
-export default class Binder {
+export default class Sequencer {
   constructor({ datastore, randomness, first_round = 1 }) {
     this.datastore = datastore;
     this.randomness = randomness;

@@ -1,9 +1,9 @@
-import Binder from "./Binder";
+import Sequencer from "./Sequencer.js";
+import Page from '@modality-dev/network-datastore/data/Page';
 
-export const NAME = "Bullshark";
+export const NAME = "DAGRider";
 
-// like DAGRider, but during periods of synchrony, leaders are chosen twice per wave
-export default class Bullshark extends Binder {
+export default class DAGRider extends Sequencer {
   constructor({ datastore, randomness, first_round = 1 }) {
     super({ datastore, randomness, first_round });
   }
@@ -34,10 +34,6 @@ export default class Bullshark extends Binder {
     };
   }
 
-  /// bullshark has:
-  /// * wave round 1 leader (based on predefined randomness)
-  /// * wave round 1 fallback leader (based on randomness of wave round 4, only used during asynchrony)
-  /// * wave round 3 leader (based on predefined randomness)
   async findLeaderInRound(round) {
     const round_props = this.constructor.getRoundProps(round, this.first_round);
 
@@ -49,7 +45,7 @@ export default class Bullshark extends Binder {
     // use common coin to pick the leader
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
-      options: scribes,
+      options: scribes.sort(),
       input: round,
     });
 
@@ -91,4 +87,54 @@ export default class Bullshark extends Binder {
     const ending_leader = await this.findLeaderInRound(end_round);
     return this.findCausallyLinkedPages(ending_leader, starting_leader);
   }
+
+  async saveOrderedPageNumbers(start_round, end_round) {
+    const round_section_leaders = [];
+    for (let round = start_round; round < end_round; round++) {
+      const leader = await this.findLeaderInRound(round);
+      if (leader) {
+        round_section_leaders.push(leader);
+      }
+    }
+    if (!round_section_leaders.length) {
+      return;
+    }
+    const ordered_section_pages = [];
+    let prev_leader;
+    let page_number;
+    if (start_round === 1) {
+      page_number = 1;
+    }
+    for (const leader of round_section_leaders) {
+      if (!prev_leader) {
+        prev_leader = leader;
+        continue;
+      }
+      const ordered_pages = await this.findOrderedPagesInSection(prev_leader.round, leader.round);
+      const section_starting_round = prev_leader.round;
+      const section_ending_round = leader.round;
+      ordered_section_pages.push({
+        section_starting_round: prev_leader.round,
+        section_ending_round: leader.round,
+        pages: ordered_pages
+      });
+      let section_page_number = 1;
+      for (const ordered_page of ordered_pages) {
+        const page = await Page.findOne({datastore: this.datastore, round: ordered_page.round, scribe: ordered_page.scribe});
+        page.section_starting_round = section_starting_round;
+        page.section_ending_round = section_ending_round;
+        page.section_page_number = section_page_number; 
+        if (page_number) {
+          page.page_number = page_number;
+        }
+        await page.save({datastore: this.datastore});
+        section_page_number++;
+        if (page_number) {
+          page_number++;
+        }
+      }
+      prev_leader = leader;
+    }
+  }
+
 }

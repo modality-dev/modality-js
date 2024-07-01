@@ -1,7 +1,7 @@
 import Page from '@modality-dev/network-datastore/data/Page';
 import Round from '@modality-dev/network-datastore/data/Round';
-import Binder from '@modality-dev/network-consensus/binders/Binder';
-import DAGRider from '@modality-dev/network-consensus/binders/DAGRider';
+import Sequencer from '@modality-dev/network-consensus/sequencing/Sequencer';
+import DAGRider from '@modality-dev/network-consensus/sequencing/DAGRider';
 import RoundRobin from '@modality-dev/network-consensus/randomness/RoundRobin';
 
 export default async function (req, res) {
@@ -22,7 +22,7 @@ export default async function (req, res) {
     randomness,
   });
   const prev_round_scribes_count = prev_round?.scribes.length;
-  const prev_round_threshold = Binder.consensusThresholdFor(prev_round_scribes_count);
+  const prev_round_threshold = Sequencer.consensusThresholdFor(prev_round_scribes_count);
   const leader = await binder.findLeaderInRound(round_number);
   const leader_scribe = leader?.scribe;
   const is_section_leader = leader_scribe === scribe_id;

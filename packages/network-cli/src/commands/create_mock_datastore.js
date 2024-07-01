@@ -18,7 +18,7 @@ const log = console.log;
 
 import NetworkDatastoreBuilder from '@modality-dev/network-datastore/NetworkDatastoreBuilder';
 import RoundRobin from '@modality-dev/network-consensus/randomness/RoundRobin';
-import DAGRider from '@modality-dev/network-consensus/binders/DAGRider';
+import DAGRider from '@modality-dev/network-consensus/sequencing/DAGRider';
 
 export async function handler({ dir = './tmp/datastore', scribes = 5, rounds = 12 }) {
   const builder = await NetworkDatastoreBuilder.createInDirectory(dir);

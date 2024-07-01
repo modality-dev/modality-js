@@ -2,6 +2,7 @@ import NetworkDatastore from "@modality-dev/network-datastore";
 import Keypair from "@modality-dev/utils/Keypair";
 import SequencerVertex from "./SequencerVertex.js";
 
+// TODO DEPRECATED
 export default class LocalDAG {
   constructor(datastore) {
     this.datastore = datastore;

@@ -1,3 +1,4 @@
+// TODO DEPRECATED
 export default class SequencerVertex {
   constructor({ round, sequencer, timelyEdges, lateEdges, events }) {
     this.round = round;
