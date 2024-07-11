@@ -22,18 +22,16 @@ describe("DAGRider", () => {
   // in particular, 
   test("sequencing given fully connected rounds", async () => {
     const NODE_COUNT = 3;
-    const scribes = await Devnet.getPubkeys(NODE_COUNT);
-    
-    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
+    let pages, page, page1;
 
+    // setup
+    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
+    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new DAGRider({
       datastore: ds_builder.datastore,
       randomness,
     });
-
     ds_builder.scribes = [...scribes];
-
-    let page, page1, pages;
     
     // round 1
     await ds_builder.addFullyConnectedRound();
@@ -99,24 +97,42 @@ describe("DAGRider", () => {
   });
 
   test.skip("sequencing given consensus threshold connected rounds", async () => {
-    const scribes = await Devnet.getPubkeys(5);
-    const consensus_threshold = DAGRider.consensusThresholdFor(scribes.length);
+    const NODE_COUNT = 5;
+    let pages, page, page1;
 
+    // setup
+    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
-
-    const randomness = new RoundRobin();
     const binder = new DAGRider({
       datastore: ds_builder.datastore,
       randomness,
     });
+    ds_builder.scribes = [...scribes];
+    
+    // round 1
+    await ds_builder.addConsensusConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
+    expect(page1).toBeNull();
 
-    ds_builder.scribes = scribes;
-    for (let i = 0; i < 12; i++) {
-      await ds_builder.addConsensusConnectedRound();
-    }
+    // round 2
+    await ds_builder.addConsensusConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
+    expect(page1).toBeNull();
+    page = await binder.findLeaderInRound(2);
+    expect(page).toBeNull();
 
-    let page;
-    let page1 = await binder.findLeaderInRound(1);
+    // round 3
+    await ds_builder.addConsensusConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
+    expect(page1).toBeNull();
+    page = await binder.findLeaderInRound(2);
+    expect(page).toBeNull();
+    page = await binder.findLeaderInRound(3);
+    expect(page).toBeNull();
+
+    // round 4
+    await ds_builder.addConsensusConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
     expect(page1).not.toBeNull();
     page = await binder.findLeaderInRound(2);
     expect(page).toBeNull();
@@ -124,22 +140,37 @@ describe("DAGRider", () => {
     expect(page).toBeNull();
     page = await binder.findLeaderInRound(4);
     expect(page).toBeNull();
-    page = await binder.findLeaderInRound(5);
-    expect(page).not.toBeNull();
-
-    let pages;
-
     pages = await binder.findOrderedPagesInSection(null, 1);
     expect(pages.length).toBe(1); // first section is only one page
     expect(pages.at(-1).scribe).toBe(page1.scribe);
 
-    await binder.saveOrderedPageNumbers(1, 12);
-    page = await Page.findOne({datastore: binder.datastore, round: 5, scribe: scribes[0]});
-    expect(page.page_number).not.toBeNull();
-    
-    // await binder.logRounds(1,5);
-    // TODO
-  });
+    // round 8
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    pages = await binder.findOrderedPagesInSection(1, 5);
+    expect(pages.length).toBe(4 * NODE_COUNT);
+    expect(pages.at(-1).scribe).toBe(scribes[1]);
+
+    // round 12
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    pages = await binder.findOrderedPagesInSection(5, 9);
+    expect(pages.length).toBe(4 * NODE_COUNT);
+    expect(pages.at(-1).scribe).toBe(scribes[2]);
+
+    // round 16
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    pages = await binder.findOrderedPagesInSection(9, 13);
+    expect(pages.length).toBe(4 * NODE_COUNT);
+    expect(pages.at(-1).scribe).toBe(scribes[0]);
+  }); 
 
   test.skip("no sequencing given under threshold connected rounds", async() => {
 
