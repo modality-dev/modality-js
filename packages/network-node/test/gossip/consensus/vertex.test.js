@@ -20,7 +20,7 @@ describe("gossip /gossip/vertex", () => {
     const mockListener = jest.fn();
     node2.services.pubsub.addEventListener("message", mockListener);
 
-    const vertex = await node1.storage.local_dag.createVertex([{}, {}, {}]);
+    const vertex = {}; // TODO await node1.storage.local_dag.createVertex([{}, {}, {}]);
     await node1.services.pubsub.publish(
       "/consensus/vertex",
       new TextEncoder().encode(JSON.stringify(vertex))

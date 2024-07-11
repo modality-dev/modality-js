@@ -173,6 +173,24 @@ describe("DAGRider", () => {
   }); 
 
   test.skip("no sequencing given under threshold connected rounds", async() => {
+    const NODE_COUNT = 5;
+    let pages, page, page1;
 
+    // setup
+    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
+    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
+    const binder = new DAGRider({
+      datastore: ds_builder.datastore,
+      randomness,
+    });
+    ds_builder.scribes = [...scribes];
+    
+    // round 1
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    await ds_builder.addConsensusConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
+    expect(page1).toBeNull();
   });
 });
