@@ -46,7 +46,7 @@ export default class DAGRider extends Sequencer {
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
       options: scribes.sort(),
-      input: round,
+      input: Math.floor(round / 4),
     });
 
     const leader = await this.findPage({ round, scribe });
@@ -85,6 +85,7 @@ export default class DAGRider extends Sequencer {
   async findOrderedPagesInSection(start_round, end_round) {
     const starting_leader = await this.findLeaderInRound(start_round);
     const ending_leader = await this.findLeaderInRound(end_round);
+    // console.log({start_round, starting_leader, end_round, ending_leader});
     return this.findCausallyLinkedPages(ending_leader, starting_leader);
   }
 

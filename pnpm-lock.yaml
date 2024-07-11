@@ -114,6 +114,9 @@ importers:
 
   packages/network-consensus:
     dependencies:
+      '@modality-dev/network-configs':
+        specifier: workspace:^
+        version: link:../network-configs
       '@modality-dev/network-datastore':
         specifier: workspace:^
         version: link:../network-datastore

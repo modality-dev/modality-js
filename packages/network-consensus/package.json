@@ -19,6 +19,7 @@
     "./*": "./src/*.js"
   },
   "dependencies": {
+    "@modality-dev/network-configs": "workspace:^",
     "@modality-dev/network-datastore": "workspace:^",
     "@modality-dev/utils": "workspace:^",
     "datastore-level": "^8.0.0",

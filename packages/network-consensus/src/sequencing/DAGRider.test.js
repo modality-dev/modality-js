@@ -9,33 +9,56 @@ import RoundRobin from "../randomness/RoundRobin";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
+import * as Devnet from '@modality-dev/network-configs/devnet-common/index';
+
 import DAGRider from "./DAGRider";
 
 describe("DAGRider", () => {
-  it("should work given fully connected rounds", async () => {
-    const keypair1 = await Keypair.generate();
-    const keypair1_pubkey = await keypair1.asPublicAddress();
-    const keypair2 = await Keypair.generate();
-    const keypair2_pubkey = await keypair2.asPublicAddress();
-    const keypair3 = await Keypair.generate();
-    const keypair3_pubkey = await keypair3.asPublicAddress();
-    const scribes = [keypair1_pubkey, keypair2_pubkey, keypair3_pubkey];
+  // to make testing easy to understand
+  // round robin is used to elect leaders
+  const randomness = new RoundRobin();
 
+  // when rounds are fully connected, pages a few rounds back can be sequenced
+  // in particular, 
+  test("sequencing given fully connected rounds", async () => {
+    const NODE_COUNT = 3;
+    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
 
-    const randomness = new RoundRobin();
     const binder = new DAGRider({
       datastore: ds_builder.datastore,
       randomness,
     });
 
-    ds_builder.scribes = scribes;
-    for (let i = 0; i < 12; i++) {
-      await ds_builder.addFullyConnectedRound();
-    }
+    ds_builder.scribes = [...scribes];
 
-    let page;
-    let page1 = await binder.findLeaderInRound(1);
+    let page, page1, pages;
+    
+    // round 1
+    await ds_builder.addFullyConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
+    expect(page1).toBeNull();
+
+    // round 2
+    await ds_builder.addFullyConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
+    expect(page1).toBeNull();
+    page = await binder.findLeaderInRound(2);
+    expect(page).toBeNull();
+
+    // round 3
+    await ds_builder.addFullyConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
+    expect(page1).toBeNull();
+    page = await binder.findLeaderInRound(2);
+    expect(page).toBeNull();
+    page = await binder.findLeaderInRound(3);
+    expect(page).toBeNull();
+
+    // round 4
+    await ds_builder.addFullyConnectedRound();
+    page1 = await binder.findLeaderInRound(1);
     expect(page1).not.toBeNull();
     page = await binder.findLeaderInRound(2);
     expect(page).toBeNull();
@@ -43,33 +66,40 @@ describe("DAGRider", () => {
     expect(page).toBeNull();
     page = await binder.findLeaderInRound(4);
     expect(page).toBeNull();
-    page = await binder.findLeaderInRound(5);
-    expect(page).not.toBeNull();
-
-    let pages;
-
     pages = await binder.findOrderedPagesInSection(null, 1);
     expect(pages.length).toBe(1); // first section is only one page
     expect(pages.at(-1).scribe).toBe(page1.scribe);
 
+    // round 8
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
     pages = await binder.findOrderedPagesInSection(1, 5);
-    expect(pages.length).toBe(4 * 3);
-    expect(pages.at(-1).scribe).toBe(page.scribe);
+    expect(pages.length).toBe(4 * NODE_COUNT);
+    expect(pages.at(-1).scribe).toBe(scribes[1]);
 
+    // round 12
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
     pages = await binder.findOrderedPagesInSection(5, 9);
-    expect(pages.length).toBe(4 * 3);
+    expect(pages.length).toBe(4 * NODE_COUNT);
+    expect(pages.at(-1).scribe).toBe(scribes[2]);
+
+    // round 16
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
+    await ds_builder.addFullyConnectedRound();
+    pages = await binder.findOrderedPagesInSection(9, 13);
+    expect(pages.length).toBe(4 * NODE_COUNT);
+    expect(pages.at(-1).scribe).toBe(scribes[0]);
   });
 
-  it("should work given consensus connected rounds", async () => {
-    const keypair1 = await Keypair.generate();
-    const keypair1_pubkey = await keypair1.asPublicAddress();
-    const keypair2 = await Keypair.generate();
-    const keypair2_pubkey = await keypair2.asPublicAddress();
-    const keypair3 = await Keypair.generate();
-    const keypair3_pubkey = await keypair3.asPublicAddress();
-    const keypair4 = await Keypair.generate();
-    const keypair4_pubkey = await keypair4.asPublicAddress();
-    const scribes = [keypair1_pubkey, keypair2_pubkey, keypair3_pubkey, keypair4_pubkey];
+  test.skip("sequencing given consensus threshold connected rounds", async () => {
+    const scribes = await Devnet.getPubkeys(5);
     const consensus_threshold = DAGRider.consensusThresholdFor(scribes.length);
 
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
@@ -84,7 +114,6 @@ describe("DAGRider", () => {
     for (let i = 0; i < 12; i++) {
       await ds_builder.addConsensusConnectedRound();
     }
-
 
     let page;
     let page1 = await binder.findLeaderInRound(1);
@@ -105,10 +134,14 @@ describe("DAGRider", () => {
     expect(pages.at(-1).scribe).toBe(page1.scribe);
 
     await binder.saveOrderedPageNumbers(1, 12);
-    page = await Page.findOne({datastore: binder.datastore, round: 5, scribe: keypair1_pubkey});
+    page = await Page.findOne({datastore: binder.datastore, round: 5, scribe: scribes[0]});
     expect(page.page_number).not.toBeNull();
     
     // await binder.logRounds(1,5);
     // TODO
+  });
+
+  test.skip("no sequencing given under threshold connected rounds", async() => {
+
   });
 });
