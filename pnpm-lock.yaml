@@ -108,6 +108,9 @@ importers:
 
   packages/network-configs:
     dependencies:
+      '@modality-dev/utils':
+        specifier: workspace:^
+        version: link:../utils
       jest:
         specifier: ^29.7
         version: 29.7.0(@types/node@20.14.2)
