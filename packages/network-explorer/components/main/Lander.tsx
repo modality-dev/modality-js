@@ -4,9 +4,9 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import {
   Clock,
   CreditCardIcon,
-  Eclipse,
-  FuelIcon,
-  Globe,
+  Network,
+  Octagon,
+  ScrollIcon,
   Shield,
 } from "lucide-react";
 
@@ -23,31 +23,30 @@ export const Lander = () => {
           />
           <Button variant="default">Search</Button>
         </div>
-        <div className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 mt-6 md:grid-cols-2 lg:grid-cols-4 text-center">
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
               <div>
-                <div className="text-sm font-medium">MOD PRICE</div>
-                <div className="text-2xl font-bold">$0.0000000003</div>
-                <div className="text-sm text-green-500">(+5.93%)</div>
+                <div className="text-sm font-medium">Round #</div>
+                <div className="text-2xl font-bold">12</div>
               </div>
-              <Eclipse className="h-6 w-6" />
+              <Octagon className="h-6 w-6" />
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
               <div>
-                <div className="text-sm font-medium">MARKET CAP</div>
-                <div className="text-2xl font-bold">$370,990,097,303.00</div>
+                <div className="text-sm font-medium">Total Scribes</div>
+                <div className="text-2xl font-bold">5</div>
               </div>
-              <Globe className="h-6 w-6" />
+              <ScrollIcon className="h-6 w-6" />
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
               <div>
-                <div className="text-sm font-medium">TRANSACTIONS</div>
-                <div className="text-2xl font-bold">2,433.84 M (13.4 TPS)</div>
+                <div className="text-sm font-medium">Transactions</div>
+                <div className="text-2xl font-bold">23,233</div>
               </div>
               <CreditCardIcon className="h-6 w-6" />
             </CardHeader>
@@ -55,19 +54,19 @@ export const Lander = () => {
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
               <div>
-                <div className="text-sm font-medium">MED GAS PRICE</div>
-                <div className="text-2xl font-bold">2 Gwei ($0.13)</div>
+                <div className="text-sm font-medium">Consenus</div>
+                <div className="text-2xl font-bold">DAG Rider</div>
               </div>
-              <FuelIcon className="h-6 w-6" />
+              <Network className="h-6 w-6" />
             </CardHeader>
           </Card>
         </div>
-        <div className="grid grid-cols-1 gap-4 mt-6 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 mt-6 lg:grid-cols-2 text-center">
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
               <div>
-                <div className="text-sm font-medium">LAST FINALIZED BLOCK</div>
-                <div className="text-2xl font-bold">20267113</div>
+                <div className="text-sm font-medium">Last Finalized Round</div>
+                <div className="text-2xl font-bold">#12</div>
               </div>
               <Clock className="h-6 w-6" />
             </CardHeader>
@@ -75,8 +74,8 @@ export const Lander = () => {
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
               <div>
-                <div className="text-sm font-medium">LAST SAFE BLOCK</div>
-                <div className="text-2xl font-bold">20267177</div>
+                <div className="text-sm font-medium">Last Safe Round</div>
+                <div className="text-2xl font-bold">#12</div>
               </div>
               <Shield className="h-6 w-6" />
             </CardHeader>
@@ -86,9 +85,9 @@ export const Lander = () => {
         <div className="grid grid-cols-1 gap-4 mt-6 lg:grid-cols-2">
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
-              <div className="text-sm font-medium">Latest Blocks</div>
+              <div className="text-sm font-medium">Latest Rounds</div>
               <Button variant="outline" size="sm">
-                Customize
+                View More
               </Button>
             </CardHeader>
             <CardContent>
@@ -126,7 +125,7 @@ export const Lander = () => {
             <CardHeader className="flex items-center justify-between p-4">
               <div className="text-sm font-medium">Latest Transactions</div>
               <Button variant="outline" size="sm">
-                Customize
+                View More
               </Button>
             </CardHeader>
             <CardContent>

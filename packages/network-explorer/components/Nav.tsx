@@ -30,7 +30,7 @@ export const Nav = () => {
     "Log Out",
   ];
   return (
-    <Navbar onMenuOpenChange={setIsMenuOpen}>
+    <Navbar onMenuOpenChange={setIsMenuOpen} maxWidth={"full"}>
       <NavbarContent>
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -43,8 +43,8 @@ export const Nav = () => {
       </NavbarContent>
 
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
-        <NavbarItem>
-          <Link href="#">Home</Link>
+        <NavbarItem isActive>
+          <Link href="/">Home</Link>
         </NavbarItem>
         <NavbarItem>
           <Link href="#">Blockchain</Link>
