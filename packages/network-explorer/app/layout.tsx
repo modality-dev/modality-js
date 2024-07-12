@@ -4,8 +4,8 @@ import { Nav } from "@/components/Nav";
 import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Home",
-  description: "Welcome to Modality Block Explorer",
+  title: "Modality Blockchain Explorer",
+  description: "Welcome to Modality Blockchain Explorer",
 };
 
 export default function RootLayout({

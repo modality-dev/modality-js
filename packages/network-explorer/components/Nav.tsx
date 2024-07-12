@@ -10,7 +10,7 @@ import {
   NavbarMenuToggle,
 } from "@nextui-org/react";
 import Link from "next/link";
-import { GitHubLogoIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
 import { useState } from "react";
 import { ModeToggle } from "./ModeToggle";
 
@@ -37,31 +37,36 @@ export const Nav = () => {
           className="sm:hidden"
         />
         <NavbarBrand>
-          <GitHubLogoIcon />
-          <p className="font-bold text-inherit ml-2">ACME</p>
+          <Image src="/mod.svg" alt="Modality" width={40} height={40} />
+          <p className="font-bold text-inherit ml-2">Modality</p>
         </NavbarBrand>
       </NavbarContent>
 
       <NavbarContent className="hidden sm:flex gap-4" justify="center">
         <NavbarItem>
-          <Link href="#">Features</Link>
-        </NavbarItem>
-        <NavbarItem isActive>
-          <Link href="#" aria-current="page">
-            Customers
-          </Link>
+          <Link href="#">Home</Link>
         </NavbarItem>
         <NavbarItem>
-          <Link href="#">Integrations</Link>
+          <Link href="#">Blockchain</Link>
+        </NavbarItem>
+        <NavbarItem>
+          <Link href="#">Resources</Link>
+        </NavbarItem>
+        <NavbarItem>
+          <Link href="#">Developers</Link>
         </NavbarItem>
       </NavbarContent>
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="#">Login</Link>
-        </NavbarItem>
-        <NavbarItem>
+        <div className="flex items-center space-x-4">
+          <span className="text-sm">
+            MOD Price:{" "}
+            <span className="text-[#3abff8]">$0.0000000003 (+5.93%)</span>
+          </span>
+          <span className="text-sm">Gas: FREE</span>
+        </div>
+        <div className="flex items-center space-x-4">
           <ModeToggle />
-        </NavbarItem>
+        </div>
       </NavbarContent>
       <NavbarMenu>
         {menuItems.map((item, index) => (
