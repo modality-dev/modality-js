@@ -35,6 +35,17 @@ export default class NetworkDatastore {
     return new NetworkDatastore(datastore);
   }
 
+  async writeToDirectory(path) {
+    const datastore = new LevelDatastore(path, {
+      db: LevelRocksDb,
+    });
+    await datastore.open();
+    const it = await this.iterator({prefix:''});
+    for await (const [key, value] of it) {
+      await datastore.put(key, value);
+    }
+  }
+
   async getDataByKey(key) {
     try {
       return await this.datastore.get(key);
@@ -67,6 +78,10 @@ export default class NetworkDatastore {
 
   queryKeys(opts) {
     return this.datastore.queryKeys(opts);
+  }
+
+  iterator({prefix, filters, orders}) {
+    return this.datastore.db.iterator({prefix, filters, orders});
   }
 
   async findMaxStringKey(prefix) {

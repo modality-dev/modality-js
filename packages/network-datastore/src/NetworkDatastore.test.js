@@ -15,5 +15,12 @@ describe("NetworkDatastore", () => {
     expect(v).toBe("4");
     v = await datastore.findMaxIntKey('/pages');
     expect(v).toBe(30);
+    const it = await datastore.iterator({prefix:''});
+    
+    let key_count = 0;
+    for await (const [key, value] of it) {
+      key_count++;
+    }
+    expect(key_count).toBe(5);
   });
 });
