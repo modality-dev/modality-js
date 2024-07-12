@@ -46,7 +46,7 @@ export default class DAGRider extends Sequencer {
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
       options: scribes.sort(),
-      input: Math.floor(round / 4),
+      input: round_props.binder_wave - 1,
     });
 
     const leader = await this.findPage({ round, scribe });
