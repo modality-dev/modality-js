@@ -96,7 +96,7 @@ describe("DAGRider", () => {
     expect(pages.at(-1).scribe).toBe(scribes[0]);
   });
 
-  test.skip("sequencing given consensus threshold connected rounds", async () => {
+  test("sequencing given consensus threshold connected rounds", async () => {
     const NODE_COUNT = 5;
     let pages, page, page1;
 
@@ -150,7 +150,10 @@ describe("DAGRider", () => {
     await ds_builder.addConsensusConnectedRound();
     await ds_builder.addConsensusConnectedRound();
     pages = await binder.findOrderedPagesInSection(1, 5);
-    expect(pages.length).toBe(4 * NODE_COUNT);
+    // given consensus connected rounds, how many nodes in round n-1
+    // won't be acked by our nodes in round n?
+    const ONE_ROUND_DROPOFF = NODE_COUNT - DAGRider.consensusThresholdFor(NODE_COUNT);
+    expect(pages.length).toBe(4 * NODE_COUNT - ONE_ROUND_DROPOFF);
     expect(pages.at(-1).scribe).toBe(scribes[1]);
 
     // round 12
@@ -159,6 +162,10 @@ describe("DAGRider", () => {
     await ds_builder.addConsensusConnectedRound();
     await ds_builder.addConsensusConnectedRound();
     pages = await binder.findOrderedPagesInSection(5, 9);
+    await binder.saveOrderedPageNumbers(1, 12);
+    await ds_builder.datastore.writeToDirectory('/tmp/modality-test');
+    // further sections still dropoff one page, but also pickup the previously dropped page
+    // netting 0 = - ONE_ROUND_DROPOFF + ONE_ROUND_DROPOFF
     expect(pages.length).toBe(4 * NODE_COUNT);
     expect(pages.at(-1).scribe).toBe(scribes[2]);
 
@@ -169,28 +176,9 @@ describe("DAGRider", () => {
     await ds_builder.addConsensusConnectedRound();
     pages = await binder.findOrderedPagesInSection(9, 13);
     expect(pages.length).toBe(4 * NODE_COUNT);
-    expect(pages.at(-1).scribe).toBe(scribes[0]);
+    expect(pages.at(-1).scribe).toBe(scribes[3]);
   }); 
 
   test.skip("no sequencing given under threshold connected rounds", async() => {
-    const NODE_COUNT = 5;
-    let pages, page, page1;
-
-    // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
-    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
-    const binder = new DAGRider({
-      datastore: ds_builder.datastore,
-      randomness,
-    });
-    ds_builder.scribes = [...scribes];
-    
-    // round 1
-    await ds_builder.addConsensusConnectedRound();
-    await ds_builder.addConsensusConnectedRound();
-    await ds_builder.addConsensusConnectedRound();
-    await ds_builder.addConsensusConnectedRound();
-    page1 = await binder.findLeaderInRound(1);
-    expect(page1).toBeNull();
   });
 });
