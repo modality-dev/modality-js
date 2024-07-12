@@ -10,7 +10,21 @@ import {
   Shield,
 } from "lucide-react";
 
-export const Lander = () => {
+const INITIAL_MAX_ROUNDS = 20;
+const SHOW_MORE_ROUNDS = 10;
+
+type LanderProps = {
+  status: any;
+  round: number;
+};
+
+export const Lander = ({ status, round }: LanderProps) => {
+  const minRound = Math.max(status.round - INITIAL_MAX_ROUNDS, 1);
+  const roundsToShow = Array.from(
+    { length: status.round === 0 ? 0 : status.round - minRound + 1 },
+    (_, i) => minRound + i
+  ).reverse();
+
   return (
     <div className="">
       <main className="px-4 py-6">
@@ -28,7 +42,7 @@ export const Lander = () => {
             <CardHeader className="flex items-center justify-between p-4">
               <div>
                 <div className="text-sm font-medium">Round #</div>
-                <div className="text-2xl font-bold">12</div>
+                <div className="text-2xl font-bold">{round}</div>
               </div>
               <Octagon className="h-6 w-6" />
             </CardHeader>
@@ -66,7 +80,7 @@ export const Lander = () => {
             <CardHeader className="flex items-center justify-between p-4">
               <div>
                 <div className="text-sm font-medium">Last Finalized Round</div>
-                <div className="text-2xl font-bold">#12</div>
+                <div className="text-2xl font-bold">#{round}</div>
               </div>
               <Clock className="h-6 w-6" />
             </CardHeader>
@@ -75,7 +89,7 @@ export const Lander = () => {
             <CardHeader className="flex items-center justify-between p-4">
               <div>
                 <div className="text-sm font-medium">Last Safe Round</div>
-                <div className="text-2xl font-bold">#12</div>
+                <div className="text-2xl font-bold">#{round}</div>
               </div>
               <Shield className="h-6 w-6" />
             </CardHeader>
