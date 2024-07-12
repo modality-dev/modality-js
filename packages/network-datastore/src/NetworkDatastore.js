@@ -2,6 +2,7 @@ import { LevelDatastore } from "datastore-level";
 import LevelMem from "level-mem";
 import LevelRocksDb from "level-rocksdb";
 import SafeJSON from "@modality-dev/utils/SafeJSON";
+import fs from 'fs';
 
 import Keypair from "@modality-dev/utils/Keypair";
 
@@ -44,6 +45,18 @@ export default class NetworkDatastore {
     for await (const [key, value] of it) {
       await datastore.put(key, value);
     }
+  }
+
+  async writeToSqlExport(path) {
+    const f = fs.createWriteStream(path);
+    f.write('CREATE TABLE IF NOT EXISTS key_values (key TEXT PRIMARY KEY value TEXT); \n');
+    const it = await this.iterator({prefix:''});
+    for await (const [key, value] of it) {
+      const escapedKey = key?.replace(/'/g, "''");
+      const escapedValue = value.toString().replace(/'/g, "''");
+      f.write(`INSERT OR REPLACE INTO key_values (key, value) VALUES ('${escapedKey}', '${escapedValue}');\n`); 
+    }
+    f.end();
   }
 
   async getDataByKey(key) {
