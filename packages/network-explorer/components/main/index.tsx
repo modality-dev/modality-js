@@ -32,7 +32,7 @@ export const Lander = ({ status, round }: LanderProps) => {
         <div className="flex items-center mt-4 space-x-4">
           <Button variant="outline">All Filters</Button>
           <Input
-            placeholder="Search by Address / Txn Hash / Block / Token / Domain Name"
+            placeholder="Search by Address / Txn Hash / Round / Scribe"
             className="flex-1"
           />
           <Button variant="default">Search</Button>
