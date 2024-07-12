@@ -49,12 +49,13 @@ export default class NetworkDatastore {
 
   async writeToSqlExport(path) {
     const f = fs.createWriteStream(path);
-    f.write('CREATE TABLE IF NOT EXISTS key_values (key TEXT PRIMARY KEY value TEXT); \n');
+    f.write('CREATE TABLE IF NOT EXISTS key_values (key TEXT PRIMARY KEY, value JSONB); \n');
     const it = await this.iterator({prefix:''});
     for await (const [key, value] of it) {
       const escapedKey = key?.replace(/'/g, "''");
       const escapedValue = value.toString().replace(/'/g, "''");
-      f.write(`INSERT OR REPLACE INTO key_values (key, value) VALUES ('${escapedKey}', '${escapedValue}');\n`); 
+      f.write(
+        `INSERT INTO key_values (key, value) VALUES ('${escapedKey}', '${escapedValue}') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;\n`); 
     }
     f.end();
   }
