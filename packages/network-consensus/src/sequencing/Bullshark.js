@@ -1,3 +1,5 @@
+import JSONStringifyDeterministic from "json-stringify-deterministic";
+
 import Sequencer from "./Sequencer";
 
 export const NAME = "Bullshark";
@@ -52,9 +54,9 @@ export default class Bullshark extends Sequencer {
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
       options: scribes.sort(),
-      input: {
+      input: JSONStringifyDeterministic({
         round: round_props.binder_wave,
-      }
+      })
     });
 
     const leader = await this.findPage({ round, scribe });

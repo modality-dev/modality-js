@@ -3,7 +3,7 @@ export default class RoundRobin {
 
   async pickOne({ options, input }) {
     // absolute first round is round 1
-    const i = parseInt(input.round - 1) % options.length;
+    const i = parseInt(JSON.parse(input).round - 1) % options.length;
     return options[i];
   }
 }
