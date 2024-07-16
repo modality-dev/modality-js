@@ -26,12 +26,14 @@ describe("DAGRider", () => {
 
     // setup
     const scribes = await Devnet.getPubkeys(NODE_COUNT); 
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new DAGRider({
       datastore: ds_builder.datastore,
       randomness,
     });
     ds_builder.scribes = [...scribes];
+    ds_builder.scribe_keypairs =  scribe_keypairs;
     
     // round 1
     await ds_builder.addFullyConnectedRound();
@@ -102,12 +104,14 @@ describe("DAGRider", () => {
 
     // setup
     const scribes = await Devnet.getPubkeys(NODE_COUNT); 
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new DAGRider({
       datastore: ds_builder.datastore,
       randomness,
     });
     ds_builder.scribes = [...scribes];
+    ds_builder.scribe_keypairs = scribe_keypairs;
     
     // round 1
     await ds_builder.addConsensusConnectedRound();
@@ -162,8 +166,6 @@ describe("DAGRider", () => {
     await ds_builder.addConsensusConnectedRound();
     await ds_builder.addConsensusConnectedRound();
     pages = await binder.findOrderedPagesInSection(5, 9);
-    await binder.saveOrderedPageNumbers(1, 12);
-    await ds_builder.datastore.writeToDirectory('/tmp/modality-test');
     // further sections still dropoff one page, but also pickup the previously dropped page
     // netting 0 = - ONE_ROUND_DROPOFF + ONE_ROUND_DROPOFF
     expect(pages.length).toBe(4 * NODE_COUNT);

@@ -6,6 +6,7 @@ export default class Page {
   constructor({
     scribe,
     round,
+    last_round_certs = [],
     events = [],
     hash,
     sig,
@@ -20,6 +21,7 @@ export default class Page {
   }) {
     this.scribe = scribe;
     this.round = round;
+    this.last_round_certs = last_round_certs;
     this.events = events;
 
     // scribe
@@ -70,6 +72,7 @@ export default class Page {
     return JSON.stringify({
       scribe: this.scribe,
       round: this.round,
+      last_round_certs: this.last_round_certs,
       events: this.events,
       hash: this.hash,
       sig: this.sig,
@@ -97,6 +100,7 @@ export default class Page {
     this.sig = await keypair.signJSON({
       scribe: this.scribe,
       round: this.round,
+      last_round_certs: this.last_round_certs,
       events: this.events,
     });
     return this.sig;
@@ -107,6 +111,7 @@ export default class Page {
     return keypair.verifyJSON(this.sig, {
       scribe: this.scribe,
       round: this.round,
+      last_round_certs: this.last_round_certs,
       events: this.events,
     });
   }
@@ -116,6 +121,7 @@ export default class Page {
     const facts = {
       scribe: this.scribe,
       round: this.round,
+      last_round_certs: this.last_round_certs,
       events: this.events,
       sig: this.sig,
     };
@@ -151,6 +157,7 @@ export default class Page {
         !keypair.verifyJSON(ack.sig, {
           scribe: this.scribe,
           round: this.round,
+          last_round_certs: this.last_round_certs,
           events: this.events,
           sig: this.sig,
         })
@@ -196,6 +203,7 @@ export default class Page {
     this.cert = await keypair.signJSON({
       scribe: this.scribe,
       round: this.round,
+      last_round_certs: this.last_round_certs,
       events: this.events,
       acks: this.acks,
     });

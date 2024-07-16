@@ -75,7 +75,18 @@ export default class NetworkDatastoreBuilder {
         failures--;
         continue;
       }
-      const page = new Page({ scribe, round: round_num, events: [] });
+      let last_round_certs = [];
+      if (round_num > 1) {
+        for (const peer_scribe of scribes) {
+          const peer_prev_page = await Page.findOne({
+            datastore: this.datastore,
+            round: round_num - 1,
+            scribe: peer_scribe,
+          });
+          last_round_certs.push(peer_prev_page.cert);
+        }
+      }
+      const page = new Page({ scribe, round: round_num, last_round_certs, events: [] });
       if (round_num > 1) {
         for (const peer_scribe of scribes) {
           const peer_prev_page = await Page.findOne({
@@ -88,6 +99,7 @@ export default class NetworkDatastoreBuilder {
             scribe: peer_scribe,
           });
         }
+        await page.generateCert(this.scribe_keypairs[scribe]);
       }
       await page.save({ datastore: this.datastore });
     }
@@ -138,12 +150,29 @@ export default class NetworkDatastoreBuilder {
             }
           }
         }
+        await page.generateCert(this.scribe_keypairs[scribe]);
       }
+
       const late_acks = this.late_acks[scribe] || [];
       for (const late_ack of late_acks) {
         await page.addLateAck(late_ack);
       }
       this.late_acks[scribe] = [];
+
+      if (round_num > 1) {
+        const not_late_scribes = scribes.filter(i => !late_acks.includes(i));
+        const last_round_certs = [];
+        for (const peer_scribe of not_late_scribes) {
+          const peer_prev_page = await Page.findOne({
+            datastore: this.datastore,
+            round: round_num - 1,
+            scribe: peer_scribe,
+          });
+          last_round_certs.push(peer_prev_page.cert);
+        }
+        page.last_round_certs = last_round_certs;
+      }
+
       await page.save({ datastore: this.datastore });
     }
     this.late_acks = this.next_round_late_acks;
