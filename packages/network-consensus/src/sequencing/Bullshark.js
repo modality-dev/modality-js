@@ -3,6 +3,11 @@ import Sequencer from "./Sequencer";
 export const NAME = "Bullshark";
 
 // like DAGRider, but during periods of synchrony, leaders are chosen twice per wave
+
+/// Bullshark has:
+/// * wave round 1 fallback leader (based on randomness of wave round 4, only used during asynchrony)
+/// * wave round 1 leader (based on predefined randomness)
+/// * wave round 3 leader (based on predefined randomness)
 export default class Bullshark extends Sequencer {
   constructor({ datastore, randomness, first_round = 1 }) {
     super({ datastore, randomness, first_round });
@@ -34,14 +39,11 @@ export default class Bullshark extends Sequencer {
     };
   }
 
-  /// bullshark has:
-  /// * wave round 1 leader (based on predefined randomness)
-  /// * wave round 1 fallback leader (based on randomness of wave round 4, only used during asynchrony)
-  /// * wave round 3 leader (based on predefined randomness)
-  async findLeaderInRound(round) {
+
+  async findFallbackLeaderInRound(round) {
     const round_props = this.constructor.getRoundProps(round, this.first_round);
 
-    // only the first round of a wave has an leader
+    // only the first round of a wave has a fallback leader
     if (round_props.binder_wave_round !== 1) {
       return null;
     }
@@ -49,8 +51,8 @@ export default class Bullshark extends Sequencer {
     // use common coin to pick the leader
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
-      options: scribes,
-      input: round,
+      options: scribes.sort(),
+      input: round_props.binder_wave - 1,
     });
 
     const leader = await this.findPage({ round, scribe });
@@ -86,9 +88,32 @@ export default class Bullshark extends Sequencer {
     return leader;
   }
 
+  async findFirstSyncLeaderInRound(round) {
+    const round_props = this.constructor.getRoundProps(round, this.first_round);
+
+    // only the first round of a wave has a first sync leader
+    if (round_props.binder_wave_round !== 1) {
+      return null;
+    }
+  }
+
+  async findSecondSyncLeaderInRound(round) {
+    const round_props = this.constructor.getRoundProps(round, this.first_round);
+
+    // only the third round of a wave has a second sync leader
+    if (round_props.binder_wave_round !== 3) {
+      return null;
+    } 
+  }
+
+  async findLeaderInRound(round) {
+    // TODO
+    return this.findFallbackLeaderInRound(round);
+  }
+
   async findOrderedPagesInSection(start_round, end_round) {
-    const starting_leader = await this.findLeaderInRound(start_round);
-    const ending_leader = await this.findLeaderInRound(end_round);
+    const starting_leader = await this.findFallbackLeaderInRound(start_round);
+    const ending_leader = await this.findFallbackLeaderInRound(end_round);
     return this.findCausallyLinkedPages(ending_leader, starting_leader);
   }
 }
