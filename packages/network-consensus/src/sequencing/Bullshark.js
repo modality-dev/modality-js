@@ -52,7 +52,9 @@ export default class Bullshark extends Sequencer {
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
       options: scribes.sort(),
-      input: round_props.binder_wave - 1,
+      input: {
+        round: round_props.binder_wave,
+      }
     });
 
     const leader = await this.findPage({ round, scribe });
