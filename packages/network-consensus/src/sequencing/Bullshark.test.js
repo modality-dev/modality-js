@@ -96,6 +96,9 @@ describe("Bullshark", () => {
     pages = await binder.findOrderedPagesInSection(9, 13);
     expect(pages.length).toBe(4 * NODE_COUNT);
     expect(pages.at(-1).scribe).toBe(scribes[0]);
+
+    let leaders = await binder.findOrderedLeadersBetween(1, 16);
+    expect(leaders.length).toBe(8);
   });
 
   test("sequencing given consensus threshold connected rounds", async () => {

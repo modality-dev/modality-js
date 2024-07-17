@@ -1,6 +1,7 @@
 import JSONStringifyDeterministic from "json-stringify-deterministic";
 
 import Sequencer from "./Sequencer";
+import Round from '@modality-dev/network-datastore/data/Round';
 
 export const NAME = "Bullshark";
 
@@ -50,12 +51,19 @@ export default class Bullshark extends Sequencer {
       return null;
     }
 
+    // ensure that rounds r+1,2,3 already complete
+    const max_round = await Round.findMaxId({datastore: this.datastore});
+    if (max_round < round + 3) {
+      return null;
+    }
+
     // use common coin to pick the leader
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
       options: scribes.sort(),
       input: JSONStringifyDeterministic({
         round: round_props.binder_wave,
+        // TODO source of shared randomness
       })
     });
 
@@ -110,9 +118,36 @@ export default class Bullshark extends Sequencer {
     } 
   }
 
+  async findSteadyLeaderInRound(round) {
+    const round_props = this.constructor.getRoundProps(round, this.first_round);
+    if (round_props.binder_wave_round === 1) {
+      return this.findFirstSyncLeaderInRound(round);
+    } else if (round_props.binder_wave_round === 3) {
+      return this.findSecondSyncLeaderInRound(round);
+    }
+    return null;
+  }
+
   async findLeaderInRound(round) {
     // TODO
     return this.findFallbackLeaderInRound(round);
+  }
+
+  async findOrderedLeadersBetween(start_round, end_round) {
+    const r = [];
+    const start_round_props = this.constructor.getRoundProps(start_round, this.first_round);
+    let working_round = start_round + ((start_round_props.binder_wave_round - 1) % 2);
+    while (working_round < end_round) {
+      const fallback = await this.findFallbackLeaderInRound(working_round);
+      const steady = await this.findSteadyLeaderInRound(working_round);
+      r.push({
+        round: working_round,
+        fallback_scribe: fallback?.scribe,
+        steady_scribe: steady?.scribe
+      });
+      working_round = working_round + 2;
+    }
+    return r;
   }
 
   async findOrderedPagesInSection(start_round, end_round) {

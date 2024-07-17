@@ -2,6 +2,7 @@ import JSONStringifyDeterministic from "json-stringify-deterministic";
 
 import Sequencer from "./Sequencer.js";
 import Page from '@modality-dev/network-datastore/data/Page';
+import Round from '@modality-dev/network-datastore/data/Round';
 
 export const NAME = "DAGRider";
 
@@ -44,12 +45,19 @@ export default class DAGRider extends Sequencer {
       return null;
     }
 
+    // ensure that rounds r+1,2,3 already complete
+    const max_round = await Round.findMaxId({datastore: this.datastore});
+    if (max_round < round + 3) {
+      return null;
+    }
+
     // use common coin to pick the leader
     const scribes = await this.findScribesInRound(round);
     const scribe = await this.randomness.pickOne({
       options: scribes.sort(),
       input: JSONStringifyDeterministic({
         round: round_props.binder_wave,
+        // TODO source of shared randomness
       })
     });
 
@@ -84,6 +92,18 @@ export default class DAGRider extends Sequencer {
     }
 
     return leader;
+  }
+
+  async findOrderedLeadersBetween(start_round, end_round) {
+    const r = [];
+    const start_round_props = this.constructor.getRoundProps(start_round, this.first_round);
+    let working_round = start_round + (start_round_props.binder_wave_round === 1 ? 0 : 5 - start_round_props.binder_wave_round);
+    while (working_round < end_round) {
+      const page = await this.findLeaderInRound(working_round);
+      r.push({round: working_round, scribe: page.scribe});
+      working_round = working_round + 4;
+    }
+    return r;
   }
 
   async findOrderedPagesInSection(start_round, end_round) {
