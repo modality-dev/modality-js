@@ -1,16 +1,11 @@
 import { Lander } from "@/components/main";
+import RoundDetail from "@/components/round";
 
 export default async function Page() {
-  const baseUrl = "http://localhost:3000";
-  // const res = await fetch(`${baseUrl}/api`, {
-  //   headers: {
-  //     "x-datastore": "../../network-cli/tmp/datastore",
-  //   },
-  // });
-  // const data = await res.json();
   return (
     <main className="flex flex-col items-center justify-center">
-      <Lander status={"ready"} round={23} />
+      {/* <Lander status={""} round={3} /> */}
+      <RoundDetail ackAmount={3} minRound={1} maxRound={12} />
     </main>
   );
 }

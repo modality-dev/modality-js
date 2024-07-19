@@ -59,7 +59,7 @@ export const Lander = ({ status, round }: LanderProps) => {
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
               <div>
-                <div className="text-sm font-medium">Transactions</div>
+                <div className="text-sm font-medium">Commits</div>
                 <div className="text-2xl font-bold">23,233</div>
               </div>
               <CreditCardIcon className="h-6 w-6" />
@@ -137,7 +137,7 @@ export const Lander = ({ status, round }: LanderProps) => {
           </Card>
           <Card>
             <CardHeader className="flex items-center justify-between p-4">
-              <div className="text-sm font-medium">Latest Transactions</div>
+              <div className="text-sm font-medium">Latest Commits</div>
               <Button variant="outline" size="sm">
                 View More
               </Button>
