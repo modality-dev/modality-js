@@ -126,5 +126,18 @@ export default class NetworkDatastore {
       }
     }
     return r;
-  } 
+  }
+
+  async bumpCurrentRound() {
+    const current_round = await this.getDataByKey('/consensus/status/current_round');
+    return this.put('/consensus/status/current_round', (parseInt(current_round) + 1).toString());
+  }
+
+  async setCurrentRound(round) {
+    return this.put('/consensus/status/current_round', (parseInt(round)).toString());
+  }
+
+  async getCurrentRound() {
+    return parseInt((await this.getDataByKey('/consensus/status/current_round'))?.toString());
+  }
 }

@@ -2,10 +2,13 @@ import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 
 export default class Sequencer {
-  constructor({ datastore, randomness, first_round = 1 }) {
+  constructor({ datastore, randomness, sequencer_first_round = 1 }) {
     this.datastore = datastore;
     this.randomness = randomness;
-    this.first_round = first_round;
+    this.sequencer_first_round = sequencer_first_round;
+    this.whoami = null;
+    this.keypair = null;
+    this.communication_enabled = false;
   }
 
   static calculate2fplus1(num_of_peers) {
@@ -14,6 +17,26 @@ export default class Sequencer {
 
   static consensusThresholdFor(num_of_peers) {
     return this.calculate2fplus1(num_of_peers);
+  }
+
+  async getCurrentRound() {
+    return this.datastore.getCurrentRound();
+  }
+
+  async getPreviousRoundScribes() {
+    return this.getScribesAtRound(await this.getCurrentRound() - 1);
+  }
+
+  async getCurrentRoundScribes() {
+    return this.getScribesAtRound(await this.getCurrentRound());
+  }
+
+  async getNextRoundScribes() {
+    return this.getScribesAtRound(await this.getCurrentRound() + 1);
+  }
+  
+  async getScribesAtRound(round) {
+    throw new Error("Not implemented");
   }
 
   // finds the first_page of a round as decided by common randomness
@@ -53,30 +76,30 @@ export default class Sequencer {
     return null;
   }
 
-  async doesPageAckLinkToPage(later_page, earlier_page) {
+  async doesPageCertLinkToPage(later_page, earlier_page) {
     if (later_page.round <= earlier_page.round) return false;
     let round = later_page.round - 1;
-    let ack_set = new Set([
-      ...Object.values(later_page.acks).map((i) => i.scribe),
+    let cert_set = new Set([
+      ...Object.values(later_page.last_round_certs).map((i) => i.scribe),
     ]);
-    while (ack_set.size && round >= earlier_page.round) {
-      if (round === earlier_page.round && ack_set.has(earlier_page.scribe)) {
+    while (cert_set.size && round >= earlier_page.round) {
+      if (round === earlier_page.round && cert_set.has(earlier_page.scribe)) {
         return true;
       }
-      const new_ack_set = new Set();
-      for (const scribe of ack_set) {
+      const new_cert_set = new Set();
+      for (const scribe of cert_set) {
         let page = await this.findPage({ round, scribe });
         if (!page) {
           throw new Error(
             `Page ${scribe} ${round} not found. You must retrieve it first.`
           );
         }
-        for (const i_ack of Object.values(page.acks)) {
-          new_ack_set.add(i_ack.scribe);
+        for (const i_cert of Object.values(page.last_round_certs)) {
+          new_cert_set.add(i_cert.scribe);
         }
       }
       round = round - 1;
-      ack_set = new_ack_set;
+      cert_set = new_cert_set;
     }
     return false;
   }
@@ -93,25 +116,24 @@ export default class Sequencer {
     // recursively causally order their ack linked pages with the same prioritization strategy.
     // with some binders, this prevents a scribe from silently self-acking as means of prioritizing a commit
 
-    let ack_set = new Set([
-      ...Object.values(last_page.acks).map((i) => i.scribe),
+    let cert_set = new Set([
+      ...Object.values(last_page.last_round_certs).map((i) => i.scribe),
     ]);
-    while (ack_set.size && round >= 1) {
-      // console.log(round, 'ack_set', ack_set);
-      const new_ack_set = new Set();
+    while (cert_set.size && round >= 1) {
+      const new_cert_set = new Set();
       // prioritize pages lexographically ordered starting at leader scribe
-      const acks_list_lexiordered = [...ack_set].sort();
-      const acks_list_start = Math.max(
+      const certs_list_lexiordered = [...cert_set].sort();
+      const certs_list_start = Math.max(
         0,
-        acks_list_lexiordered.findIndex(
+        certs_list_lexiordered.findIndex(
           (i) => i.localeCompare(last_page.scribe) > 0
         )
       );
-      const acks_list = [
-        ...acks_list_lexiordered.slice(acks_list_start),
-        ...acks_list_lexiordered.slice(0, acks_list_start),
+      const certs_list = [
+        ...certs_list_lexiordered.slice(certs_list_start),
+        ...certs_list_lexiordered.slice(0, certs_list_start),
       ];
-      for (const scribe of acks_list) {
+      for (const scribe of certs_list) {
         page = await this.findPage({ round, scribe });
         if (!page) {
           throw new Error(
@@ -126,7 +148,7 @@ export default class Sequencer {
           ) {
             should_skip = true;
           } else if (page.round < after_page.round) {
-            if (await this.doesPageAckLinkToPage(after_page, page)) {
+            if (await this.doesPageCertLinkToPage(after_page, page)) {
               // console.log(`
               //   processing ${last_page.round}.${last_page.scribe}
               //     skipping ${page.round}.${page.scribe}
@@ -134,18 +156,22 @@ export default class Sequencer {
               //     skipping ${after_page.round}.${after_page.scribe}
               //   `)
               should_skip = true;
+            } else {
+              //
             }
           }
         }
         if (!should_skip) {
           r.push({ round: page.round, scribe: page.scribe });
-          for (const ack of Object.values(page.acks || {})) {
-            new_ack_set.add(ack.scribe);
+          for (const cert of Object.values(page.last_round_certs || {})) {
+            new_cert_set.add(cert.scribe);
           }
+        } else {
+          new_cert_set.delete(page.scribe);
         }
       }
 
-      ack_set = new_ack_set;
+      cert_set = new_cert_set;
       round = round - 1;
     }
 

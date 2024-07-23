@@ -6,7 +6,7 @@ export default class Page {
   constructor({
     scribe,
     round,
-    last_round_certs = [],
+    last_round_certs = {},
     events = [],
     hash,
     sig,
@@ -43,9 +43,13 @@ export default class Page {
     this.page_number = page_number;
   }
 
-  static fromJSON(json) {
+  static fromJSONString(json) {
     if (!json) return null;
     return new Page(SafeJSON.parse(json));
+  }
+  
+  static fromJSONObject(obj) {
+    return new Page(obj);
   }
 
   static getIdFor({ round, scribe }) {
@@ -61,15 +65,19 @@ export default class Page {
 
   static async findOne({ datastore, round, scribe }) {
     const v = await datastore.get(this.getIdFor({ round, scribe }));
-    return this.fromJSON(v.toString());
+    return this.fromJSONString(v.toString());
   }
 
   async save({ datastore }) {
-    return datastore.put(this.getId(), this.toJSON());
+    return datastore.put(this.getId(), this.toJSONString());
   }
 
-  toJSON() {
-    return JSON.stringify({
+  toJSONString() {
+    return JSON.stringify(this.toJSONObject());
+  }
+
+  toJSONObject() {
+    return {
       scribe: this.scribe,
       round: this.round,
       last_round_certs: this.last_round_certs,
@@ -85,8 +93,22 @@ export default class Page {
       section_ending_round: this.section_ending_round,
       section_page_number: this.section_page_number,
       page_number: this.page_number,
-    });
+    };
   }
+
+  toDraftJSONObject() {
+    return {
+      scribe: this.scribe,
+      round: this.round,
+      last_round_certs: this.last_round_certs,
+      events: this.events,
+      sig: this.sig,
+    }
+  }
+
+  toDraftJSONString() {
+    return JSON.stringify(this.toDraftJSONObject);
+  } 
 
   addEvent(event) {
     this.events.push(event);
@@ -121,31 +143,35 @@ export default class Page {
     const facts = {
       scribe: this.scribe,
       round: this.round,
-      last_round_certs: this.last_round_certs,
-      events: this.events,
       sig: this.sig,
     };
-    const sig = await keypair.signJSON(facts);
-    return {scribe: peer_id, round: (this.round - 1), sig};
+    const acker_sig = await keypair.signJSON(facts);
+    return {
+      scribe: this.scribe,
+      round: this.round,
+      sig: this.sig,
+      acker: peer_id,
+      acker_sig
+    };
   }
 
   async validateAck(ack) {
-    // TODO
-    return true;
-    const keypair = Keypair.fromPublicKey(ack[0]);
+    if (!ack || !ack.acker || !ack.acker_sig) {
+      return false;
+    }
+    const keypair = Keypair.fromPublicKey(ack.acker);
     const facts = {
       scribe: this.scribe,
       round: this.round,
-      events: this.events,
       sig: this.sig,
     };
-    return await keypair.verifyJSON(ack[1], facts);
+    return await keypair.verifyJSON(ack.acker_sig, facts);
   }
 
   async addAck(ack) {
     const is_valid = await this.validateAck(ack);
     if (is_valid) {
-      this.acks[ack.scribe] = ack;
+      this.acks[ack.acker] = ack;
       return true;
     }
   }
@@ -215,6 +241,7 @@ export default class Page {
     return keypair.verifyJSON(this.cert, {
       scribe: this.scribe,
       round: this.round,
+      last_round_certs: this.last_round_certs,
       events: this.events,
       acks: this.acks,
     });

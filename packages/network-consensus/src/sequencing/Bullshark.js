@@ -12,28 +12,28 @@ export const NAME = "Bullshark";
 /// * wave round 1 leader (based on predefined randomness)
 /// * wave round 3 leader (based on predefined randomness)
 export default class Bullshark extends Sequencer {
-  constructor({ datastore, randomness, first_round = 1 }) {
-    super({ datastore, randomness, first_round });
+  constructor({ datastore, randomness, sequencer_first_round = 1 }) {
+    super({ datastore, randomness, sequencer_first_round });
   }
 
-  static getBoundRound(round, first_round = 1) {
-    return round - first_round;
+  static getBoundRound(round, sequencer_first_round = 1) {
+    return round - sequencer_first_round;
   }
 
-  static getWaveOfRound(round, first_round = 1) {
-    const bound_round = this.getBoundRound(round, first_round);
+  static getWaveOfRound(round, sequencer_first_round = 1) {
+    const bound_round = this.getBoundRound(round, sequencer_first_round);
     return Math.floor(bound_round / 4) + 1;
   }
 
-  static getWaveRoundOfRound(round, first_round) {
-    const bound_round = this.getBoundRound(round, first_round);
+  static getWaveRoundOfRound(round, sequencer_first_round) {
+    const bound_round = this.getBoundRound(round, sequencer_first_round);
     return (bound_round % 4) + 1;
   }
 
-  static getRoundProps(round, first_round) {
-    const binder_round = round - first_round + 1;
-    const binder_wave = this.getWaveOfRound(round, first_round);
-    const binder_wave_round = this.getWaveRoundOfRound(round, first_round);
+  static getRoundProps(round, sequencer_first_round) {
+    const binder_round = round - sequencer_first_round + 1;
+    const binder_wave = this.getWaveOfRound(round, sequencer_first_round);
+    const binder_wave_round = this.getWaveRoundOfRound(round, sequencer_first_round);
     return {
       round,
       binder_round,
@@ -44,7 +44,7 @@ export default class Bullshark extends Sequencer {
 
 
   async findFallbackLeaderInRound(round) {
-    const round_props = this.constructor.getRoundProps(round, this.first_round);
+    const round_props = this.constructor.getRoundProps(round, this.sequencer_first_round);
 
     // only the first round of a wave has a fallback leader
     if (round_props.binder_wave_round !== 1) {
@@ -101,25 +101,37 @@ export default class Bullshark extends Sequencer {
   }
 
   async findFirstSyncLeaderInRound(round) {
-    const round_props = this.constructor.getRoundProps(round, this.first_round);
+    const round_props = this.constructor.getRoundProps(round, this.sequencer_first_round);
 
     // only the first round of a wave has a first sync leader
     if (round_props.binder_wave_round !== 1) {
       return null;
     }
+
+    // ensure that rounds r+1,2 already complete
+    const max_round = await Round.findMaxId({datastore: this.datastore});
+    if (max_round < round + 1) {
+      return null;
+    }
   }
 
   async findSecondSyncLeaderInRound(round) {
-    const round_props = this.constructor.getRoundProps(round, this.first_round);
+    const round_props = this.constructor.getRoundProps(round, this.sequencer_first_round);
 
     // only the third round of a wave has a second sync leader
     if (round_props.binder_wave_round !== 3) {
       return null;
     } 
+
+    // ensure that rounds r+1,2 already complete
+    const max_round = await Round.findMaxId({datastore: this.datastore});
+    if (max_round < round + 1) {
+      return null;
+    }
   }
 
   async findSteadyLeaderInRound(round) {
-    const round_props = this.constructor.getRoundProps(round, this.first_round);
+    const round_props = this.constructor.getRoundProps(round, this.sequencer_first_round);
     if (round_props.binder_wave_round === 1) {
       return this.findFirstSyncLeaderInRound(round);
     } else if (round_props.binder_wave_round === 3) {
@@ -135,7 +147,7 @@ export default class Bullshark extends Sequencer {
 
   async findOrderedLeadersBetween(start_round, end_round) {
     const r = [];
-    const start_round_props = this.constructor.getRoundProps(start_round, this.first_round);
+    const start_round_props = this.constructor.getRoundProps(start_round, this.sequencer_first_round);
     let working_round = start_round + ((start_round_props.binder_wave_round - 1) % 2);
     while (working_round < end_round) {
       const fallback = await this.findFallbackLeaderInRound(working_round);

@@ -7,28 +7,40 @@ import Round from '@modality-dev/network-datastore/data/Round';
 export const NAME = "DAGRider";
 
 export default class DAGRider extends Sequencer {
-  constructor({ datastore, randomness, first_round = 1 }) {
-    super({ datastore, randomness, first_round });
+  constructor({ datastore, randomness, sequencer_first_round = 1 }) {
+    super({ datastore, randomness, sequencer_first_round });
   }
 
-  static getBoundRound(round, first_round = 1) {
-    return round - first_round;
+  async getScribesAtRound(round) {
+    if (round < 1) {
+      return [];
+    // TODO
+    // } else if (round === 1) {
+    } else {
+      // TODO make this not static
+      const round_data = await Round.findOne({datastore: this.datastore, round: 1})
+      return round_data.scribes;
+    }
   }
 
-  static getWaveOfRound(round, first_round = 1) {
-    const bound_round = this.getBoundRound(round, first_round);
+  static getBoundRound(round, sequencer_first_round = 1) {
+    return round - sequencer_first_round;
+  }
+
+  static getWaveOfRound(round, sequencer_first_round = 1) {
+    const bound_round = this.getBoundRound(round, sequencer_first_round);
     return Math.floor(bound_round / 4) + 1;
   }
 
-  static getWaveRoundOfRound(round, first_round) {
-    const bound_round = this.getBoundRound(round, first_round);
+  static getWaveRoundOfRound(round, sequencer_first_round) {
+    const bound_round = this.getBoundRound(round, sequencer_first_round);
     return (bound_round % 4) + 1;
   }
 
-  static getRoundProps(round, first_round) {
-    const binder_round = round - first_round + 1;
-    const binder_wave = this.getWaveOfRound(round, first_round);
-    const binder_wave_round = this.getWaveRoundOfRound(round, first_round);
+  static getRoundProps(round, sequencer_first_round) {
+    const binder_round = round - sequencer_first_round + 1;
+    const binder_wave = this.getWaveOfRound(round, sequencer_first_round);
+    const binder_wave_round = this.getWaveRoundOfRound(round, sequencer_first_round);
     return {
       round,
       binder_round,
@@ -38,7 +50,7 @@ export default class DAGRider extends Sequencer {
   }
 
   async findLeaderInRound(round) {
-    const round_props = this.constructor.getRoundProps(round, this.first_round);
+    const round_props = this.constructor.getRoundProps(round, this.sequencer_first_round);
 
     // only the first round of a wave has an leader
     if (round_props.binder_wave_round !== 1) {
@@ -66,28 +78,33 @@ export default class DAGRider extends Sequencer {
       return null;
     }
 
-    // ensure that in round+3, 2/3*(scribes) of the pages ack link back to the leader
-    let prev_pages = new Set([leader.scribe]);
-    let next_pages = new Set();
+    // ensure that in round+3, 2/3*(scribes) of the pages link back to the leader thru certs
+    let prev_round_scribes = new Set([leader.scribe]);
+    let next_round_scribes = new Set();
     for (const i of [1, 2, 3]) {
+      // TODO support changes in scribes
       for (const i_scribe of scribes) {
         const page = await this.findPage({
           round: round + i,
           scribe: i_scribe,
         });
         if (page) {
-          for (const prev_page of prev_pages) {
-            if (page.acks[prev_page]) {
-              next_pages.add(page.scribe);
+          for (const prev_page_scribe of prev_round_scribes) {
+            const prev_page = await this.findPage({
+              round: round + i - 1,
+              scribe: prev_page_scribe,
+            });
+            if (page.last_round_certs[prev_page.scribe]?.cert === prev_page.cert) {
+              next_round_scribes.add(page.scribe);
               continue;
             }
           }
         }
       }
-      prev_pages = new Set([...next_pages]);
-      next_pages = new Set();
+      prev_round_scribes = new Set([...next_round_scribes]);
+      next_round_scribes = new Set();
     }
-    if (prev_pages.size < Math.ceil((2 / 3) * scribes.length)) {
+    if (prev_round_scribes.size < Math.ceil((2 / 3) * scribes.length)) {
       return null;
     }
 
@@ -96,7 +113,7 @@ export default class DAGRider extends Sequencer {
 
   async findOrderedLeadersBetween(start_round, end_round) {
     const r = [];
-    const start_round_props = this.constructor.getRoundProps(start_round, this.first_round);
+    const start_round_props = this.constructor.getRoundProps(start_round, this.sequencer_first_round);
     let working_round = start_round + (start_round_props.binder_wave_round === 1 ? 0 : 5 - start_round_props.binder_wave_round);
     while (working_round < end_round) {
       const page = await this.findLeaderInRound(working_round);
@@ -111,6 +128,35 @@ export default class DAGRider extends Sequencer {
     const ending_leader = await this.findLeaderInRound(end_round);
     // console.log({start_round, starting_leader, end_round, ending_leader});
     return this.findCausallyLinkedPages(ending_leader, starting_leader);
+  }
+
+  async findOrderedPagesUptoRound(end_round) {
+    const start_round = 1;
+    const round_section_leaders = [];
+    for (let round = start_round; round <= end_round; round++) {
+      const leader = await this.findLeaderInRound(round);
+      if (leader) {
+        round_section_leaders.push(leader);
+      }
+    }
+    if (!round_section_leaders.length) {
+      return;
+    }
+    let prev_leader;
+    let page_number;
+    if (start_round === 1) {
+      page_number = 1;
+    }
+    let r = [];
+    for (const leader of round_section_leaders) {
+      if (!prev_leader) {
+        prev_leader = leader;
+        continue;
+      }
+      const ordered_pages = await this.findOrderedPagesInSection(prev_leader.round, leader.round);
+      r = [...r, ...ordered_pages];
+    }
+    return r;
   }
 
   async saveOrderedPageNumbers(start_round, end_round) {
@@ -162,4 +208,59 @@ export default class DAGRider extends Sequencer {
     }
   }
 
+  async onReceiveDraftPage(page_data) {
+    const page = await Page.fromJSONObject(page_data);
+    if (!page.validateSig()) {
+      return;
+    }
+
+    const current_round = await this.getCurrentRound();
+
+    if (page.round !== current_round) {
+      return;
+    }
+
+    const current_round_scribes = await this.getCurrentRoundScribes();
+
+    if (!current_round_scribes.includes(page.scribe)) {
+      return;
+    }
+
+    if (this.whoami && current_round_scribes.includes(this.whoami)) {
+      const ack = await page.generateAck(this.keypair);
+      if (this.communication_enabled) {
+        // TODO
+        // enqueueAck(ack);
+      }
+      return ack;
+    }
+  }
+
+  async onReceivePageAck(ack) {
+
+  }
+
+  async onReceiveFinalPage(page_data) {
+    const page = await Page.fromJSONObject(page_data);
+    if (!page.validateSig()) {
+      return;
+    }
+
+    // TODO
+    // if (!this.current_scribes.contains(page.scribe)) {
+    //   return;
+    // }
+
+    // TODO
+    // if (page.round !== this.current_round) {
+    //   return;
+    // }
+
+    // if (this.current_round > 0 && page.last_round_certs <= twoFPlusOne(this.last_round_scribes)) {
+    //   return;
+    // }
+
+
+
+  }
 }

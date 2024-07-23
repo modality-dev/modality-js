@@ -33,12 +33,19 @@ export default function Page() {
     </div>
     <br />
     <div>
-      <div>Is Certified: {page?.is_certified ? 'true' : ''}</div>
+      <div>Certificate: {page?.cert}</div>
+      <br />
+      <div>
+        Last Round Certs:
+        {Object.values(page?.last_round_certs || {}).sort((a,b) => a.scribe.localeCompare(b.scribe)).map(lrc => (<div key={`${lrc.scribe}`}>
+          * Scribe: <a href={`/rounds/${page.round - 1}/scribes/${lrc.scribe}`}>{lrc.scribe}</a> | Cert: {lrc.cert}
+        </div>))}
+      </div>
       <br />
       <div>
         Acks:
-        {Object.values(page?.acks || {}).sort((a,b) => a.scribe.localeCompare(b.scribe)).map(ack => (<div key={`${ack.scribe}`}>
-          * <a href={`/rounds/${ack.round}/scribes/${ack.scribe}`}>{ack.scribe}</a>
+        {Object.values(page?.acks || {}).sort((a,b) => a.scribe.localeCompare(b.acker)).map(ack => (<div key={`${ack.acker}`}>
+          * Scribe: <a href={`/rounds/${ack.round}/scribes/${ack.acker}`}>{ack.acker}</a> | Sig: {ack.acker_sig}
         </div>))}
       </div>
       <br />

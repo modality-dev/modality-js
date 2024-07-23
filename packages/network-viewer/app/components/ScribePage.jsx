@@ -21,10 +21,10 @@ export default function ScribePage({round, scribe, showLines = true}) {
   }, [round]);
 
   React.useEffect(() => {
-    const acks = Object.keys(page.acks || {});
-    const connections = acks.map(awk_scribe => (
+    const lr_certs = Object.values(page.last_round_certs || {});
+    const connections = lr_certs.map(cert => (
       [
-        {round: round-1, scribe: awk_scribe},
+        {round: round-1, scribe: cert.scribe},
         {round, scribe},
       ]
     ));

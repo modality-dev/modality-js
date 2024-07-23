@@ -14,6 +14,24 @@ function shuffleArray(array) {
   return array;
 }
 
+function randomSetOfN(input, n) {
+  let all_set;
+  if (input instanceof Set) {
+    all_set = input;
+  } else {
+    all_set = new Set(input);
+  }
+  return shuffleArray(Array.from(all_set)).slice(0, n);
+}
+
+function randomSetOfNIncluding(array, n, include_array) {
+  const all_set = new Set(array);
+  const include_set = new Set(include_array);
+  const all_minus_include_set = all_set.difference(include_set);
+  const random_set = randomSetOfN(all_minus_include_set, n-(include_array.length));
+  return new Set([...include_array, ...random_set]);
+}
+
 export default class NetworkDatastoreBuilder {
   constructor() {
     this.datastore = null;
@@ -75,7 +93,7 @@ export default class NetworkDatastoreBuilder {
         failures--;
         continue;
       }
-      let last_round_certs = [];
+      let last_round_certs = {};
       if (round_num > 1) {
         for (const peer_scribe of scribes) {
           const peer_prev_page = await Page.findOne({
@@ -83,26 +101,20 @@ export default class NetworkDatastoreBuilder {
             round: round_num - 1,
             scribe: peer_scribe,
           });
-          last_round_certs.push(peer_prev_page.cert);
+          last_round_certs[peer_prev_page.scribe] = {
+            scribe: peer_prev_page.scribe,
+            cert: peer_prev_page.cert,
+          };
         }
       }
       const page = new Page({ scribe, round: round_num, last_round_certs, events: [] });
-      if (round_num > 1) {
-        for (const peer_scribe of scribes) {
-          const peer_prev_page = await Page.findOne({
-            datastore: this.datastore,
-            round: round_num - 1,
-            scribe: peer_scribe,
-          });
-          await page.addAck({
-            round: peer_prev_page?.round,
-            scribe: peer_scribe,
-          });
-        }
-        await page.generateCert(this.scribe_keypairs[scribe]);
+      for (const peer_scribe of scribes) {
+        await page.addAck(await page.generateAck(this.scribe_keypairs[peer_scribe]));
       }
+      await page.generateCert(this.scribe_keypairs[scribe]);
       await page.save({ datastore: this.datastore });
     }
+    await this.datastore.bumpCurrentRound();
   }
 
   async addConsensusConnectedRound({ failures = 0 } = {}) {
@@ -118,8 +130,33 @@ export default class NetworkDatastoreBuilder {
         failures--;
         continue;
       }
-      const page = new Page({ scribe, round: round_num, events: [] });
+      let last_round_certs = {};
       if (round_num > 1) {
+        const last_round_certified_scribes = randomSetOfNIncluding(scribes, consensus_threshold, [scribe]);
+        for (const peer_scribe of last_round_certified_scribes) {
+          const peer_prev_page = await Page.findOne({
+            datastore: this.datastore,
+            round: round_num - 1,
+            scribe: peer_scribe,
+          });
+          last_round_certs[peer_prev_page.scribe] = {
+            scribe: peer_prev_page.scribe,
+            cert: peer_prev_page.cert,
+          };
+        }
+      }
+      const page = new Page({ scribe, round: round_num, last_round_certs, events: [] });
+      const acking_scribes = randomSetOfNIncluding(scribes, consensus_threshold, [scribe]);
+      for (const peer_scribe of acking_scribes) {
+        await page.addAck(await page.generateAck(this.scribe_keypairs[peer_scribe]));
+      }
+      await page.generateCert(this.scribe_keypairs[scribe]);
+      await page.save({ datastore: this.datastore });
+
+      /*
+      const page = new Page({ scribe, round: round_num, events: [], last_round_certs });
+      await page.generateSig(this.scribe_keypairs[scribe])
+      // if (round_num > 1) {
         // prioritize self ack
         const acking_scribes = [
           scribe,
@@ -142,16 +179,16 @@ export default class NetworkDatastoreBuilder {
                 },
               ];
             } else {
-              page.acks[peer_scribe] = {
-                round: peer_prev_page?.round,
-                scribe: peer_scribe,
-              };
-              acks_so_far++;
+              const ack = await page.generateAck(this.scribe_keypairs[peer_scribe]);
+              const valid = await page.addAck(ack);
+              if (!valid) {
+                acks_so_far++;
+              }
             }
           }
         }
-        await page.generateCert(this.scribe_keypairs[scribe]);
-      }
+      // }
+      await page.generateCert(this.scribe_keypairs[scribe]);
 
       const late_acks = this.late_acks[scribe] || [];
       for (const late_ack of late_acks) {
@@ -161,22 +198,27 @@ export default class NetworkDatastoreBuilder {
 
       if (round_num > 1) {
         const not_late_scribes = scribes.filter(i => !late_acks.includes(i));
-        const last_round_certs = [];
+        const last_round_certs = {};
         for (const peer_scribe of not_late_scribes) {
           const peer_prev_page = await Page.findOne({
             datastore: this.datastore,
             round: round_num - 1,
             scribe: peer_scribe,
           });
-          last_round_certs.push(peer_prev_page.cert);
+          last_round_certs[peer_scribe] = {
+            scribe: peer_scribe,
+            cert: peer_prev_page.cert
+          };
         }
         page.last_round_certs = last_round_certs;
       }
+      */
 
       await page.save({ datastore: this.datastore });
     }
     this.late_acks = this.next_round_late_acks;
     this.next_round_late_acks = {};
+    await this.datastore.bumpCurrentRound();
   }
 
   async addPartiallyConnectedRound({ failures = 0 } = {}) {
@@ -216,10 +258,7 @@ export default class NetworkDatastoreBuilder {
                 },
               ];
             } else {
-              page.acks[peer_scribe] = {
-                round: peer_prev_page?.round,
-                scribe: peer_scribe,
-              };
+              await page.addAck(await page.generateAck(this.scribe_keypairs[peer_scribe]));
               acks_so_far++;
             }
           }
