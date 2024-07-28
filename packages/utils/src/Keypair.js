@@ -244,7 +244,11 @@ export default class Keypair {
 
   async verifySignatureForString(signature, str) {
     const bytes = uint8ArrayFromString(str);
-    return await this.verifySignatureForBytes(signature, bytes);
+    try {
+      return await this.verifySignatureForBytes(signature, bytes);
+    } catch (e) {
+      return false;
+    }
   }
 
   async verifyJSON(signature, json) {

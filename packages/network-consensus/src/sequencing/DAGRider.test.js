@@ -257,5 +257,10 @@ describe("DAGRider", () => {
     expect(page.cert).not.toBeNull();
     expect(Object.keys(page.acks).length).toBe(3);
     expect(await page.validateCert({acks_needed: 3})).toBe(true);
+
+    let cert_page = await seq2.onReceiveCertifiedPage(await page.toJSONObject());
+    expect(cert_page).not.toBe(null);
+    cert_page = await seq2.onReceiveCertifiedPage({...(await page.toJSONObject()), cert: null});
+    expect(cert_page).toBeNull();
   });
 });

@@ -18,6 +18,11 @@ export default class Sequencer {
     return this.calculate2fplus1(num_of_peers);
   }
 
+ async consensusThresholdForRound(round) {
+    const scribes = await this.getScribesAtRound(round);
+    return this.constructor.calculate2fplus1(scribes.length);
+  }
+
   async getCurrentRound() {
     return this.datastore.getCurrentRound();
   }
@@ -268,24 +273,32 @@ export default class Sequencer {
     }  
   }
 
-  async onReceiveFinalPage(page_data) {
+  async onReceiveCertifiedPage(page_data) {
     const page = await Page.fromJSONObject(page_data);
     if (!page.validateSig()) {
-      return;
+      return null;
     }
 
-    // TODO
-    // if (!this.current_scribes.contains(page.scribe)) {
-    //   return;
-    // }
+    const round = await this.getCurrentRound();
+    if (page.round < round) {
+      return this.onReceiveLateCertifiedPage(page_data);
+    } else if (page.round > round) {
+      // TODO handle slowness
+      return null;
+    }
 
-    // TODO
-    // if (page.round !== this.current_round) {
-    //   return;
-    // }
+    const last_round_threshold = await this.consensusThresholdForRound(round - 1); 
+    const current_round_threshold = await this.consensusThresholdForRound(round); 
+    if (round > 1 && Object.keys(page.last_round_certs).length < last_round_threshold) {
+      return null;
+    }
 
-    // if (this.current_round > 0 && page.last_round_certs <= twoFPlusOne(this.last_round_scribes)) {
-    //   return;
-    // }
+    const has_valid_cert = await page.validateCert({acks_needed: current_round_threshold});
+    if (!has_valid_cert) {
+      return null;
+    }
+    
+    await page.save({datastore: this.datastore});
+    return page;
   }
 }
