@@ -2,13 +2,12 @@ import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 
 export default class Sequencer {
-  constructor({ datastore, randomness, sequencer_first_round = 1 }) {
+  constructor({ datastore, randomness, sequencer_first_round = 1, keypair, communication_enabled }) {
     this.datastore = datastore;
     this.randomness = randomness;
     this.sequencer_first_round = sequencer_first_round;
-    this.whoami = null;
-    this.keypair = null;
-    this.communication_enabled = false;
+    this.keypair = keypair;
+    this.communication_enabled = communication_enabled;
   }
 
   static calculate2fplus1(num_of_peers) {
@@ -214,5 +213,78 @@ export default class Sequencer {
     for (let round = start_round; round <= end_round; round++) {
       await this.logRound(round);
     }
+  }
+
+  async onReceiveDraftPage(page_data) {
+    const page = await Page.fromJSONObject(page_data);
+    if (!page.validateSig()) {
+      console.warn('invalid sig')
+      return;
+    }
+
+    const current_round = await this.getCurrentRound();
+
+    if (page.round !== current_round) {
+      console.warn('different round')
+      return;
+    }
+
+    const current_round_scribes = await this.getCurrentRoundScribes();
+
+    if (!current_round_scribes.includes(page.scribe)) {
+      console.warn('unknown round')
+      return;
+    }
+
+    if (await this.keypair?.asPublicAddress() && current_round_scribes.includes(await this.keypair?.asPublicAddress())) {
+      const ack = await page.generateAck(this.keypair);
+      if (this.communication_enabled) {
+        // TODO
+        // enqueueAck(ack);
+      }
+      return ack;
+    }
+  }
+
+  async onReceivePageAck(ack) {
+    if (!ack) {
+      return;
+    }
+
+    const whoami = await this.keypair?.asPublicAddress();
+    if (!whoami || whoami !== ack.scribe) {
+      return;
+    }
+
+    const round = await this.getCurrentRound();
+    if (ack.round !== round) {
+      return;
+    }
+
+    const page = await Page.findOne({datastore: this.datastore, round, scribe: whoami});
+    if (page) {
+      await page.addAck(ack);
+    }  
+  }
+
+  async onReceiveFinalPage(page_data) {
+    const page = await Page.fromJSONObject(page_data);
+    if (!page.validateSig()) {
+      return;
+    }
+
+    // TODO
+    // if (!this.current_scribes.contains(page.scribe)) {
+    //   return;
+    // }
+
+    // TODO
+    // if (page.round !== this.current_round) {
+    //   return;
+    // }
+
+    // if (this.current_round > 0 && page.last_round_certs <= twoFPlusOne(this.last_round_scribes)) {
+    //   return;
+    // }
   }
 }

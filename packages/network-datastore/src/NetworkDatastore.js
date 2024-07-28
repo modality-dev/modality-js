@@ -5,6 +5,7 @@ import SafeJSON from "@modality-dev/utils/SafeJSON";
 import fs from 'fs';
 
 import Keypair from "@modality-dev/utils/Keypair";
+import Page from './data/Page';
 
 export default class NetworkDatastore {
   constructor(datastore) {
@@ -60,6 +61,15 @@ export default class NetworkDatastore {
     f.end();
   }
 
+  async cloneToMemory() {
+    const datastore = await NetworkDatastore.createInMemory();
+    const it = await this.iterator({prefix:''});
+    for await (const [key, value] of it) {
+      await datastore.put(key, value);
+    }
+    return datastore;
+  }
+
   async getDataByKey(key) {
     try {
       return await this.datastore.get(key);
@@ -95,7 +105,12 @@ export default class NetworkDatastore {
   }
 
   iterator({prefix, filters, orders}) {
-    return this.datastore.db.iterator({prefix, filters, orders});
+    return this.datastore.db.iterator({
+      gt: `${prefix}/`,
+      lt: `${prefix}0`,
+      filters,
+      orders
+    });
   }
 
   async findMaxStringKey(prefix) {
@@ -128,9 +143,18 @@ export default class NetworkDatastore {
     return r;
   }
 
+  async getTimelyCertsAtRound(round) {
+    const pages = (await Page.findAllInRound({datastore: this, round})).filter(i => !i.seen_at_round);
+    return pages.reduce((acc, i) => {
+      acc[i.scribe] = i.cert;
+      return acc;
+    }, {});
+  }
+
   async bumpCurrentRound() {
     const current_round = await this.getDataByKey('/consensus/status/current_round');
-    return this.put('/consensus/status/current_round', (parseInt(current_round) + 1).toString());
+    const current_round_num = parseInt(current_round) || 0;
+    return this.put('/consensus/status/current_round', (current_round_num + 1).toString());
   }
 
   async setCurrentRound(round) {

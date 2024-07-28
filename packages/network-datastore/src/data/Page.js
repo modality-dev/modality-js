@@ -17,7 +17,8 @@ export default class Page {
     section_ending_round,
     section_starting_round,
     section_page_number,
-    page_number
+    page_number,
+    seen_at_round,
   }) {
     this.scribe = scribe;
     this.round = round;
@@ -41,6 +42,7 @@ export default class Page {
     this.section_ending_round = section_ending_round;
     this.section_page_number = section_page_number;
     this.page_number = page_number;
+    this.seen_at_round = seen_at_round;
   }
 
   static fromJSONString(json) {
@@ -68,6 +70,20 @@ export default class Page {
     return this.fromJSONString(v.toString());
   }
 
+  static async findAllInRound({datastore, round}) {
+    const prefix = `/consensus/round/${round}/scribe`;
+    const it = datastore.iterator({prefix});
+    const r = [];
+    for await (const [key, value] of it) {
+      const scribe = key.split(`${prefix}/`)[1];
+      const page = await this.findOne({datastore, round, scribe});
+      if (page) {
+        r.push(page);
+      }
+    }
+    return r;
+  }
+
   async save({ datastore }) {
     return datastore.put(this.getId(), this.toJSONString());
   }
@@ -93,6 +109,7 @@ export default class Page {
       section_ending_round: this.section_ending_round,
       section_page_number: this.section_page_number,
       page_number: this.page_number,
+      seen_at_round: this.seen_at_round
     };
   }
 

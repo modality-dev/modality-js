@@ -7,8 +7,8 @@ import Round from '@modality-dev/network-datastore/data/Round';
 export const NAME = "DAGRider";
 
 export default class DAGRider extends Sequencer {
-  constructor({ datastore, randomness, sequencer_first_round = 1 }) {
-    super({ datastore, randomness, sequencer_first_round });
+  constructor({ datastore, randomness, sequencer_first_round = 1, keypair, communication_enabled }) {
+    super({ datastore, randomness, sequencer_first_round, keypair, communication_enabled });
   }
 
   async getScribesAtRound(round) {
@@ -206,61 +206,5 @@ export default class DAGRider extends Sequencer {
       }
       prev_leader = leader;
     }
-  }
-
-  async onReceiveDraftPage(page_data) {
-    const page = await Page.fromJSONObject(page_data);
-    if (!page.validateSig()) {
-      return;
-    }
-
-    const current_round = await this.getCurrentRound();
-
-    if (page.round !== current_round) {
-      return;
-    }
-
-    const current_round_scribes = await this.getCurrentRoundScribes();
-
-    if (!current_round_scribes.includes(page.scribe)) {
-      return;
-    }
-
-    if (this.whoami && current_round_scribes.includes(this.whoami)) {
-      const ack = await page.generateAck(this.keypair);
-      if (this.communication_enabled) {
-        // TODO
-        // enqueueAck(ack);
-      }
-      return ack;
-    }
-  }
-
-  async onReceivePageAck(ack) {
-
-  }
-
-  async onReceiveFinalPage(page_data) {
-    const page = await Page.fromJSONObject(page_data);
-    if (!page.validateSig()) {
-      return;
-    }
-
-    // TODO
-    // if (!this.current_scribes.contains(page.scribe)) {
-    //   return;
-    // }
-
-    // TODO
-    // if (page.round !== this.current_round) {
-    //   return;
-    // }
-
-    // if (this.current_round > 0 && page.last_round_certs <= twoFPlusOne(this.last_round_scribes)) {
-    //   return;
-    // }
-
-
-
   }
 }

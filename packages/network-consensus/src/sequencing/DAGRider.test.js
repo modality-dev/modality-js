@@ -191,55 +191,73 @@ describe("DAGRider", () => {
 
   test("event handling", async () => {
     const NODE_COUNT = 3;
-    let pages, page, page1;
+
+    let page, ack, round;
 
     // setup
     const scribes = await Devnet.getPubkeys(NODE_COUNT); 
     const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
-    const binder = new DAGRider({
-      datastore: ds_builder.datastore,
-      randomness,
-    });
     ds_builder.scribes = [...scribes];
     ds_builder.scribe_keypairs =  scribe_keypairs;
     ds_builder.datastore.setCurrentRound(1);
+    await ds_builder.addFullyConnectedRound();
+
+    const datastores = [
+      await ds_builder.datastore.cloneToMemory(),
+      await ds_builder.datastore.cloneToMemory(),
+      await ds_builder.datastore.cloneToMemory(),
+    ];
+
+    const seq1 = new DAGRider({
+      datastore: datastores[0],
+      randomness,
+      keypair: scribe_keypairs[scribes[0]],
+      communication_enabled: true
+    });
+
+    const seq2 = new DAGRider({
+      datastore: datastores[1],
+      randomness,
+      keypair: scribe_keypairs[scribes[1]],
+    });
+
+    const seq3 = new DAGRider({
+      datastore: datastores[2],
+      randomness,
+      keypair: scribe_keypairs[scribes[2]],
+    });
     
     // round 1
-    await ds_builder.addFullyConnectedRound();
-    page1 = await binder.findLeaderInRound(1);
-    expect(page1).toBeNull();
+    page = await seq1.findLeaderInRound(1);
+    expect(page).toBeNull();
 
     // round 2 from perspective of scribe 1
-    binder.keypair = scribe_keypairs[scribes[0]];
-    binder.whoami = scribes[0];
-    binder.communication_enabled = true;
-
-    let draft_page, ack;
-    let acks = [];
-    draft_page = new Page({
-      round: 2,
+    round = 2;
+    page = new Page({
+      round,
       scribe: scribes[0],
-      last_round_certs: [],
+      last_round_certs: await seq1.datastore.getTimelyCertsAtRound(round - 1),
       events: [],
-    }); 
+    });
+    await page.generateSig(scribe_keypairs[scribes[0]]);
+    await page.save({datastore: seq1.datastore});
+    ack = await seq1.onReceiveDraftPage(page);
+    await seq1.onReceivePageAck(ack);
+    await page.addAck(ack);
 
-    await draft_page.generateSig(scribe_keypairs[scribes[0]]);
-    acks.push(ack);
-    await draft_page.addAck(ack);
+    ack = await seq2.onReceiveDraftPage(page);
+    await seq1.onReceivePageAck(ack);
+    await page.addAck(ack);
 
-    await draft_page.generateSig(scribe_keypairs[scribes[1]]);
-    ack = await binder.onReceiveDraftPage(draft_page);
-    acks.push(ack);
-    await draft_page.addAck(ack);
+    await page.generateSig(scribe_keypairs[scribes[1]]);
+    ack = await seq3.onReceiveDraftPage(page);
+    await page.addAck(ack);
 
-    await draft_page.generateSig(scribe_keypairs[scribes[1]]);
-    ack = await binder.onReceiveDraftPage(draft_page);
-    await draft_page.addAck(ack);
+    await page.generateCert(scribe_keypairs[scribes[0]]);
+    expect(page.cert).not.toBeNull();
 
-    await draft_page.generateCert(scribe_keypairs[scribes[0]]);
-    expect(draft_page.cert).not.toBeNull();
-
-    expect(await draft_page.validateCert()).toBe(true);
+    expect(await page.validateCert()).toBe(true);
   });
 });
