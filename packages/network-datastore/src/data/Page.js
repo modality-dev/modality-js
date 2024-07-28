@@ -87,6 +87,27 @@ export default class Page {
   async save({ datastore }) {
     return datastore.put(this.getId(), this.toJSONString());
   }
+  
+  async reload({ datastore }) {
+    const page = await this.constructor.findOne({datastore, scribe: this.scribe, round: this.round});
+    this.scribe = page.scribe;
+    this.round = page.round;
+    this.last_round_certs = page.last_round_certs;
+    this.events = page.events;
+    this.hash = page.hash;
+    this.sig = page.sig;
+    this.acks = page.acks;
+    this.late_acks = page.late_acks;
+    this.cert = page.cert;
+    this.number = page.number;
+    this.is_section_leader = page.is_section_leader;
+    this.section_starting_round = page.section_starting_round;
+    this.section_ending_round = page.section_ending_round;
+    this.section_page_number = page.section_page_number;
+    this.page_number = page.page_number;
+    this.seen_at_round = page.seen_at_round;
+    return this;
+  }
 
   toJSONString() {
     return JSON.stringify(this.toJSONObject());
@@ -253,7 +274,7 @@ export default class Page {
     return this.cert;
   }
 
-  async validateCert() {
+  async validateCertSig() {
     const keypair = Keypair.fromPublicKey(this.scribe);
     return keypair.verifyJSON(this.cert, {
       scribe: this.scribe,
@@ -262,5 +283,14 @@ export default class Page {
       events: this.events,
       acks: this.acks,
     });
+  }
+
+  async validateCert({acks_needed}) {
+    const isCertSigValid = await this.validateCertSig();
+    if (!isCertSigValid) {
+      return false;
+    }
+    const validAckCount = await this.countValidAcks();
+    return validAckCount >= acks_needed;
   }
 }

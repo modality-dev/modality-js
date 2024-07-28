@@ -264,6 +264,7 @@ export default class Sequencer {
     const page = await Page.findOne({datastore: this.datastore, round, scribe: whoami});
     if (page) {
       await page.addAck(ack);
+      await page.save({datastore: this.datastore});
     }  
   }
 

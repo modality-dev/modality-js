@@ -245,19 +245,17 @@ describe("DAGRider", () => {
     await page.save({datastore: seq1.datastore});
     ack = await seq1.onReceiveDraftPage(page);
     await seq1.onReceivePageAck(ack);
-    await page.addAck(ack);
 
     ack = await seq2.onReceiveDraftPage(page);
     await seq1.onReceivePageAck(ack);
-    await page.addAck(ack);
 
-    await page.generateSig(scribe_keypairs[scribes[1]]);
     ack = await seq3.onReceiveDraftPage(page);
-    await page.addAck(ack);
+    await seq1.onReceivePageAck(ack);
 
+    await page.reload({datastore: seq1.datastore});
     await page.generateCert(scribe_keypairs[scribes[0]]);
     expect(page.cert).not.toBeNull();
-
-    expect(await page.validateCert()).toBe(true);
+    expect(Object.keys(page.acks).length).toBe(3);
+    expect(await page.validateCert({acks_needed: 3})).toBe(true);
   });
 });
