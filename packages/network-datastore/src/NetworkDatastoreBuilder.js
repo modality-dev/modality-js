@@ -82,6 +82,28 @@ export default class NetworkDatastoreBuilder {
     return builder;
   }
 
+  async createSequencers(SeqType, opts = {}) {
+    const r = {}
+    for (const scribe of this.scribes) {
+      const seq = new SeqType({
+        datastore: await this.datastore.cloneToMemory(),
+        keypair: this.scribe_keypairs[scribe],
+        ...opts,
+      });
+      r[scribe] = seq;
+    }
+    return r;
+  }
+
+  async setupGenesisScribes(scribe_keypairs, initial_rounds = 1) {
+    this.scribe_keypairs =  scribe_keypairs;
+    this.scribes = Object.keys(scribe_keypairs);
+    for (let i = 0; i < initial_rounds; i++) {
+      this.datastore.setCurrentRound(i+1);
+      await this.addFullyConnectedRound();
+    }
+  }
+
   async addFullyConnectedRound({ failures = 0 } = {}) {
     const round_num = ++this.round_num;
     const round = new Round({ round: round_num });

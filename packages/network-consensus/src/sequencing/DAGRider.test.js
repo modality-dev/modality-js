@@ -268,56 +268,19 @@ describe("DAGRider", () => {
   test("run sequencers", async () => {
     const NODE_COUNT = 3;
 
-    // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
     const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
-
-    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
-    ds_builder.scribes = [...scribes];
-    ds_builder.scribe_keypairs =  scribe_keypairs;
-    ds_builder.datastore.setCurrentRound(1);
-    await ds_builder.addFullyConnectedRound();
-
-    const datastores = [
-      await ds_builder.datastore.cloneToMemory(),
-      await ds_builder.datastore.cloneToMemory(),
-      await ds_builder.datastore.cloneToMemory(),
-    ];
-
+    const dsb = await NetworkDatastoreBuilder.createInMemory();
+    await dsb.setupGenesisScribes(scribe_keypairs);
     const communication = new SameProcess();
-
-    const seq1 = new DAGRider({
-      datastore: datastores[0],
+    const seqs = await dsb.createSequencers(DAGRider, {
       randomness,
-      keypair: scribe_keypairs[scribes[0]],
-      communication,
+      communication
     });
+    communication.scribe_sequencers = seqs;
 
-    const seq2 = new DAGRider({
-      datastore: datastores[1],
-      randomness,
-      keypair: scribe_keypairs[scribes[1]],
-      communication,
-    });
+    await Promise.all(Object.values(seqs).map(seq => seq.runUntilRound(9)));
 
-    const seq3 = new DAGRider({
-      datastore: datastores[2],
-      randomness,
-      keypair: scribe_keypairs[scribes[2]],
-      communication,
-    });
-
-    communication.scribe_sequencers = {
-      [scribes[0]]: seq1,
-      [scribes[1]]: seq2,
-      [scribes[2]]: seq3,
-    }
-
-    await Promise.all([
-      seq1.runUntilRound(9),
-      seq2.runUntilRound(9),
-      seq3.runUntilRound(9),
-    ]);
+    const seq1 = seqs[Object.keys(seqs)[0]];
 
     const leader1 = await seq1.findLeaderInRound(1);
     expect(leader1).not.toBeNull();
