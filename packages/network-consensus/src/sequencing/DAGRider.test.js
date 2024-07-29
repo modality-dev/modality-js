@@ -263,4 +263,49 @@ describe("DAGRider", () => {
     cert_page = await seq2.onReceiveCertifiedPage({...(await page.toJSONObject()), cert: null});
     expect(cert_page).toBeNull();
   });
+
+  test.skip("run sequencers", async () => {
+    const NODE_COUNT = 3;
+
+    // setup
+    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+
+    const ds_builder = await NetworkDatastoreBuilder.createInMemory();
+    ds_builder.scribes = [...scribes];
+    ds_builder.scribe_keypairs =  scribe_keypairs;
+    ds_builder.datastore.setCurrentRound(1);
+    await ds_builder.addFullyConnectedRound();
+
+    const datastores = [
+      await ds_builder.datastore.cloneToMemory(),
+      await ds_builder.datastore.cloneToMemory(),
+      await ds_builder.datastore.cloneToMemory(),
+    ];
+
+    const seq1 = new DAGRider({
+      datastore: datastores[0],
+      randomness,
+      keypair: scribe_keypairs[scribes[0]],
+      communication_enabled: true
+    });
+
+    const seq2 = new DAGRider({
+      datastore: datastores[1],
+      randomness,
+      keypair: scribe_keypairs[scribes[1]],
+    });
+
+    const seq3 = new DAGRider({
+      datastore: datastores[2],
+      randomness,
+      keypair: scribe_keypairs[scribes[2]],
+    });
+
+    await Promise.all([
+      seq1.runUntilRound(5),
+      seq2.runUntilRound(5),
+      seq3.runUntilRound(5),
+    ]);
+  });
 });

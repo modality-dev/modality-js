@@ -1,6 +1,10 @@
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 
+import { setTimeout } from 'timers/promises';
+
+const INTRA_ROUND_WAIT_TIME_MS = 50;
+
 export default class Sequencer {
   constructor({ datastore, randomness, sequencer_first_round = 1, keypair, communication_enabled }) {
     this.datastore = datastore;
@@ -300,5 +304,62 @@ export default class Sequencer {
     
     await page.save({datastore: this.datastore});
     return page;
+  }
+
+  async runRound() {
+    const scribe = await this.keypair?.asPublicAddress();
+    const round = await this.getCurrentRound();
+    const last_round_certs = await this.datastore.getTimelyCertsAtRound(round - 1);
+    // TODO if not enough certs throws error
+    const events = []; // TODO pop events off queue
+    const page = new Page({
+      round,
+      scribe,
+      last_round_certs,
+      events,
+    });
+    await page.generateSig(this.keypair);
+    await page.save({datastore: this.datastore});
+    const current_round_threshold = await this.consensusThresholdForRound(round);
+
+    // TODO
+    // await this.broadcastDraftPage(page);
+
+    let keep_waiting_for_acks = true;
+    let keep_waiting_for_certs = true;
+    while (keep_waiting_for_acks || keep_waiting_for_certs) {
+      await setTimeout(this.intra_round_wait_time_ms || INTRA_ROUND_WAIT_TIME_MS);
+      if (keep_waiting_for_acks) {
+        await page.reload({datastore: this.datastore});
+        const valid_acks = await page.countValidAcks();
+        if (valid_acks >= current_round_threshold) {
+          await page.generateCert(this.keypair);
+          // await this.broadcastCertifiedPage(page);
+          keep_waiting_for_acks = false; 
+        }       
+      }
+      if (keep_waiting_for_certs) {
+        const current_round_certs = await this.datastore.getTimelyCertsAtRound(round);
+        if (current_round_certs.length >= current_round_threshold) {
+          keep_waiting_for_certs = false;
+        }
+      }
+    }
+
+    await this.datastore.bumpCurrentRound();
+  }
+
+  async runUntilRound(round) {
+    let current_round = await this.getCurrentRound();
+    while(current_round < round) {
+      await this.runRound();
+      current_round = await this.getCurrentRound();
+    }
+  }
+
+  async run() {
+    while (true) {
+      await this.runRound();
+    }
   }
 }
