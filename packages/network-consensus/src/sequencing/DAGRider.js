@@ -7,8 +7,8 @@ import Round from '@modality-dev/network-datastore/data/Round';
 export const NAME = "DAGRider";
 
 export default class DAGRider extends Sequencer {
-  constructor({ datastore, randomness, sequencer_first_round = 1, keypair, communication_enabled }) {
-    super({ datastore, randomness, sequencer_first_round, keypair, communication_enabled });
+  constructor({ datastore, randomness, sequencer_first_round = 1, keypair, communication }) {
+    super({ datastore, randomness, sequencer_first_round, keypair, communication });
   }
 
   async getScribesAtRound(round) {

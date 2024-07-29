@@ -6,6 +6,7 @@ import NetworkDatastore from "@modality-dev/network-datastore";
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 import RoundRobin from "../randomness/RoundRobin";
+import SameProcess from "../communication/SameProcess";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
@@ -264,7 +265,7 @@ describe("DAGRider", () => {
     expect(cert_page).toBeNull();
   });
 
-  test.skip("run sequencers", async () => {
+  test("run sequencers", async () => {
     const NODE_COUNT = 3;
 
     // setup
@@ -283,29 +284,46 @@ describe("DAGRider", () => {
       await ds_builder.datastore.cloneToMemory(),
     ];
 
+    const communication = new SameProcess();
+
     const seq1 = new DAGRider({
       datastore: datastores[0],
       randomness,
       keypair: scribe_keypairs[scribes[0]],
-      communication_enabled: true
+      communication,
     });
 
     const seq2 = new DAGRider({
       datastore: datastores[1],
       randomness,
       keypair: scribe_keypairs[scribes[1]],
+      communication,
     });
 
     const seq3 = new DAGRider({
       datastore: datastores[2],
       randomness,
       keypair: scribe_keypairs[scribes[2]],
+      communication,
     });
 
+    communication.scribe_sequencers = {
+      [scribes[0]]: seq1,
+      [scribes[1]]: seq2,
+      [scribes[2]]: seq3,
+    }
+
     await Promise.all([
-      seq1.runUntilRound(5),
-      seq2.runUntilRound(5),
-      seq3.runUntilRound(5),
+      seq1.runUntilRound(9),
+      seq2.runUntilRound(9),
+      seq3.runUntilRound(9),
     ]);
+
+    const leader1 = await seq1.findLeaderInRound(1);
+    expect(leader1).not.toBeNull();
+    const leader5 = await seq1.findLeaderInRound(5);
+    expect(leader5).not.toBeNull();
+    const pages = await seq1.findOrderedPagesInSection(null, 5);
+    expect(pages.length).toBe(13);
   });
 });

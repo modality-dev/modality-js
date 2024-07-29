@@ -146,7 +146,7 @@ export default class NetworkDatastore {
   async getTimelyCertsAtRound(round) {
     const pages = (await Page.findAllInRound({datastore: this, round})).filter(i => !i.seen_at_round);
     return pages.reduce((acc, i) => {
-      acc[i.scribe] = i.cert;
+      acc[i.scribe] = i;
       return acc;
     }, {});
   }
