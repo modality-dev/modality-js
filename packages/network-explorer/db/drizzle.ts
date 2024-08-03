@@ -1,9 +1,8 @@
-import { pgTable, serial, text, varchar } from "drizzle-orm/pg-core";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { Client } from "pg";
+import { Pool } from "pg";
 
-const sql = new Client({
-  connectionString: "postgres://user:password@host:port/db",
+const sql = new Pool({
+  connectionString: process.env.DATABASE_URL!,
 });
 
 const db = drizzle(sql);

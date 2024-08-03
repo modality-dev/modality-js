@@ -8,8 +8,8 @@ export default async function Page() {
   console.log({ data });
   return (
     <main className="flex flex-col items-center justify-center">
-      {/* <Lander status={""} round={3} /> */}
-      <RoundDetail ackAmount={3} minRound={1} maxRound={12} />
+      <Lander status={""} round={3} />
+      {/* <RoundDetail ackAmount={3} minRound={1} maxRound={12} /> */}
     </main>
   );
 }
