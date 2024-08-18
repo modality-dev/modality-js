@@ -9,7 +9,7 @@ import RoundRobin from "../randomness/RoundRobin";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
-import * as Devnet from '@modality-dev/network-configs/devnet-common/index';
+import * as Devnet from "@modality-dev/network-configs/devnet-common/index";
 
 import Bullshark from "./Bullshark";
 
@@ -19,22 +19,22 @@ describe("Bullshark", () => {
   const randomness = new RoundRobin();
 
   // when rounds are fully connected, pages a few rounds back can be sequenced
-  // in particular, 
+  // in particular,
   test("sequencing given fully connected rounds", async () => {
     const NODE_COUNT = 3;
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
-    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new Bullshark({
       datastore: ds_builder.datastore,
       randomness,
     });
     ds_builder.scribes = [...scribes];
-    ds_builder.scribe_keypairs =  scribe_keypairs;
-    
+    ds_builder.scribe_keypairs = scribe_keypairs;
+
     // round 1
     await ds_builder.addFullyConnectedRound();
     page1 = await binder.findLeaderInRound(1);
@@ -106,8 +106,8 @@ describe("Bullshark", () => {
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
-    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new Bullshark({
       datastore: ds_builder.datastore,
@@ -115,7 +115,7 @@ describe("Bullshark", () => {
     });
     ds_builder.scribes = [...scribes];
     ds_builder.scribe_keypairs = scribe_keypairs;
-    
+
     // round 1
     await ds_builder.addConsensusConnectedRound();
     page1 = await binder.findLeaderInRound(1);
@@ -159,7 +159,8 @@ describe("Bullshark", () => {
     pages = await binder.findOrderedPagesInSection(1, 5);
     // given consensus connected rounds, how many nodes in round n-1
     // won't be acked by our nodes in round n?
-    const ONE_ROUND_DROPOFF = NODE_COUNT - Bullshark.consensusThresholdFor(NODE_COUNT);
+    const ONE_ROUND_DROPOFF =
+      NODE_COUNT - Bullshark.consensusThresholdFor(NODE_COUNT);
     expect(pages.length).toBe(4 * NODE_COUNT - ONE_ROUND_DROPOFF);
     expect(pages.at(-1).scribe).toBe(scribes[1]);
 
@@ -182,8 +183,7 @@ describe("Bullshark", () => {
     pages = await binder.findOrderedPagesInSection(9, 13);
     expect(pages.length).toBe(4 * NODE_COUNT);
     expect(pages.at(-1).scribe).toBe(scribes[3]);
-  }); 
-
-  test.skip("no sequencing given under threshold connected rounds", async() => {
   });
+
+  test.skip("no sequencing given under threshold connected rounds", async () => {});
 });

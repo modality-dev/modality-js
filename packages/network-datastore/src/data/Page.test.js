@@ -1,12 +1,12 @@
 import { jest, expect, describe, test, it } from "@jest/globals";
 
 import Page from "./Page.js";
-import NetworkDatastore from '../NetworkDatastore.js';
+import NetworkDatastore from "../NetworkDatastore.js";
 
 import Keypair from "@modality-dev/utils/Keypair";
 
 describe("Page", () => {
-  it("should work", async () => {
+  test("should work", async () => {
     const datastore = await NetworkDatastore.createInMemory();
 
     const node1_keypair = await Keypair.generate();
@@ -26,16 +26,24 @@ describe("Page", () => {
     let sig1empty = await b1empty.generateSig(node1_keypair);
     expect(sig1).not.toBe(sig1empty);
 
-    let ack1 = await b1.generateAck(node2_keypair);
+    // ack self
+    let ack1 = await b1.generateAck(node1_keypair);
     await b1.addAck(ack1);
-    expect(b1.acks[ack1.scribe]).toBe(ack1);
-    result = await b1.validateAcks();
-    expect(result).toBe(true);
-    result = await b1.countValidAcks(ack1);
+    result = await b1.countValidAcks();
     expect(result).toBe(1);
 
+    // other acks
+    let ack2 = await b1.generateAck(node2_keypair);
+    await b1.addAck(ack2);
+    expect(b1.acks[ack2.acker]).toBe(ack2);
+    result = await b1.validateAcks();
+    expect(result).toBe(true);
+    result = await b1.countValidAcks();
+    expect(result).toBe(2);
+
     await b1.generateCert(node1_keypair);
-    result = await b1.validateCert();
+    expect(b1.cert).not.toBe(null);
+    result = await b1.validateCert({ acks_needed: 2 });
     expect(result).toBe(true);
     await b1.save({ datastore });
 

@@ -1,24 +1,39 @@
 import JSONStringifyDeterministic from "json-stringify-deterministic";
 
 import Sequencer from "./Sequencer.js";
-import Page from '@modality-dev/network-datastore/data/Page';
-import Round from '@modality-dev/network-datastore/data/Round';
+import Page from "@modality-dev/network-datastore/data/Page";
+import Round from "@modality-dev/network-datastore/data/Round";
 
 export const NAME = "DAGRider";
 
 export default class DAGRider extends Sequencer {
-  constructor({ datastore, randomness, sequencer_first_round = 1, keypair, communication }) {
-    super({ datastore, randomness, sequencer_first_round, keypair, communication });
+  constructor({
+    datastore,
+    randomness,
+    sequencer_first_round = 1,
+    keypair,
+    communication,
+  }) {
+    super({
+      datastore,
+      randomness,
+      sequencer_first_round,
+      keypair,
+      communication,
+    });
   }
 
   async getScribesAtRound(round) {
     if (round < 1) {
       return [];
-    // TODO
-    // } else if (round === 1) {
+      // TODO
+      // } else if (round === 1) {
     } else {
       // TODO make this not static
-      const round_data = await Round.findOne({datastore: this.datastore, round: 1})
+      const round_data = await Round.findOne({
+        datastore: this.datastore,
+        round: 1,
+      });
       return round_data.scribes;
     }
   }
@@ -40,7 +55,10 @@ export default class DAGRider extends Sequencer {
   static getRoundProps(round, sequencer_first_round) {
     const binder_round = round - sequencer_first_round + 1;
     const binder_wave = this.getWaveOfRound(round, sequencer_first_round);
-    const binder_wave_round = this.getWaveRoundOfRound(round, sequencer_first_round);
+    const binder_wave_round = this.getWaveRoundOfRound(
+      round,
+      sequencer_first_round
+    );
     return {
       round,
       binder_round,
@@ -50,7 +68,10 @@ export default class DAGRider extends Sequencer {
   }
 
   async findLeaderInRound(round) {
-    const round_props = this.constructor.getRoundProps(round, this.sequencer_first_round);
+    const round_props = this.constructor.getRoundProps(
+      round,
+      this.sequencer_first_round
+    );
 
     // only the first round of a wave has an leader
     if (round_props.binder_wave_round !== 1) {
@@ -58,7 +79,7 @@ export default class DAGRider extends Sequencer {
     }
 
     // ensure that rounds r+1,2,3 already complete
-    const max_round = await Round.findMaxId({datastore: this.datastore});
+    const max_round = await Round.findMaxId({ datastore: this.datastore });
     if (max_round < round + 3) {
       return null;
     }
@@ -70,7 +91,7 @@ export default class DAGRider extends Sequencer {
       input: JSONStringifyDeterministic({
         round: round_props.binder_wave,
         // TODO source of shared randomness
-      })
+      }),
     });
 
     const leader = await this.findPage({ round, scribe });
@@ -94,7 +115,9 @@ export default class DAGRider extends Sequencer {
               round: round + i - 1,
               scribe: prev_page_scribe,
             });
-            if (page.last_round_certs[prev_page.scribe]?.cert === prev_page.cert) {
+            if (
+              page.last_round_certs[prev_page.scribe]?.cert === prev_page.cert
+            ) {
               next_round_scribes.add(page.scribe);
               continue;
             }
@@ -113,11 +136,18 @@ export default class DAGRider extends Sequencer {
 
   async findOrderedLeadersBetween(start_round, end_round) {
     const r = [];
-    const start_round_props = this.constructor.getRoundProps(start_round, this.sequencer_first_round);
-    let working_round = start_round + (start_round_props.binder_wave_round === 1 ? 0 : 5 - start_round_props.binder_wave_round);
+    const start_round_props = this.constructor.getRoundProps(
+      start_round,
+      this.sequencer_first_round
+    );
+    let working_round =
+      start_round +
+      (start_round_props.binder_wave_round === 1
+        ? 0
+        : 5 - start_round_props.binder_wave_round);
     while (working_round < end_round) {
       const page = await this.findLeaderInRound(working_round);
-      r.push({round: working_round, scribe: page.scribe});
+      r.push({ round: working_round, scribe: page.scribe });
       working_round = working_round + 4;
     }
     return r;
@@ -153,7 +183,10 @@ export default class DAGRider extends Sequencer {
         prev_leader = leader;
         continue;
       }
-      const ordered_pages = await this.findOrderedPagesInSection(prev_leader.round, leader.round);
+      const ordered_pages = await this.findOrderedPagesInSection(
+        prev_leader.round,
+        leader.round
+      );
       r = [...r, ...ordered_pages];
     }
     return r;
@@ -181,24 +214,31 @@ export default class DAGRider extends Sequencer {
         prev_leader = leader;
         continue;
       }
-      const ordered_pages = await this.findOrderedPagesInSection(prev_leader.round, leader.round);
+      const ordered_pages = await this.findOrderedPagesInSection(
+        prev_leader.round,
+        leader.round
+      );
       const section_starting_round = prev_leader.round;
       const section_ending_round = leader.round;
       ordered_section_pages.push({
         section_starting_round: prev_leader.round,
         section_ending_round: leader.round,
-        pages: ordered_pages
+        pages: ordered_pages,
       });
       let section_page_number = 1;
       for (const ordered_page of ordered_pages) {
-        const page = await Page.findOne({datastore: this.datastore, round: ordered_page.round, scribe: ordered_page.scribe});
+        const page = await Page.findOne({
+          datastore: this.datastore,
+          round: ordered_page.round,
+          scribe: ordered_page.scribe,
+        });
         page.section_starting_round = section_starting_round;
         page.section_ending_round = section_ending_round;
-        page.section_page_number = section_page_number; 
+        page.section_page_number = section_page_number;
         if (page_number) {
           page.page_number = page_number;
         }
-        await page.save({datastore: this.datastore});
+        await page.save({ datastore: this.datastore });
         section_page_number++;
         if (page_number) {
           page_number++;

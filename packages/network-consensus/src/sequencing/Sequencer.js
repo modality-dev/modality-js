@@ -1,21 +1,29 @@
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 
-import { setTimeout } from 'timers/promises';
+import { setTimeout, setImmediate } from "timers/promises";
+import { Mutex } from "async-mutex";
 
 const INTRA_ROUND_WAIT_TIME_MS = 50;
 
 export default class Sequencer {
-  constructor({ datastore, randomness, sequencer_first_round = 1, keypair, communication }) {
+  constructor({
+    datastore,
+    randomness,
+    sequencer_first_round = 1,
+    keypair,
+    communication,
+  }) {
     this.datastore = datastore;
     this.randomness = randomness;
     this.sequencer_first_round = sequencer_first_round;
     this.keypair = keypair;
     this.communication = communication;
+    this.mutex = new Mutex();
   }
 
   static calculate2fplus1(num_of_peers) {
-    return Math.floor(num_of_peers * 2.0 / 3.0) + 1;
+    return Math.floor((num_of_peers * 2.0) / 3.0) + 1;
   }
 
   static consensusThresholdFor(num_of_peers) {
@@ -32,7 +40,7 @@ export default class Sequencer {
   }
 
   async getPreviousRoundScribes() {
-    return this.getScribesAtRound(await this.getCurrentRound() - 1);
+    return this.getScribesAtRound((await this.getCurrentRound()) - 1);
   }
 
   async getCurrentRoundScribes() {
@@ -40,7 +48,7 @@ export default class Sequencer {
   }
 
   async getNextRoundScribes() {
-    return this.getScribesAtRound(await this.getCurrentRound() + 1);
+    return this.getScribesAtRound((await this.getCurrentRound()) + 1);
   }
 
   async getScribesAtRound(round) {
@@ -193,7 +201,7 @@ export default class Sequencer {
       round: round_num,
     });
     if (!round) {
-      console.log(r.join('\n'));
+      console.log(r.join("\n"));
       return;
     }
     for (const scribe of round.scribes) {
@@ -201,7 +209,7 @@ export default class Sequencer {
       const page = await this.findPage({ round: round_num, scribe });
       if (page) {
         for (const ack of Object.values(page.acks)) {
-          r.push(`* Ack from ${ack.scribe}`)
+          r.push(`* Ack from ${ack.scribe}`);
         }
         for (const ack of page.late_acks) {
           r.push(`* Late Ack of Round #${ack.round + 1} from ${ack.scribe}`);
@@ -215,7 +223,7 @@ export default class Sequencer {
     // ### Late Acks
     // `}).join('\n')}
     // `);
-    console.log(r.join('\n'));
+    console.log(r.join("\n"));
   }
 
   async logRounds(start_round, end_round) {
@@ -225,30 +233,36 @@ export default class Sequencer {
   }
 
   async onReceiveDraftPage(page_data) {
+    const whoami = await this.keypair?.asPublicAddress();
     const page = await Page.fromJSONObject(page_data);
+    if (
+      page.scribe === "12D3KooW9pte76rpnggcLYkFaawuTEs5DC5axHkg3cK3cewGxxHd"
+    ) {
+      // console.log('onReceiveDraftPage', page.round, whoami, Date.now())
+    }
     if (!page.validateSig()) {
-      console.warn('invalid sig')
+      console.warn("invalid sig");
       return;
     }
 
     const current_round = await this.getCurrentRound();
 
     if (page.round !== current_round) {
-      console.warn('different round')
+      console.warn("different round");
       return;
     }
 
     const current_round_scribes = await this.getCurrentRoundScribes();
 
     if (!current_round_scribes.includes(page.scribe)) {
-      console.warn('unknown round')
+      console.warn("unknown round");
       return;
     }
 
-    if (await this.keypair?.asPublicAddress() && current_round_scribes.includes(await this.keypair?.asPublicAddress())) {
+    if (whoami && current_round_scribes.includes(whoami)) {
       const ack = await page.generateAck(this.keypair);
       if (this.communication) {
-        await this.communication.sendPageAck({ to: ack.scribe, ack_data: ack })
+        await this.communication.sendPageAck({ to: ack.scribe, ack_data: ack });
       }
       return ack;
     }
@@ -269,10 +283,16 @@ export default class Sequencer {
       return;
     }
 
-    const page = await Page.findOne({ datastore: this.datastore, round, scribe: whoami });
+    const page = await Page.findOne({
+      datastore: this.datastore,
+      round,
+      scribe: whoami,
+    });
     if (page) {
-      await page.addAck(ack);
-      await page.save({ datastore: this.datastore });
+      await this.mutex.runExclusive(async () => {
+        await page.addAck(ack);
+        await page.save({ datastore: this.datastore });
+      });
     }
   }
 
@@ -290,13 +310,21 @@ export default class Sequencer {
       return null;
     }
 
-    const last_round_threshold = await this.consensusThresholdForRound(round - 1);
-    const current_round_threshold = await this.consensusThresholdForRound(round);
-    if (round > 1 && Object.keys(page.last_round_certs).length < last_round_threshold) {
+    const last_round_threshold = await this.consensusThresholdForRound(
+      round - 1
+    );
+    const current_round_threshold =
+      await this.consensusThresholdForRound(round);
+    if (
+      round > 1 &&
+      Object.keys(page.last_round_certs).length < last_round_threshold
+    ) {
       return null;
     }
 
-    const has_valid_cert = await page.validateCert({ acks_needed: current_round_threshold });
+    const has_valid_cert = await page.validateCert({
+      acks_needed: current_round_threshold,
+    });
     if (!has_valid_cert) {
       return null;
     }
@@ -308,7 +336,9 @@ export default class Sequencer {
   async runRound() {
     const scribe = await this.keypair?.asPublicAddress();
     const round = await this.getCurrentRound();
-    const last_round_certs = await this.datastore.getTimelyCertsAtRound(round - 1);
+    const last_round_certs = await this.datastore.getTimelyCertSigsAtRound(
+      round - 1
+    );
     // TODO if not enough certs throws error
     const events = []; // TODO pop events off queue
     const page = new Page({
@@ -319,39 +349,52 @@ export default class Sequencer {
     });
     await page.generateSig(this.keypair);
     await page.save({ datastore: this.datastore });
-    const current_round_threshold = await this.consensusThresholdForRound(round);
 
     if (this.communication) {
-      await this.communication.broadcastDraftPage({ page_data: await page.toDraftJSONObject() })
+      const page_data = await page.toDraftJSONObject();
+      await this.communication.broadcastDraftPage({ page_data });
     }
 
+    const current_round_threshold =
+      await this.consensusThresholdForRound(round);
     let keep_waiting_for_acks = true;
     let keep_waiting_for_certs = true;
     while (keep_waiting_for_acks || keep_waiting_for_certs) {
-      await setTimeout(this.intra_round_wait_time_ms || INTRA_ROUND_WAIT_TIME_MS);
       if (keep_waiting_for_acks) {
         await page.reload({ datastore: this.datastore });
         const valid_acks = await page.countValidAcks();
         if (valid_acks >= current_round_threshold) {
           await page.generateCert(this.keypair);
           if (this.communication) {
-            await this.communication.broadcastCertifiedPage({ page_data: await page.toJSONObject() })
+            await this.communication.broadcastCertifiedPage({
+              page_data: await page.toJSONObject(),
+            });
           }
           keep_waiting_for_acks = false;
         }
       }
       if (keep_waiting_for_certs) {
-        const current_round_certs = await this.datastore.getTimelyCertsAtRound(round);
-        if (Object.keys(current_round_certs).length >= current_round_threshold) {
+        const current_round_certs =
+          await this.datastore.getTimelyCertsAtRound(round);
+        if (
+          Object.keys(current_round_certs).length >= current_round_threshold
+        ) {
           keep_waiting_for_certs = false;
         }
+      }
+      const wait_in_ms =
+        this.intra_round_wait_time_ms ?? INTRA_ROUND_WAIT_TIME_MS;
+      if (wait_in_ms) {
+        await setTimeout(wait_in_ms);
+      } else {
+        await setImmediate();
       }
     }
     await this.bumpCurrentRound();
   }
 
   async bumpCurrentRound() {
-    const round_num = await this.getCurrentRound(); 
+    const round_num = await this.getCurrentRound();
     const round = new Round({ round: round_num });
     round.scribes = await this.getCurrentRoundScribes();
     await round.save({ datastore: this.datastore });

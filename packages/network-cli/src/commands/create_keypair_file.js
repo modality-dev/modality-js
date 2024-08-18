@@ -7,21 +7,26 @@ export const builder = {
     desc: "directory",
   },
   number: {
-    desc: "number of keypairs to generate"
-  }
+    desc: "number of keypairs to generate",
+  },
 };
 
 import fs from "fs";
-import Keypair from '@modality-dev/utils/Keypair';
-import JSONFile from '@modality-dev/utils/JSONFile';
+import Keypair from "@modality-dev/utils/Keypair";
+import JSONFile from "@modality-dev/utils/JSONFile";
 import JSONStringifyDeterministic from "json-stringify-deterministic";
 
 const log = console.log;
 
-export async function handler({dir, number = 1, overwrite = false, summarize}) {
+export async function handler({
+  dir,
+  number = 1,
+  overwrite = false,
+  summarize,
+}) {
   const summary = {};
   for (let i = 0; i < number; i++) {
-    const key = await Keypair.generate(); 
+    const key = await Keypair.generate();
     const name = await key.publicKeyAsBase58Identity();
     const base_path = `${dir}/${name}`;
     const path_to_keypair = `${base_path}/signing.keypair`;
@@ -48,5 +53,5 @@ export async function handler({dir, number = 1, overwrite = false, summarize}) {
 
 export default handler;
 
-import cliCalls from 'cli-calls';
+import cliCalls from "cli-calls";
 await cliCalls(import.meta, handler);

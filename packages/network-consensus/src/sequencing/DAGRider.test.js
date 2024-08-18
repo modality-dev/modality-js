@@ -10,7 +10,7 @@ import SameProcess from "../communication/SameProcess";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
-import * as Devnet from '@modality-dev/network-configs/devnet-common/index';
+import * as Devnet from "@modality-dev/network-configs/devnet-common/index";
 
 import DAGRider from "./DAGRider";
 
@@ -20,22 +20,22 @@ describe("DAGRider", () => {
   const randomness = new RoundRobin();
 
   // when rounds are fully connected, pages a few rounds back can be sequenced
-  // in particular, 
+  // in particular,
   test("sequencing given fully connected rounds", async () => {
     const NODE_COUNT = 3;
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
-    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new DAGRider({
       datastore: ds_builder.datastore,
       randomness,
     });
     ds_builder.scribes = [...scribes];
-    ds_builder.scribe_keypairs =  scribe_keypairs;
-    
+    ds_builder.scribe_keypairs = scribe_keypairs;
+
     // round 1
     await ds_builder.addFullyConnectedRound();
     page1 = await binder.findLeaderInRound(1);
@@ -107,8 +107,8 @@ describe("DAGRider", () => {
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
-    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new DAGRider({
       datastore: ds_builder.datastore,
@@ -116,7 +116,7 @@ describe("DAGRider", () => {
     });
     ds_builder.scribes = [...scribes];
     ds_builder.scribe_keypairs = scribe_keypairs;
-    
+
     // round 1
     await ds_builder.addConsensusConnectedRound();
     page1 = await binder.findLeaderInRound(1);
@@ -160,7 +160,8 @@ describe("DAGRider", () => {
     pages = await binder.findOrderedPagesInSection(1, 5);
     // given consensus connected rounds, how many nodes in round n-1
     // won't be acked by our nodes in round n?
-    const ONE_ROUND_DROPOFF = NODE_COUNT - DAGRider.consensusThresholdFor(NODE_COUNT);
+    const ONE_ROUND_DROPOFF =
+      NODE_COUNT - DAGRider.consensusThresholdFor(NODE_COUNT);
     expect(pages.length).toBe(4 * NODE_COUNT - ONE_ROUND_DROPOFF);
     expect(pages.at(-1).scribe).toBe(scribes[1]);
 
@@ -185,10 +186,9 @@ describe("DAGRider", () => {
     pages = await binder.findOrderedPagesInSection(9, 13);
     expect(pages.length).toBe(4 * NODE_COUNT);
     expect(pages.at(-1).scribe).toBe(scribes[3]);
-  }); 
-
-  test.skip("no sequencing given under threshold connected rounds", async() => {
   });
+
+  test.skip("no sequencing given under threshold connected rounds", async () => {});
 
   test("event handling", async () => {
     const NODE_COUNT = 3;
@@ -196,12 +196,12 @@ describe("DAGRider", () => {
     let page, ack, round;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT); 
-    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
 
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     ds_builder.scribes = [...scribes];
-    ds_builder.scribe_keypairs =  scribe_keypairs;
+    ds_builder.scribe_keypairs = scribe_keypairs;
     ds_builder.datastore.setCurrentRound(1);
     await ds_builder.addFullyConnectedRound();
 
@@ -215,7 +215,7 @@ describe("DAGRider", () => {
       datastore: datastores[0],
       randomness,
       keypair: scribe_keypairs[scribes[0]],
-      communication_enabled: true
+      communication_enabled: true,
     });
 
     const seq2 = new DAGRider({
@@ -229,7 +229,7 @@ describe("DAGRider", () => {
       randomness,
       keypair: scribe_keypairs[scribes[2]],
     });
-    
+
     // round 1
     page = await seq1.findLeaderInRound(1);
     expect(page).toBeNull();
@@ -243,7 +243,7 @@ describe("DAGRider", () => {
       events: [],
     });
     await page.generateSig(scribe_keypairs[scribes[0]]);
-    await page.save({datastore: seq1.datastore});
+    await page.save({ datastore: seq1.datastore });
     ack = await seq1.onReceiveDraftPage(page);
     await seq1.onReceivePageAck(ack);
 
@@ -253,32 +253,40 @@ describe("DAGRider", () => {
     ack = await seq3.onReceiveDraftPage(page);
     await seq1.onReceivePageAck(ack);
 
-    await page.reload({datastore: seq1.datastore});
+    await page.reload({ datastore: seq1.datastore });
     await page.generateCert(scribe_keypairs[scribes[0]]);
     expect(page.cert).not.toBeNull();
     expect(Object.keys(page.acks).length).toBe(3);
-    expect(await page.validateCert({acks_needed: 3})).toBe(true);
+    expect(await page.validateCert({ acks_needed: 3 })).toBe(true);
 
-    let cert_page = await seq2.onReceiveCertifiedPage(await page.toJSONObject());
+    let cert_page = await seq2.onReceiveCertifiedPage(
+      await page.toJSONObject()
+    );
     expect(cert_page).not.toBe(null);
-    cert_page = await seq2.onReceiveCertifiedPage({...(await page.toJSONObject()), cert: null});
+    cert_page = await seq2.onReceiveCertifiedPage({
+      ...(await page.toJSONObject()),
+      cert: null,
+    });
     expect(cert_page).toBeNull();
   });
 
   test("run sequencers", async () => {
-    const NODE_COUNT = 3;
+    const NODE_COUNT = 9;
 
-    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT); 
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const dsb = await NetworkDatastoreBuilder.createInMemory();
     await dsb.setupGenesisScribes(scribe_keypairs);
     const communication = new SameProcess();
     const seqs = await dsb.createSequencers(DAGRider, {
       randomness,
-      communication
+      communication,
     });
     communication.scribe_sequencers = seqs;
+    for (const seq of Object.values(seqs)) {
+      seq.intra_round_wait_time_ms = 0;
+    }
 
-    await Promise.all(Object.values(seqs).map(seq => seq.runUntilRound(9)));
+    await Promise.all(Object.values(seqs).map((seq) => seq.runUntilRound(9)));
 
     const seq1 = seqs[Object.keys(seqs)[0]];
 
@@ -287,6 +295,6 @@ describe("DAGRider", () => {
     const leader5 = await seq1.findLeaderInRound(5);
     expect(leader5).not.toBeNull();
     const pages = await seq1.findOrderedPagesInSection(null, 5);
-    expect(pages.length).toBe(13);
+    expect(pages.length).toBe(NODE_COUNT * 4 + 1);
   });
 });

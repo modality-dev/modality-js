@@ -8,7 +8,7 @@ export default class Round {
     return this;
   }
 
-  static findMaxId({datastore}) {
+  static findMaxId({ datastore }) {
     return datastore.findMaxIntKey(`/consensus/round`);
   }
 

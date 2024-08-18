@@ -13,7 +13,7 @@ export async function getKeypairs(count = null) {
   if (count > Object.keys(keypairs).length) {
     throw new Error("not enough common IDs");
   }
-  const slice = Object.values(keypairs).slice(0,count);
+  const slice = Object.values(keypairs).slice(0, count);
   const r = [];
   for (const kp of slice) {
     r.push(await Keypair.fromJSON(kp));
@@ -28,7 +28,7 @@ export async function getKeypairsDict(count = null) {
   if (count > Object.keys(keypairs).length) {
     throw new Error("not enough common IDs");
   }
-  const slice = Object.values(keypairs).slice(0,count);
+  const slice = Object.values(keypairs).slice(0, count);
   const r = {};
   for (const kp of slice) {
     r[kp.id] = await Keypair.fromJSON(kp);
@@ -43,7 +43,7 @@ export async function getPubkeys(count = null) {
   if (count > Object.keys(keypairs).length) {
     throw new Error("not enough common IDs");
   }
-  const slice = Object.values(keypairs).slice(0,count);
+  const slice = Object.values(keypairs).slice(0, count);
   const r = [];
   for (const kp of slice) {
     r.push(kp.id);
@@ -51,8 +51,7 @@ export async function getPubkeys(count = null) {
   return r;
 }
 
-
-export async function getKeypairFor (id) {
+export async function getKeypairFor(id) {
   return await Keypair.fromJSON(keypairs[id]);
 }
 

@@ -2,10 +2,10 @@ import { LevelDatastore } from "datastore-level";
 import LevelMem from "level-mem";
 import LevelRocksDb from "level-rocksdb";
 import SafeJSON from "@modality-dev/utils/SafeJSON";
-import fs from 'fs';
+import fs from "fs";
 
 import Keypair from "@modality-dev/utils/Keypair";
-import Page from './data/Page';
+import Page from "./data/Page";
 
 export default class NetworkDatastore {
   constructor(datastore) {
@@ -42,7 +42,7 @@ export default class NetworkDatastore {
       db: LevelRocksDb,
     });
     await datastore.open();
-    const it = await this.iterator({prefix:''});
+    const it = await this.iterator({ prefix: "" });
     for await (const [key, value] of it) {
       await datastore.put(key, value);
     }
@@ -50,20 +50,23 @@ export default class NetworkDatastore {
 
   async writeToSqlExport(path) {
     const f = fs.createWriteStream(path);
-    f.write('CREATE TABLE IF NOT EXISTS key_values (key TEXT PRIMARY KEY, value JSONB); \n');
-    const it = await this.iterator({prefix:''});
+    f.write(
+      "CREATE TABLE IF NOT EXISTS key_values (key TEXT PRIMARY KEY, value JSONB); \n"
+    );
+    const it = await this.iterator({ prefix: "" });
     for await (const [key, value] of it) {
       const escapedKey = key?.replace(/'/g, "''");
       const escapedValue = value.toString().replace(/'/g, "''");
       f.write(
-        `INSERT INTO key_values (key, value) VALUES ('${escapedKey}', '${escapedValue}') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;\n`); 
+        `INSERT INTO key_values (key, value) VALUES ('${escapedKey}', '${escapedValue}') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;\n`
+      );
     }
     f.end();
   }
 
   async cloneToMemory() {
     const datastore = await NetworkDatastore.createInMemory();
-    const it = await this.iterator({prefix:''});
+    const it = await this.iterator({ prefix: "" });
     for await (const [key, value] of it) {
       await datastore.put(key, value);
     }
@@ -104,12 +107,12 @@ export default class NetworkDatastore {
     return this.datastore.queryKeys(opts);
   }
 
-  iterator({prefix, filters, orders}) {
+  iterator({ prefix, filters, orders }) {
     return this.datastore.db.iterator({
       gt: `${prefix}/`,
       lt: `${prefix}0`,
       filters,
-      orders
+      orders,
     });
   }
 
@@ -117,13 +120,13 @@ export default class NetworkDatastore {
     const it = this.datastore.db.iterator({
       gt: `${prefix}/`,
       lt: `${prefix}0`,
-      reverse: true, 
-      limit: 1
+      reverse: true,
+      limit: 1,
     });
     for await (const [key, value] of it) {
       return key.split(`${prefix}/`)[1];
     }
-  } 
+  }
 
   async findMaxIntKey(prefix) {
     let r = null;
@@ -144,24 +147,50 @@ export default class NetworkDatastore {
   }
 
   async getTimelyCertsAtRound(round) {
-    const pages = (await Page.findAllInRound({datastore: this, round})).filter(i => !i.seen_at_round);
+    const pages = (
+      await Page.findAllInRound({ datastore: this, round })
+    ).filter((i) => !i.seen_at_round);
     return pages.reduce((acc, i) => {
       acc[i.scribe] = i;
       return acc;
     }, {});
   }
 
+  async getTimelyCertSigsAtRound(round) {
+    const pages = (
+      await Page.findAllInRound({ datastore: this, round })
+    ).filter((i) => !i.seen_at_round);
+    return pages.reduce((acc, i) => {
+      acc[i.scribe] = {
+        scribe: i.scribe,
+        cert: i.cert,
+        round: i.round,
+      };
+      return acc;
+    }, {});
+  }
+
   async bumpCurrentRound() {
-    const current_round = await this.getDataByKey('/consensus/status/current_round');
+    const current_round = await this.getDataByKey(
+      "/consensus/status/current_round"
+    );
     const current_round_num = parseInt(current_round) || 0;
-    return this.put('/consensus/status/current_round', (current_round_num + 1).toString());
+    return this.put(
+      "/consensus/status/current_round",
+      (current_round_num + 1).toString()
+    );
   }
 
   async setCurrentRound(round) {
-    return this.put('/consensus/status/current_round', (parseInt(round)).toString());
+    return this.put(
+      "/consensus/status/current_round",
+      parseInt(round).toString()
+    );
   }
 
   async getCurrentRound() {
-    return parseInt((await this.getDataByKey('/consensus/status/current_round'))?.toString());
+    return parseInt(
+      (await this.getDataByKey("/consensus/status/current_round"))?.toString()
+    );
   }
 }

@@ -49,7 +49,7 @@ export default class Page {
     if (!json) return null;
     return new Page(SafeJSON.parse(json));
   }
-  
+
   static fromJSONObject(obj) {
     return new Page(obj);
   }
@@ -70,13 +70,13 @@ export default class Page {
     return this.fromJSONString(v.toString());
   }
 
-  static async findAllInRound({datastore, round}) {
+  static async findAllInRound({ datastore, round }) {
     const prefix = `/consensus/round/${round}/scribe`;
-    const it = datastore.iterator({prefix});
+    const it = datastore.iterator({ prefix });
     const r = [];
     for await (const [key, value] of it) {
       const scribe = key.split(`${prefix}/`)[1];
-      const page = await this.findOne({datastore, round, scribe});
+      const page = await this.findOne({ datastore, round, scribe });
       if (page) {
         r.push(page);
       }
@@ -87,9 +87,13 @@ export default class Page {
   async save({ datastore }) {
     return datastore.put(this.getId(), this.toJSONString());
   }
-  
+
   async reload({ datastore }) {
-    const page = await this.constructor.findOne({datastore, scribe: this.scribe, round: this.round});
+    const page = await this.constructor.findOne({
+      datastore,
+      scribe: this.scribe,
+      round: this.round,
+    });
     this.scribe = page.scribe;
     this.round = page.round;
     this.last_round_certs = page.last_round_certs;
@@ -130,7 +134,7 @@ export default class Page {
       section_ending_round: this.section_ending_round,
       section_page_number: this.section_page_number,
       page_number: this.page_number,
-      seen_at_round: this.seen_at_round
+      seen_at_round: this.seen_at_round,
     };
   }
 
@@ -141,12 +145,12 @@ export default class Page {
       last_round_certs: this.last_round_certs,
       events: this.events,
       sig: this.sig,
-    }
+    };
   }
 
   toDraftJSONString() {
     return JSON.stringify(this.toDraftJSONObject);
-  } 
+  }
 
   addEvent(event) {
     this.events.push(event);
@@ -189,7 +193,7 @@ export default class Page {
       round: this.round,
       sig: this.sig,
       acker: peer_id,
-      acker_sig
+      acker_sig,
     };
   }
 
@@ -260,7 +264,7 @@ export default class Page {
     if (is_valid) {
       this.late_acks.push(ack);
       return true;
-    } 
+    }
   }
 
   async generateCert(keypair) {
@@ -285,7 +289,7 @@ export default class Page {
     });
   }
 
-  async validateCert({acks_needed}) {
+  async validateCert({ acks_needed }) {
     const isCertSigValid = await this.validateCertSig();
     if (!isCertSigValid) {
       return false;

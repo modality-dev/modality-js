@@ -4,23 +4,27 @@ export const describe = "creates a mock datastore";
 export const builder = {
   dir: {
     required: true,
-    desc: "path to output"
+    desc: "path to output",
   },
   scribes: {
-    desc: "scribe count"
+    desc: "scribe count",
   },
   rounds: {
-    desc: "scribe rounds"
-  }
+    desc: "scribe rounds",
+  },
 };
 
 const log = console.log;
 
-import NetworkDatastoreBuilder from '@modality-dev/network-datastore/NetworkDatastoreBuilder';
-import RoundRobin from '@modality-dev/network-consensus/randomness/RoundRobin';
-import DAGRider from '@modality-dev/network-consensus/sequencing/DAGRider';
+import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
+import RoundRobin from "@modality-dev/network-consensus/randomness/RoundRobin";
+import DAGRider from "@modality-dev/network-consensus/sequencing/DAGRider";
 
-export async function handler({ dir = './tmp/datastore', scribes = 5, rounds = 12 }) {
+export async function handler({
+  dir = "./tmp/datastore",
+  scribes = 5,
+  rounds = 12,
+}) {
   const builder = await NetworkDatastoreBuilder.createInDirectory(dir);
   await builder.generateScribes(scribes, true);
   await builder.addFullyConnectedRound();
@@ -37,6 +41,5 @@ export async function handler({ dir = './tmp/datastore', scribes = 5, rounds = 1
 
 export default handler;
 
-
-import cliCalls from 'cli-calls';
+import cliCalls from "cli-calls";
 await cliCalls(import.meta, handler);
