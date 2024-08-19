@@ -297,4 +297,74 @@ describe("DAGRider", () => {
     const pages = await seq1.findOrderedPagesInSection(null, 5);
     expect(pages.length).toBe(NODE_COUNT * 4 + 1);
   });
+
+  test("given f = 1, one bad sequencer not elected leader, network can sequence", async () => {
+    const NODE_COUNT = 4;
+    const BAD_NODE_COUNT = 1;
+
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
+    const dsb = await NetworkDatastoreBuilder.createInMemory();
+    await dsb.setupGenesisScribes(scribe_keypairs);
+    const communication = new SameProcess();
+    const seqs = await dsb.createSequencers(DAGRider, {
+      randomness,
+      communication,
+    });
+    const bad_seq_id = Object.keys(seqs)[1];
+    const good_seqs = {
+      ...seqs,
+    };
+    delete good_seqs[bad_seq_id];
+    communication.scribe_sequencers = {...good_seqs};
+    for (const seq of Object.values(seqs)) {
+      seq.intra_round_wait_time_ms = 0;
+    }
+
+    await Promise.all(Object.values(good_seqs).map((seq) => seq.runUntilRound(9)));
+
+    const seq1 = good_seqs[Object.keys(good_seqs)[0]];
+    const leader1 = await seq1.findLeaderInRound(1);
+    expect(leader1).not.toBeNull();
+    const leader5 = await seq1.findLeaderInRound(5);
+    expect(leader5).not.toBeNull();
+    const pages = await seq1.findOrderedPagesInSection(null, 5);
+    expect(pages.length).toBe((NODE_COUNT - BAD_NODE_COUNT) * 4 + 1 + BAD_NODE_COUNT);
+  });
+
+  test.skip("given f = 0, one bad sequence, network stalls", async () => {
+    const NODE_COUNT = 3;
+    const BAD_NODE_COUNT = 1;
+
+    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
+    const dsb = await NetworkDatastoreBuilder.createInMemory();
+    await dsb.setupGenesisScribes(scribe_keypairs);
+    const communication = new SameProcess();
+    const seqs = await dsb.createSequencers(DAGRider, {
+      randomness,
+      communication,
+    });
+    const bad_seq_id = Object.keys(seqs)[1];
+    const good_seqs = {
+      ...seqs,
+    };
+    delete good_seqs[bad_seq_id];
+    communication.scribe_sequencers = {...good_seqs};
+    for (const seq of Object.values(seqs)) {
+      seq.intra_round_wait_time_ms = 0;
+    }
+
+    await new Promise((resolve, reject) => {
+      setTimeout(async () => {
+        await Promise.all(Object.values(good_seqs).map((seq) => seq.runUntilRound(9))).then(resolve);
+      }, 2000).then(reject);
+    });
+
+    const seq1 = good_seqs[Object.keys(good_seqs)[0]];
+    const leader1 = await seq1.findLeaderInRound(1);
+    expect(leader1).not.toBeNull();
+    const leader5 = await seq1.findLeaderInRound(5);
+    expect(leader5).not.toBeNull();
+    const pages = await seq1.findOrderedPagesInSection(null, 5);
+    expect(pages.length).toBe((NODE_COUNT - BAD_NODE_COUNT) * 4 + 1 + BAD_NODE_COUNT);
+  });
 });
