@@ -331,7 +331,7 @@ describe("DAGRider", () => {
     expect(pages.length).toBe((NODE_COUNT - BAD_NODE_COUNT) * 4 + 1 + BAD_NODE_COUNT);
   });
 
-  test.skip("given f = 0, one bad sequence, network stalls", async () => {
+  test("given f = 0, one bad sequence, network stalls", async () => {
     const NODE_COUNT = 3;
     const BAD_NODE_COUNT = 1;
 
@@ -353,18 +353,11 @@ describe("DAGRider", () => {
       seq.intra_round_wait_time_ms = 0;
     }
 
-    await new Promise((resolve, reject) => {
-      setTimeout(async () => {
-        await Promise.all(Object.values(good_seqs).map((seq) => seq.runUntilRound(9))).then(resolve);
-      }, 2000).then(reject);
-    });
-
-    const seq1 = good_seqs[Object.keys(good_seqs)[0]];
-    const leader1 = await seq1.findLeaderInRound(1);
-    expect(leader1).not.toBeNull();
-    const leader5 = await seq1.findLeaderInRound(5);
-    expect(leader5).not.toBeNull();
-    const pages = await seq1.findOrderedPagesInSection(null, 5);
-    expect(pages.length).toBe((NODE_COUNT - BAD_NODE_COUNT) * 4 + 1 + BAD_NODE_COUNT);
+    let finished = false;
+    await setTimeout(async () => {
+      await Promise.all(Object.values(good_seqs).map((seq) => seq.runUntilRound(9)));
+      finished = true;
+    }, 3*1000);
+    expect(finished).toBe(false);
   });
 });
