@@ -11,12 +11,14 @@ export default class Sequencer {
     datastore,
     randomness,
     sequencer_first_round = 1,
+    pubkey,
     keypair,
     communication,
   }) {
     this.datastore = datastore;
     this.randomness = randomness;
     this.sequencer_first_round = sequencer_first_round;
+    this.pubkey = pubkey;
     this.keypair = keypair;
     this.communication = communication;
     this.mutex = new Mutex();
@@ -235,11 +237,6 @@ export default class Sequencer {
   async onReceiveDraftPage(page_data) {
     const whoami = await this.keypair?.asPublicAddress();
     const page = await Page.fromJSONObject(page_data);
-    if (
-      page.scribe === "12D3KooW9pte76rpnggcLYkFaawuTEs5DC5axHkg3cK3cewGxxHd"
-    ) {
-      // console.log('onReceiveDraftPage', page.round, whoami, Date.now())
-    }
     if (!page.validateSig()) {
       console.warn("invalid sig");
       return;
@@ -248,7 +245,7 @@ export default class Sequencer {
     const current_round = await this.getCurrentRound();
 
     if (page.round !== current_round) {
-      console.warn("different round");
+      console.warn("different round", page.round, current_round);
       return;
     }
 
@@ -262,7 +259,7 @@ export default class Sequencer {
     if (whoami && current_round_scribes.includes(whoami)) {
       const ack = await page.generateAck(this.keypair);
       if (this.communication) {
-        await this.communication.sendPageAck({ to: ack.scribe, ack_data: ack });
+        await this.communication.sendPageAck({ from: this.pubkey, to: ack.scribe, ack_data: ack });
       }
       return ack;
     }
@@ -352,7 +349,7 @@ export default class Sequencer {
 
     if (this.communication) {
       const page_data = await page.toDraftJSONObject();
-      await this.communication.broadcastDraftPage({ page_data });
+      await this.communication.broadcastDraftPage({ from: this.pubkey, page_data });
     }
 
     const current_round_threshold =
@@ -367,6 +364,7 @@ export default class Sequencer {
           await page.generateCert(this.keypair);
           if (this.communication) {
             await this.communication.broadcastCertifiedPage({
+              from: this.pubkey,
               page_data: await page.toJSONObject(),
             });
           }

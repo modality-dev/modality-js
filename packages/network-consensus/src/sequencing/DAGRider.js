@@ -11,6 +11,7 @@ export default class DAGRider extends Sequencer {
     datastore,
     randomness,
     sequencer_first_round = 1,
+    pubkey,
     keypair,
     communication,
   }) {
@@ -18,6 +19,7 @@ export default class DAGRider extends Sequencer {
       datastore,
       randomness,
       sequencer_first_round,
+      pubkey,
       keypair,
       communication,
     });
@@ -95,6 +97,7 @@ export default class DAGRider extends Sequencer {
     });
 
     const leader = await this.findPage({ round, scribe });
+    // console.log({ round, scribes, scribe, leader });
     if (!leader) {
       return null;
     }

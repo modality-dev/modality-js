@@ -51,6 +51,20 @@ export async function getPubkeys(count = null) {
   return r;
 }
 
+export function pubkeyOf(index) {
+  return Object.values(keypairs)[index]?.id;
+}
+
+export function indexOf(pubkey) {
+  let index = 0
+  for (const keypair of Object.entries(keypairs)) {
+    if (keypair[1].id === pubkey) {
+      return index;
+    }
+    index++;
+  }
+}
+
 export async function getKeypairFor(id) {
   return await Keypair.fromJSON(keypairs[id]);
 }
@@ -60,4 +74,7 @@ export default {
   keypairs,
   getKeypairs,
   getKeypairFor,
+  getKeypairsDict,
+  pubkeyOf,
+  indexOf
 };

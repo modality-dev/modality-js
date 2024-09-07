@@ -90,6 +90,7 @@ export default class NetworkDatastoreBuilder {
     for (const scribe of this.scribes) {
       const seq = new SeqType({
         datastore: await this.datastore.cloneToMemory(),
+        pubkey: scribe,
         keypair: this.scribe_keypairs[scribe],
         ...opts,
       });
