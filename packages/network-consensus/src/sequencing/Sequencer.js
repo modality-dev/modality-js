@@ -330,7 +330,7 @@ export default class Sequencer {
     return page;
   }
 
-  async runRound() {
+  async runRound(signal) {
     const scribe = await this.keypair?.asPublicAddress();
     const round = await this.getCurrentRound();
     const last_round_certs = await this.datastore.getTimelyCertSigsAtRound(
@@ -357,6 +357,9 @@ export default class Sequencer {
     let keep_waiting_for_acks = true;
     let keep_waiting_for_certs = true;
     while (keep_waiting_for_acks || keep_waiting_for_certs) {
+      if (signal?.aborted) {
+        throw new Error("aborted");
+      }
       if (keep_waiting_for_acks) {
         await page.reload({ datastore: this.datastore });
         const valid_acks = await page.countValidAcks();
@@ -399,17 +402,20 @@ export default class Sequencer {
     await this.datastore.bumpCurrentRound();
   }
 
-  async runUntilRound(round) {
+  async runUntilRound(round, signal) {
     let current_round = await this.getCurrentRound();
     while (current_round < round) {
-      await this.runRound();
+      if (signal?.aborted) {
+        throw new Error("aborted");
+      }
+      await this.runRound(signal);
       current_round = await this.getCurrentRound();
     }
   }
 
-  async run() {
+  async run(signal) {
     while (true) {
-      await this.runRound();
+      await this.runRound(signal);
     }
   }
 }

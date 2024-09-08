@@ -36,7 +36,7 @@ export default class SequencerTesting {
     return Object.fromEntries(Object.entries(this.seqs).filter((seq) => !this.communication.offline_sequencers.includes(seq[0])));
   }
 
-  runUntilRound(round) {
-    return Promise.all(Object.values(this.onlineSequencerEntries()).map((seq) => seq.runUntilRound(round)));
+  runUntilRound(round, signal) {
+    return Promise.all(Object.values(this.onlineSequencerEntries()).map((seq) => seq.runUntilRound(round, signal)));
   }
 }

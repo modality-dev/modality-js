@@ -1,5 +1,7 @@
 import { jest, expect, describe, test, it } from "@jest/globals";
 
+import { setTimeout as setTimeoutPromise } from 'timers/promises';
+
 import Keypair from "@modality-dev/utils/Keypair";
 import NetworkDatastore from "@modality-dev/network-datastore";
 
@@ -306,33 +308,16 @@ describe("DAGRider", () => {
     expect(pages.length).toBe((NODE_COUNT - BAD_NODE_COUNT) * 4 + 1 + BAD_NODE_COUNT);
   });
 
-  test.skip("given f = 0, one bad sequence, network stalls", async () => {
+  test("given f = 0, one bad sequence, network stalls", async () => {
     const NODE_COUNT = 3;
     const BAD_NODE_COUNT = 1;
+    const offline_seq_id = Devnet.pubkeyOf(NODE_COUNT - 1);
 
-    const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
-    const dsb = await NetworkDatastoreBuilder.createInMemory();
-    await dsb.setupGenesisScribes(scribe_keypairs);
-    const communication = new SameProcess();
-    const seqs = await dsb.createSequencers(DAGRider, {
-      randomness,
-      communication,
-    });
-    const bad_seq_id = Object.keys(seqs)[1];
-    const good_seqs = {
-      ...seqs,
-    };
-    delete good_seqs[bad_seq_id];
-    communication.scribe_sequencers = {...good_seqs};
-    for (const seq of Object.values(seqs)) {
-      seq.intra_round_wait_time_ms = 0;
-    }
+    const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: DAGRider, RandomnessModule: RoundRobin});
+    st.communication.offline_sequencers = [offline_seq_id];
 
-    let finished = false;
-    await setTimeout(async () => {
-      await Promise.all(Object.values(good_seqs).map((seq) => seq.runUntilRound(9)));
-      finished = true;
-    }, 3*1000);
-    expect(finished).toBe(false);
+    const abortController = new AbortController();
+    setTimeoutPromise(3000).then(() => { abortController.abort() });    
+    await expect(st.runUntilRound(9, abortController.signal)).rejects.toThrow("aborted");
   });
 });
