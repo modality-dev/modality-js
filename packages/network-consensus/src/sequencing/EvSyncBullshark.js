@@ -47,7 +47,7 @@ export default class EvSyncBullshark extends Sequencer {
     }
 
     // use common coin to pick the leader
-    const scribes = await this.findScribesInRound(round);
+    const scribes = await this.getScribesAtRound(round);
     const scribe = await this.randomness.pickOne({
       options: scribes,
       input: round,

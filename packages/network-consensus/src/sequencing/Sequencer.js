@@ -57,18 +57,6 @@ export default class Sequencer {
     return this.datastore.getCurrentRound();
   }
 
-  async getPreviousRoundScribes() {
-    return this.getScribesAtRound((await this.getCurrentRound()) - 1);
-  }
-
-  async getCurrentRoundScribes() {
-    return this.getScribesAtRound(await this.getCurrentRound());
-  }
-
-  async getNextRoundScribes() {
-    return this.getScribesAtRound((await this.getCurrentRound()) + 1);
-  }
-
   async getScribesAtRound(round) {
     throw new Error("Not implemented");
   }
@@ -90,15 +78,6 @@ export default class Sequencer {
   // when end round does not have first page, this returns null
   async findOrderedPagesInSection(start_round, end_round) {
     throw new Error("Not implemented");
-  }
-
-  async findScribesInRound(round_id) {
-    const round = await Round.findOne({
-      datastore: this.datastore,
-      round: round_id,
-    });
-    if (!round) throw new Error(`Round ${round_id} not found`);
-    return round.scribes;
   }
 
   async findPage({ round, scribe }) {
@@ -211,45 +190,7 @@ export default class Sequencer {
 
     return r.reverse();
   }
-
-  async logRound(round_num) {
-    const r = [`# Round #${round_num}`];
-    const round = await Round.findOne({
-      datastore: this.datastore,
-      round: round_num,
-    });
-    if (!round) {
-      console.log(r.join("\n"));
-      return;
-    }
-    for (const scribe of round.scribes) {
-      r.push(`## Scribe ${scribe}`);
-      const page = await this.findPage({ round: round_num, scribe });
-      if (page) {
-        for (const ack of Object.values(page.acks)) {
-          r.push(`* Ack from ${ack.scribe}`);
-        }
-        for (const ack of page.late_acks) {
-          r.push(`* Late Ack of Round #${ack.round + 1} from ${ack.scribe}`);
-        }
-      }
-    }
-    //     console.log(`
-    // ${round.scribes.map(async scribe => {
-    // return `## Scribe
-    // ### Acks
-    // ### Late Acks
-    // `}).join('\n')}
-    // `);
-    console.log(r.join("\n"));
-  }
-
-  async logRounds(start_round, end_round) {
-    for (let round = start_round; round <= end_round; round++) {
-      await this.logRound(round);
-    }
-  }
-
+  
   async onReceiveDraftPage(page_data) {
     const page = await Page.fromJSONObject(page_data);
     if (!page.validateSig()) {
@@ -260,7 +201,7 @@ export default class Sequencer {
     const round_scribes = await this.getScribesAtRound(page.round);
     if (!round_scribes.includes(page.scribe)) {
       console.warn(
-        `ignoring non-scribe ${page.scribe} at round ${page.around}`
+        `ignoring non-scribe ${page.scribe} at round ${page.round}`
       );
       return;
     }
@@ -651,7 +592,7 @@ export default class Sequencer {
       // await roundi.save({ datastore: this.datastore });
     }
     const round = new Round({ round: round_num });
-    round.scribes = await this.getCurrentRoundScribes();
+    round.scribes = await this.getScribesAtRound(round_num);
     await round.save({ datastore: this.datastore });
     await this.datastore.setCurrentRound(round_num);
   }
@@ -659,7 +600,7 @@ export default class Sequencer {
   async bumpCurrentRound() {
     const round_num = await this.getCurrentRound();
     const round = new Round({ round: round_num });
-    round.scribes = await this.getCurrentRoundScribes();
+    round.scribes = await this.getScribesAtRound(round_num);
     await round.save({ datastore: this.datastore });
     await this.datastore.bumpCurrentRound();
   }
