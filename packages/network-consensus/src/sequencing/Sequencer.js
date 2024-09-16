@@ -228,7 +228,7 @@ export default class Sequencer {
     if (this.pubkey) {
       const ack = await page.generateLateAck(this.keypair, current_round);
       if (this.communication) {
-        const last_round_certs = await this.datastore.getTimelyCertSigsAtRound(
+        const last_round_certs = await this.getTimelyCertSigsAtRound(
           current_round - 1
         );
         await this.communication.sendPageLateAck({
@@ -400,8 +400,7 @@ export default class Sequencer {
 
   async getOrFetchLastRoundCerts(round) {
     const last_round = round - 1;
-    let last_round_certs =
-      await this.datastore.getTimelyCertSigsAtRound(last_round);
+    let last_round_certs = await this.getTimelyCertSigsAtRound(last_round);
     const last_round_scribes = await this.getScribesAtRound(last_round);
 
     const threshold = this.constructor.calculate2fplus1(
@@ -429,9 +428,33 @@ export default class Sequencer {
       }
     }
 
-    last_round_certs = await this.datastore.getTimelyCertSigsAtRound(last_round);
+    last_round_certs = await this.getTimelyCertSigsAtRound(last_round);
 
     return last_round_certs;
+  }
+
+  async getTimelyCertsAtRound(round) {
+    const pages = (
+      await Page.findAllInRound({ datastore: this.datastore, round })
+    ).filter((i) => !i.seen_at_round);
+    return pages.reduce((acc, i) => {
+      acc[i.scribe] = i;
+      return acc;
+    }, {});
+  }
+
+  async getTimelyCertSigsAtRound(round) {
+    const pages = (
+      await Page.findAllInRound({ datastore: this.datastore, round })
+    ).filter((i) => !i.seen_at_round);
+    return pages.reduce((acc, i) => {
+      acc[i.scribe] = {
+        scribe: i.scribe,
+        cert: i.cert,
+        round: i.round,
+      };
+      return acc;
+    }, {});
   }
 
   async speedUpToLatestUncertifiedRound() {
@@ -546,7 +569,7 @@ export default class Sequencer {
       }
       if (keep_waiting_for_certs) {
         const current_round_certs =
-          await this.datastore.getTimelyCertsAtRound(round);
+          await this.getTimelyCertsAtRound(round);
         if (
           Object.keys(current_round_certs).length >= current_round_threshold
         ) {

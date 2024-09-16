@@ -2,9 +2,7 @@ import { jest, expect, describe, test, it } from "@jest/globals";
 
 import { setTimeout as setTimeoutPromise } from 'timers/promises';
 
-import Keypair from "@modality-dev/utils/Keypair";
 import Page from "@modality-dev/network-datastore/data/Page";
-import Round from "@modality-dev/network-datastore/data/Round";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
@@ -241,7 +239,7 @@ describe("DAGRider", () => {
     page = Page.from({
       round,
       scribe: scribes[0],
-      last_round_certs: await seq1.datastore.getTimelyCertsAtRound(round - 1),
+      last_round_certs: await seq1.getTimelyCertsAtRound(round - 1),
       events: [],
     });
     await page.generateSig(scribe_keypairs[scribes[0]]);

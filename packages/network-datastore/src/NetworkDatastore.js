@@ -4,9 +4,6 @@ import LevelRocksDb from "level-rocksdb";
 import SafeJSON from "@modality-dev/utils/SafeJSON";
 import fs from "fs";
 
-import Keypair from "@modality-dev/utils/Keypair";
-import Page from "./data/Page";
-
 export default class NetworkDatastore {
   constructor(datastore) {
     this.datastore = datastore;
@@ -144,30 +141,6 @@ export default class NetworkDatastore {
       }
     }
     return r;
-  }
-
-  async getTimelyCertsAtRound(round) {
-    const pages = (
-      await Page.findAllInRound({ datastore: this, round })
-    ).filter((i) => !i.seen_at_round);
-    return pages.reduce((acc, i) => {
-      acc[i.scribe] = i;
-      return acc;
-    }, {});
-  }
-
-  async getTimelyCertSigsAtRound(round) {
-    const pages = (
-      await Page.findAllInRound({ datastore: this, round })
-    ).filter((i) => !i.seen_at_round);
-    return pages.reduce((acc, i) => {
-      acc[i.scribe] = {
-        scribe: i.scribe,
-        cert: i.cert,
-        round: i.round,
-      };
-      return acc;
-    }, {});
   }
 
   async bumpCurrentRound() {
