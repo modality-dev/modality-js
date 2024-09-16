@@ -110,7 +110,7 @@ export default class NetworkDatastoreBuilder {
 
   async addFullyConnectedRound({ failures = 0 } = {}) {
     const round_num = ++this.round_num;
-    const round = new Round({ round: round_num });
+    const round = Round.from({ round: round_num });
     round.scribes = [...this.scribes];
     await round.save({ datastore: this.datastore });
     const scribes = shuffleArray(this.scribes);
@@ -133,7 +133,7 @@ export default class NetworkDatastoreBuilder {
           };
         }
       }
-      const page = new Page({
+      const page = Page.from({
         scribe,
         round: round_num,
         last_round_certs,
@@ -152,7 +152,7 @@ export default class NetworkDatastoreBuilder {
 
   async addConsensusConnectedRound({ failures = 0 } = {}) {
     const round_num = ++this.round_num;
-    const round = new Round({ round: round_num });
+    const round = Round.from({ round: round_num });
     round.scribes = [...this.scribes];
     await round.save({ datastore: this.datastore });
     const scribes = shuffleArray(this.scribes);
@@ -182,7 +182,7 @@ export default class NetworkDatastoreBuilder {
           };
         }
       }
-      const page = new Page({
+      const page = Page.from({
         scribe,
         round: round_num,
         last_round_certs,
@@ -202,7 +202,7 @@ export default class NetworkDatastoreBuilder {
       await page.save({ datastore: this.datastore });
 
       /*
-      const page = new Page({ scribe, round: round_num, events: [], last_round_certs });
+      const page = Page.from({ scribe, round: round_num, events: [], last_round_certs });
       await page.generateSig(this.scribe_keypairs[scribe])
       // if (round_num > 1) {
         // prioritize self ack
@@ -271,7 +271,7 @@ export default class NetworkDatastoreBuilder {
 
   async addPartiallyConnectedRound({ failures = 0 } = {}) {
     const round_num = ++this.round_num;
-    const round = new Round({ round: round_num });
+    const round = Round.from({ round: round_num });
     round.scribes = [...this.scribes];
     await round.save({ datastore: this.datastore });
     const scribes = shuffleArray(this.scribes);
@@ -282,7 +282,7 @@ export default class NetworkDatastoreBuilder {
         failures--;
         continue;
       }
-      const page = new Page({ scribe, round: round_num, events: [] });
+      const page = Page.from({ scribe, round: round_num, events: [] });
       if (round_num > 1) {
         // prioritize self ack
         const acking_scribes = [

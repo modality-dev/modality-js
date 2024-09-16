@@ -238,7 +238,7 @@ describe("DAGRider", () => {
 
     // round 2 from perspective of scribe 1
     round = 2;
-    page = new Page({
+    page = Page.from({
       round,
       scribe: scribes[0],
       last_round_certs: await seq1.datastore.getTimelyCertsAtRound(round - 1),

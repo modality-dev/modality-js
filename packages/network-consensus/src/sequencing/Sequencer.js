@@ -486,7 +486,7 @@ export default class Sequencer {
     }
 
     const events = []; // TODO pop events off queue
-    const page = new Page({
+    const page = Page.from({
       round,
       scribe,
       last_round_certs,
@@ -587,11 +587,11 @@ export default class Sequencer {
     const current_round_num = await this.getCurrentRound();
     for (let i = current_round_num + 1; i < round_num; i++) {
       // TODO maybe handle jumping from earlier rounds
-      // const roundi = new Round({ round: i });
+      // const roundi = Round.from({ round: i });
       // roundi.scribes = await this.getScribesAtRound(i);
       // await roundi.save({ datastore: this.datastore });
     }
-    const round = new Round({ round: round_num });
+    const round = Round.from({ round: round_num });
     round.scribes = await this.getScribesAtRound(round_num);
     await round.save({ datastore: this.datastore });
     await this.datastore.setCurrentRound(round_num);
@@ -599,7 +599,7 @@ export default class Sequencer {
 
   async bumpCurrentRound() {
     const round_num = await this.getCurrentRound();
-    const round = new Round({ round: round_num });
+    const round = Round.from({ round: round_num });
     round.scribes = await this.getScribesAtRound(round_num);
     await round.save({ datastore: this.datastore });
     await this.datastore.bumpCurrentRound();
@@ -617,6 +617,7 @@ export default class Sequencer {
   }
 
   async run(signal) {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       await this.runRound(signal);
     }

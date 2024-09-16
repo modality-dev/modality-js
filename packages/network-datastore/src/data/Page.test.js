@@ -15,14 +15,14 @@ describe("Page", () => {
     const node2_keypair = await Keypair.generate();
     const node2_pubkey = await node1_keypair.asPublicAddress();
 
-    let b1 = new Page({ scribe: node1_pubkey, round: 1, events: [] });
+    let b1 = Page.from({ scribe: node1_pubkey, round: 1, events: [] });
     await b1.addEvent({ data: "data1" });
     await b1.addEvent({ data: "data2" });
     expect(b1.events.length).toBe(2);
     let sig1 = await b1.generateSig(node1_keypair);
     let result = await b1.validateSig();
     expect(result).toBe(true);
-    let b1empty = new Page({ scribe: node1_pubkey, round: 1, events: [] });
+    let b1empty = Page.from({ scribe: node1_pubkey, round: 1, events: [] });
     let sig1empty = await b1empty.generateSig(node1_keypair);
     expect(sig1).not.toBe(sig1empty);
 

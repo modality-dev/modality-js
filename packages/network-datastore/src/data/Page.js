@@ -1,73 +1,32 @@
 import SafeJSON from "@modality-dev/utils/SafeJSON";
 import Keypair from "@modality-dev/utils/Keypair";
+import Model from './Model';
 
 // Narwhal style vertices
-export default class Page {
-  constructor({
-    scribe,
-    round,
-    last_round_certs = {},
-    events = [],
-    hash,
-    sig,
-    acks = {},
-    late_acks = [],
-    cert,
-    is_section_leader,
-    section_ending_round,
-    section_starting_round,
-    section_page_number,
-    page_number,
-    seen_at_round,
-  }) {
-    this.scribe = scribe;
-    this.round = round;
-    this.last_round_certs = last_round_certs;
-    this.events = events;
-
-    // scribe
-    this.hash = hash;
-    this.sig = sig;
-
-    // peer acknowledgements
-    this.acks = acks;
-    this.late_acks = late_acks;
-
-    // final cert
-    this.cert = cert;
-
-    // consensus related
-    this.is_section_leader = is_section_leader;
-    this.section_starting_round = section_starting_round;
-    this.section_ending_round = section_ending_round;
-    this.section_page_number = section_page_number;
-    this.page_number = page_number;
-    this.seen_at_round = seen_at_round;
-  }
-
-  static fromJSONString(json) {
-    if (!json) return null;
-    return new Page(SafeJSON.parse(json));
-  }
-
-  static fromJSONObject(obj) {
-    return new Page(obj);
-  }
-
-  static getIdFor({ round, scribe }) {
-    return `/consensus/round/${round}/scribe/${scribe}`;
-  }
-
-  getId() {
-    return this.constructor.getIdFor({
-      round: this.round,
-      scribe: this.scribe,
-    });
-  }
-
-  static async findOne({ datastore, round, scribe }) {
-    const v = await datastore.get(this.getIdFor({ round, scribe }));
-    return this.fromJSONString(v.toString());
+export default class Page extends Model {
+  static id_path = "/consensus/round/${round}/scribe/${scribe}";
+  static fields = [
+    "scribe",
+    "round",
+    "last_round_certs",
+    "events",
+    "hash",
+    "sig",
+    "acks",
+    "late_acks",
+    "cert",
+    "is_section_leader",
+    "section_ending_round",
+    "section_starting_round",
+    "section_page_number",
+    "page_number",
+    "seen_at_round",
+  ];
+  static field_defaults = {
+    events: [],
+    last_round_certs: {},
+    acks: {},
+    late_acks: [],
   }
 
   static async findAllInRound({ datastore, round }) {
@@ -82,60 +41,6 @@ export default class Page {
       }
     }
     return r;
-  }
-
-  async save({ datastore }) {
-    return datastore.put(this.getId(), this.toJSONString());
-  }
-
-  async reload({ datastore }) {
-    const page = await this.constructor.findOne({
-      datastore,
-      scribe: this.scribe,
-      round: this.round,
-    });
-    this.scribe = page.scribe;
-    this.round = page.round;
-    this.last_round_certs = page.last_round_certs;
-    this.events = page.events;
-    this.hash = page.hash;
-    this.sig = page.sig;
-    this.acks = page.acks;
-    this.late_acks = page.late_acks;
-    this.cert = page.cert;
-    this.number = page.number;
-    this.is_section_leader = page.is_section_leader;
-    this.section_starting_round = page.section_starting_round;
-    this.section_ending_round = page.section_ending_round;
-    this.section_page_number = page.section_page_number;
-    this.page_number = page.page_number;
-    this.seen_at_round = page.seen_at_round;
-    return this;
-  }
-
-  toJSONString() {
-    return JSON.stringify(this.toJSONObject());
-  }
-
-  toJSONObject() {
-    return {
-      scribe: this.scribe,
-      round: this.round,
-      last_round_certs: this.last_round_certs,
-      events: this.events,
-      hash: this.hash,
-      sig: this.sig,
-      acks: this.acks,
-      late_acks: this.late_acks,
-      cert: this.cert,
-      number: this.number,
-      is_section_leader: this.is_section_leader,
-      section_starting_round: this.section_starting_round,
-      section_ending_round: this.section_ending_round,
-      section_page_number: this.section_page_number,
-      page_number: this.page_number,
-      seen_at_round: this.seen_at_round,
-    };
   }
 
   toDraftJSONObject() {
