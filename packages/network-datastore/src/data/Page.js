@@ -197,6 +197,26 @@ export default class Page {
     };
   }
 
+  async generateLateAck(keypair, seen_at_round) {
+    const peer_id = await keypair.asPublicAddress();
+    const facts = {
+      scribe: this.scribe,
+      round: this.round,
+      seen_at_round,
+      sig: this.sig,
+    };
+    const acker_sig = await keypair.signJSON(facts);
+    return {
+      scribe: this.scribe,
+      round: this.round,
+      seen_at_round,
+      sig: this.sig,
+      acker: peer_id,
+      acker_sig,
+    };
+  }
+
+
   async validateAck(ack) {
     if (!ack || !ack.acker || !ack.acker_sig) {
       return false;

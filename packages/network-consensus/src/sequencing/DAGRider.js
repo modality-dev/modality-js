@@ -54,21 +54,6 @@ export default class DAGRider extends Sequencer {
     return (bound_round % 4) + 1;
   }
 
-  static getRoundProps(round, sequencer_first_round) {
-    const binder_round = round - sequencer_first_round + 1;
-    const binder_wave = this.getWaveOfRound(round, sequencer_first_round);
-    const binder_wave_round = this.getWaveRoundOfRound(
-      round,
-      sequencer_first_round
-    );
-    return {
-      round,
-      binder_round,
-      binder_wave,
-      binder_wave_round,
-    };
-  }
-
   async findLeaderInRound(round) {
     const round_props = this.constructor.getRoundProps(
       round,

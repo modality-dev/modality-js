@@ -29,6 +29,17 @@ export default class SameProcess {
     await to_seq?.onReceivePageAck(ack_data);
   }
 
+  async sendPageLateAck({ from, to, ack_data }) {
+    if (this.offline_sequencers.includes(from)) {
+      return;
+    }
+    if (this.offline_sequencers.includes(to)) {
+      return;
+    }
+    const to_seq = this.scribe_sequencers[to];
+    await to_seq?.onReceivePageLateAck(ack_data);
+  }
+
   async broadcastCertifiedPage({ from, page_data }) {
     if (this.offline_sequencers.includes(from)) {
       return;
@@ -40,4 +51,12 @@ export default class SameProcess {
       await to_seq?.onReceiveCertifiedPage(page_data);
     }
   }
+
+  async fetchScribeRoundCertifiedPage({ from, to, scribe, round }) {
+    if (this.offline_sequencers.includes(from)) {
+      return;
+    }
+    const to_seq = this.scribe_sequencers[to];
+    return to_seq?.onFetchScribeRoundCertifiedPageRequest({scribe, round});
+  };
 }

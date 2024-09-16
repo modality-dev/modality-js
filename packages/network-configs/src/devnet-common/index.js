@@ -72,6 +72,7 @@ export async function getKeypairFor(id) {
 export default {
   name: "devnet-common",
   keypairs,
+  getPubkeys,
   getKeypairs,
   getKeypairFor,
   getKeypairsDict,

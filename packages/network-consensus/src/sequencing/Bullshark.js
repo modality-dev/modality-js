@@ -12,10 +12,25 @@ export const NAME = "Bullshark";
 /// * wave round 1 leader (based on predefined randomness)
 /// * wave round 3 leader (based on predefined randomness)
 export default class Bullshark extends Sequencer {
-  constructor({ datastore, randomness, sequencer_first_round = 1 }) {
-    super({ datastore, randomness, sequencer_first_round });
+  constructor({ datastore, randomness, sequencer_first_round = 1, ...rest }) {
+    super({ datastore, randomness, sequencer_first_round, ...rest });
   }
 
+  async getScribesAtRound(round) {
+    if (round < 1) {
+      return [];
+      // TODO
+      // } else if (round === 1) {
+    } else {
+      // TODO make this not static
+      const round_data = await Round.findOne({
+        datastore: this.datastore,
+        round: 1,
+      });
+      return round_data.scribes;
+    }
+  }
+  
   static getBoundRound(round, sequencer_first_round = 1) {
     return round - sequencer_first_round;
   }
@@ -28,21 +43,6 @@ export default class Bullshark extends Sequencer {
   static getWaveRoundOfRound(round, sequencer_first_round) {
     const bound_round = this.getBoundRound(round, sequencer_first_round);
     return (bound_round % 4) + 1;
-  }
-
-  static getRoundProps(round, sequencer_first_round) {
-    const binder_round = round - sequencer_first_round + 1;
-    const binder_wave = this.getWaveOfRound(round, sequencer_first_round);
-    const binder_wave_round = this.getWaveRoundOfRound(
-      round,
-      sequencer_first_round
-    );
-    return {
-      round,
-      binder_round,
-      binder_wave,
-      binder_wave_round,
-    };
   }
 
   async findFallbackLeaderInRound(round) {

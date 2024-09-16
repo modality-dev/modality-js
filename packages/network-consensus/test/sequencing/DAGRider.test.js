@@ -3,18 +3,16 @@ import { jest, expect, describe, test, it } from "@jest/globals";
 import { setTimeout as setTimeoutPromise } from 'timers/promises';
 
 import Keypair from "@modality-dev/utils/Keypair";
-import NetworkDatastore from "@modality-dev/network-datastore";
-
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
-import RoundRobin from "../../src/randomness/RoundRobin";
-import SameProcess from "../../src/communication/SameProcess";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
-import * as Devnet from "@modality-dev/network-configs/devnet-common/index";
+import Devnet from "@modality-dev/network-configs/Devnet";
 
 import DAGRider from "../../src/sequencing/DAGRider";
+import RoundRobin from "../../src/randomness/RoundRobin";
+
 import SequencerTesting from "./SequencerTesting";
 
 describe("DAGRider", () => {
@@ -191,8 +189,6 @@ describe("DAGRider", () => {
     expect(pages.at(-1).scribe).toBe(scribes[3]);
   });
 
-  test.skip("no sequencing given under threshold connected rounds", async () => {});
-
   test("event handling", async () => {
     const NODE_COUNT = 3;
 
@@ -217,6 +213,7 @@ describe("DAGRider", () => {
     const seq1 = new DAGRider({
       datastore: datastores[0],
       randomness,
+      pubkey: scribes[0],
       keypair: scribe_keypairs[scribes[0]],
       communication_enabled: true,
     });
@@ -224,12 +221,14 @@ describe("DAGRider", () => {
     const seq2 = new DAGRider({
       datastore: datastores[1],
       randomness,
+      pubkey: scribes[1],
       keypair: scribe_keypairs[scribes[1]],
     });
 
     const seq3 = new DAGRider({
       datastore: datastores[2],
       randomness,
+      pubkey: scribes[2],
       keypair: scribe_keypairs[scribes[2]],
     });
 
@@ -289,6 +288,31 @@ describe("DAGRider", () => {
     expect(pages.length).toBe(NODE_COUNT * 4 + 1);
   });
 
+  test("given f = 0, one bad sequence, network stalls", async () => {
+    const NODE_COUNT = 3;
+    const BAD_NODE_COUNT = 1;
+    const offline_seq_id = Devnet.pubkeyOf(NODE_COUNT - 1);
+
+    const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: DAGRider, RandomnessModule: RoundRobin});
+    st.communication.offline_sequencers = [offline_seq_id];
+
+    const abortController = new AbortController();
+    setTimeoutPromise(3000).then(() => { abortController.abort() });    
+    await expect(st.runUntilRound(9, abortController.signal)).rejects.toThrow("aborted");
+
+    st.communication.offline_sequencers = [];
+    await st.runUntilRound(9);
+
+    const my_seq_id = Devnet.pubkeyOf(0);
+    const seq1 = st.getSequencer(my_seq_id);
+    const leader1 = await seq1.findLeaderInRound(1);
+    expect(leader1).not.toBeNull();
+    const leader5 = await seq1.findLeaderInRound(5);
+    expect(leader5).not.toBeNull();
+    const pages = await seq1.findOrderedPagesInSection(null, 5);
+    expect(pages.length).toBe((NODE_COUNT) * 4 + 1);
+  });
+
   test("given f = 1, one bad sequencer not elected leader, network can sequence", async () => {
     const NODE_COUNT = 4;
     const BAD_NODE_COUNT = 1;
@@ -306,18 +330,17 @@ describe("DAGRider", () => {
     expect(leader5).not.toBeNull();
     const pages = await seq1.findOrderedPagesInSection(null, 5);
     expect(pages.length).toBe((NODE_COUNT - BAD_NODE_COUNT) * 4 + 1 + BAD_NODE_COUNT);
-  });
 
-  test("given f = 0, one bad sequence, network stalls", async () => {
-    const NODE_COUNT = 3;
-    const BAD_NODE_COUNT = 1;
-    const offline_seq_id = Devnet.pubkeyOf(NODE_COUNT - 1);
+    // bring back the offline sequencer
+    st.communication.offline_sequencers = [];
+    await st.runUntilRound(13);
+    const pages_r0t9 = await seq1.findOrderedPagesInSection(null, 9);
+    // bad node not yet producing pages
+    expect(pages_r0t9.length).toBe(1 + (NODE_COUNT - BAD_NODE_COUNT) * 8 + 1);
 
-    const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: DAGRider, RandomnessModule: RoundRobin});
-    st.communication.offline_sequencers = [offline_seq_id];
-
-    const abortController = new AbortController();
-    setTimeoutPromise(3000).then(() => { abortController.abort() });    
-    await expect(st.runUntilRound(9, abortController.signal)).rejects.toThrow("aborted");
+    await st.runUntilRound(17);
+    const pages_r0t13 = await seq1.findOrderedPagesInSection(null, 13);
+    // bad node may have caught up and is producing pages
+    expect(pages_r0t13.length).toBeGreaterThanOrEqual(1 + (NODE_COUNT - BAD_NODE_COUNT) * 12 + 1);
   });
 });
