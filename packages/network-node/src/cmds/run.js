@@ -15,7 +15,7 @@ async function addPeerDiscoveryEventListeners(node) {
   });
 }
 
-export default async function run({ config, keypair, listen, storage }) {
+export default async function run({ config, keypair, listen, storage, services }) {
   const conf = parseConfigArgs({ config, keypair, listen, storage });
   const peerId = await PeerIdHelpers.createFromJSON(conf.keypair);
 
@@ -30,7 +30,12 @@ export default async function run({ config, keypair, listen, storage }) {
   await attachDatastore(node, conf);
 
   await addPeerDiscoveryEventListeners(node);
-  await addSequencerEventListeners(node);
+  services = Array.isArray(services) ? services : [services];
+  if (services.includes("scribe") || services.includes("sequencer")) {
+    await addSequencerEventListeners(node);
+  }
+
+  console.log(node.storage.sequencer);
 
   console.log("Listener ready, listening on:");
   node.getMultiaddrs().forEach((ma) => {

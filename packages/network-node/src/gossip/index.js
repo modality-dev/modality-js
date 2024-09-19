@@ -1,9 +1,9 @@
-import * as ConsensusVertex from "../gossip/consensus/vertex.js";
-import * as ConsensusVertexCertificate from "../gossip/consensus/vertex_certificate.js";
+import * as ConsensusScribesPageDraft from "../gossip/consensus/scribes/page_draft.js";
+import * as ConsensusScribesPageCert from "../gossip/consensus/scribes/page_cert.js";
 
 export const SEQUENCER_TOPIC_MODULES = [
-  ConsensusVertex,
-  ConsensusVertexCertificate,
+  ConsensusScribesPageDraft,
+  ConsensusScribesPageCert,
 ];
 
 export async function addSequencerEventListeners(node) {

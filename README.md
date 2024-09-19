@@ -17,7 +17,7 @@ To run a node, you'll find the configurations in `packages/fixtures/network-node
 Execute the following command:
 
 ```bash
-node packages/network-node/src/cmds/run_sequencer.js --config packages/network-node/fixtures/configs/node1.json
+node packages/network-node/src/cmds/run.js --config packages/network-node/fixtures/configs/node1.json
 ```
 
 You should now see in the terminal that you are listening on the addresses set in the `node1.json` config.

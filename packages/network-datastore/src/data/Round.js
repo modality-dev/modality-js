@@ -1,4 +1,4 @@
-import Model from "./Model";
+import Model from "./Model.js";
 export default class Round extends Model {
   static id_path = "/consensus/round/${round}";
   static fields = ["round", "scribes"];

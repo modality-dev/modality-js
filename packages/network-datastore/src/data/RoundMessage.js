@@ -1,4 +1,4 @@
-import Model from "./Model";
+import Model from "./Model.js";
 
 export default class RoundMessage extends Model {
   static id_path = "/consensus/round_messages/${round}/type/${type}/scribe/${scribe}";

@@ -1,6 +1,6 @@
 import SafeJSON from "@modality-dev/utils/SafeJSON";
 import Keypair from "@modality-dev/utils/Keypair";
-import Model from './Model';
+import Model from './Model.js';
 
 // Narwhal style vertices
 export default class Page extends Model {

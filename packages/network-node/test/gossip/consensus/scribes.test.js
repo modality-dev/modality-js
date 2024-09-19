@@ -7,7 +7,7 @@ import node2_config from "../../../fixtures/configs/node2.json";
 import { addSequencerEventListeners } from "../../../src/gossip/index.js";
 import { attachDatastore } from "../../../src/storage.js";
 
-describe("gossip /gossip/vertex", () => {
+describe("gossip /consensus/scribes", () => {
   it("should work", async () => {
     const node1 = await createTestNode(node1_config);
     await addSequencerEventListeners(node1);
@@ -22,7 +22,7 @@ describe("gossip /gossip/vertex", () => {
 
     const vertex = {}; // TODO await node1.storage.local_dag.createVertex([{}, {}, {}]);
     await node1.services.pubsub.publish(
-      "/consensus/vertex",
+      "/consensus/scribes",
       new TextEncoder().encode(JSON.stringify(vertex))
     );
 

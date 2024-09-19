@@ -10,11 +10,11 @@ import all from "it-all";
 import * as Uint8ArrayHelpers from "uint8arrays";
 import SafeJSON from "@modality-dev/utils/SafeJSON";
 
-import * as Consensus_SignVertex from "./consensus/sign_vertex.js";
+import * as Consensus_Scribes_PageAck from "./consensus/scribes/page_ack.js";
 import * as Consensus_Status from "./consensus/status.js";
 import * as SubmitCommits from "./consensus/submit_commits.js";
 
-const REQRES_MODULES = [Consensus_SignVertex, Consensus_Status, SubmitCommits];
+const REQRES_MODULES = [Consensus_Scribes_PageAck, Consensus_Status, SubmitCommits];
 
 export function asReqResProtocol(func) {
   return ({ stream }) => {

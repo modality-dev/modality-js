@@ -1,4 +1,4 @@
-export const PATH = "/consensus/sign_vertex";
+export const PATH = "/consensus/scribes/page_ack";
 
 export function handler({ peer, data }) {
   // TODO record signed vertex (timely or late)
