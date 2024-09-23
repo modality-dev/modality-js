@@ -21,4 +21,9 @@ export default class ContractCommitEvent extends Model {
     }
     return r;
   }
+
+  static async saveEvent({ timestamp, contract_id, commit_id, data }) {
+    const datastore = Model.from({ timestamp, contract_id, commit_id, data });
+    await this.save({ datastore });
+  }
 }
