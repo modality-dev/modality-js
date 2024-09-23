@@ -1,11 +1,14 @@
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 import RoundMessage from "@modality-dev/network-datastore/data/RoundMessage";
+import ContractCommitEvent from "@modality-dev/network-datastore/data/ContractCommitEvent";
 
 import { setTimeout, setImmediate } from "timers/promises";
 import { Mutex } from "async-mutex";
 
 const INTRA_ROUND_WAIT_TIME_MS = 50;
+const NO_EVENTS_ROUND_WAIT_TIME_MS = 15000;
+const NO_EVENTS_POLL_WAIT_TIME_MS = 500;
 
 export default class Sequencer {
   constructor({
@@ -508,7 +511,28 @@ export default class Sequencer {
       round = await this.getCurrentRound();
     }
 
-    const events = []; // TODO pop events off queue
+    let cc_events = await ContractCommitEvent.findAll({ datastore: this.datastore });
+    let keep_waiting_for_events = (cc_events.length === 0);
+    if (keep_waiting_for_events) {
+      setTimeout(this.no_events_round_wait_time_ms ?? NO_EVENTS_ROUND_WAIT_TIME_MS).then(() => {
+        keep_waiting_for_events = false;
+      });
+    }
+    while (keep_waiting_for_events) {
+      await setTimeout(this.no_events_poll_wait_time_ms ?? NO_EVENTS_POLL_WAIT_TIME_MS);
+      cc_events = await ContractCommitEvent.findAll({ datastore: this.datastore });
+      if (cc_events.length > 0) {
+        keep_waiting_for_events = false;
+      }
+    }
+    const events = [];
+    for (const cc_event of cc_events) {
+      events.push({
+        contract_id: cc_event.contract_id,
+        commit_id: cc_event.commit_id,
+      });
+      await cc_event.delete({ datastore: this.datastore });
+    }
     const page = Page.from({
       round,
       scribe,

@@ -102,4 +102,9 @@ export default class Model {
     }
     return this;
   }
+
+  async delete({ datastore }) {
+    return datastore.delete(this.getId());
+  }
+
 }

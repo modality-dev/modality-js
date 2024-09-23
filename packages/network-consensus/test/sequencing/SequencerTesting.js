@@ -21,6 +21,8 @@ export default class SequencerTesting {
     });
     for (const seq of Object.values(seqs)) {
       seq.intra_round_wait_time_ms = 0;
+      seq.no_events_round_wait_time_ms = 0;
+      seq.no_events_poll_wait_time_ms = 0;
     }
     communication.scribe_sequencers = {...seqs};
     r.seqs = seqs;
