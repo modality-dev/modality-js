@@ -4,17 +4,10 @@ import SafeJSON from "@modality-dev/utils/SafeJSON";
 export const TOPIC = "/consensus/scribes/page_draft";
 
 export async function handler(node, event) {
-  // todo check if i am in this epoch sequencers
-
-  const local_dag = node.storage?.local_dag;
-  if (!local_dag) {
-    return;
-  }
-
   const text = new TextDecoder().decode(event.detail.data);
   const page = SafeJSON.parse(text);
 
-  await node.storage.sequencer.communication.onReceivePageDraft(page);
+  await node.storage.sequencer.onReceiveDraftPage(page);
   // const page_ack = { };
   // await node.services.reqres.call(
   //   page.scribe,

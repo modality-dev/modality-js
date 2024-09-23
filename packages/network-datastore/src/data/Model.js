@@ -81,8 +81,17 @@ export default class Model {
 
 
   static async findOne({ datastore, ...keys }) {
-    const v = await datastore.get(this.getIdFor(keys));
-    return this.fromJSONString(v.toString());
+    const key = this.getIdFor(keys);
+    try {
+      const v = await datastore.get(key);
+      return this.fromJSONString(v.toString());
+    } catch (e) {
+      if (e.code === "ERR_NOT_FOUND") {
+        return null;
+      } else {
+        throw e;
+      }
+    }
   }
 
   async reload({datastore}) {

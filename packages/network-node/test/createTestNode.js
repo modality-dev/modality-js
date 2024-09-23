@@ -68,12 +68,12 @@ class ReqResService {
     this.peerId = peerId;
   }
 
-  async handleRequest(peer, path, data) {
-    const r = await SourceReqResService.handleRequest(peer, path, data);
+  async handleRequest(peer, path, data, options) {
+    const r = await SourceReqResService.handleRequest(peer, path, data, options);
     return r;
   }
 
-  async call(peerId, path, data) {
+  async call(peerId, path, data, options) {
     const target_node = this.peers.peers_by_peerId.get(peerId.toString());
     if (!target_node) {
       throw new Error(`peer not found`);
@@ -81,7 +81,8 @@ class ReqResService {
     const r = await target_node.services.reqres.handleRequest(
       peerId,
       path,
-      data
+      data,
+      options
     );
     return r;
   }

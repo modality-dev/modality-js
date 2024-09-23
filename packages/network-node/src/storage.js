@@ -19,6 +19,4 @@ export async function attachDatastore(node, conf) {
     randomness: new RoundRobin(),
   });
   node.storage.sequencer.communication = new ConsensusCommunication({node: node, sequencer: node.storage.sequencer});
-  // node.storage.local_dag = await LocalDAG.create(node.storage.datastore);
-  // await node.storage.local_dag.setup({ keypair });
 }

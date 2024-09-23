@@ -58,10 +58,10 @@ export class ReqResService {
     this.handleMessage = this.handleMessage.bind(this);
   }
 
-  static async handleRequest(peer, path, data) {
+  static async handleRequest(peer, path, data, options) {
     for (const module of REQRES_MODULES) {
       if (path === module.PATH) {
-        return module.handler({ peer, path, data });
+        return module.handler({ peer, path, data, ...options });
       }
     }
     throw new CodeError(
@@ -88,7 +88,18 @@ export class ReqResService {
     return this.started;
   }
 
+  async handleRequest(peerId, path, data, options) {
+    const res = await this.constructor.handleRequest(
+      peerId,
+      path,
+      data,
+      options
+    ); 
+    return res;
+  }
+
   async handleMessage(data) {
+    console.log("HANDLING MESSAGE", this, data)
     this.log("incoming reqres from %p", data.connection.remotePeer);
 
     const { stream } = data;
@@ -104,7 +115,10 @@ export class ReqResService {
     const res = await this.constructor.handleRequest(
       data.connection.remotePeer,
       req.path,
-      req.data
+      req.data,
+      {
+        // node: this.components.node
+      }
     );
     this.log(
       "incoming reqres from %p complete in %dms",

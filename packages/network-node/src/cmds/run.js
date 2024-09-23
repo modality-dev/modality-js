@@ -47,10 +47,9 @@ export default async function run({ config, keypair, listen, storage, load_stora
   services = Array.isArray(services) ? services : [services];
   if (services.includes("scribe") || services.includes("sequencer")) {
     await addSequencerEventListeners(node);
+    console.log(`Starting on round: ${await node.storage.sequencer.getCurrentRound()}`);
   }
-
-  console.log(node.storage.sequencer, await node.storage.sequencer.getCurrentRound());
-  
+ 
   console.log("Listener ready, listening on:");
   node.getMultiaddrs().forEach((ma) => {
     console.log(ma.toString());

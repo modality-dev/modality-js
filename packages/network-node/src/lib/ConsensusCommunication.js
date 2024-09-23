@@ -12,18 +12,20 @@ export default class ConsensusCommunication {
 
   async callReqres( to, path, data ) {
     if (to === this.node.peerId.toString()) {
-      return await this.node.services.reqres.constructor.handleRequest(this.node.peerId, path, data);
+      return await this.node.services.reqres.handleRequest(this.node.peerId, path, data, {node: this.node});
     } else {
       return await this.node.services.reqres.call(
         peerIdFromString(to),
         path,
-        data
+        data,
+        {node: this.node}
       );
     }
   }
 
   async broadcastDraftPage({ from, page_data }) {
-    await this.node.services.pubsub.publish(PAGE_DRAFT_TOPIC, new TextEncoder().encode(page_data));
+    const json_text = new TextEncoder().encode(JSON.stringify(page_data))
+    await this.node.services.pubsub.publish(PAGE_DRAFT_TOPIC, json_text);
   }
 
   async sendPageAck({ from, to, ack_data }) {
@@ -39,7 +41,8 @@ export default class ConsensusCommunication {
   }
 
   async broadcastCertifiedPage({ from, page_data }) {
-    await this.node.services.pubsub.publish(PAGE_CERT_TOPIC, new TextEncoder().encode(page_data));
+    const json_text = new TextEncoder().encode(JSON.stringify(page_data))
+    await this.node.services.pubsub.publish(PAGE_CERT_TOPIC, json_text);
   }
 
   async fetchScribeRoundCertifiedPage({ from, to, scribe, round }) {
