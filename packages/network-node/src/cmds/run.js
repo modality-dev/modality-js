@@ -1,3 +1,6 @@
+import fs from 'fs-extra';
+import * as tar from 'tar';
+
 import createLibp2pNode from "../createLibp2pNode.js";
 import PeerIdHelpers from "../PeerIdHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
@@ -15,8 +18,19 @@ async function addPeerDiscoveryEventListeners(node) {
   });
 }
 
-export default async function run({ config, keypair, listen, storage, services }) {
+export default async function run({ config, keypair, listen, storage, load_storage, services }) {
   const conf = parseConfigArgs({ config, keypair, listen, storage });
+
+  if (load_storage && conf.storage) {
+    fs.ensureDirSync(conf.storage);
+    fs.emptyDirSync(conf.storage);
+    await tar.extract({
+      file: load_storage,
+      cwd: conf.storage,
+    });
+    console.log({load_storage, storage: conf.storage});
+  }
+
   const peerId = await PeerIdHelpers.createFromJSON(conf.keypair);
 
   const node = await createLibp2pNode({
@@ -35,12 +49,31 @@ export default async function run({ config, keypair, listen, storage, services }
     await addSequencerEventListeners(node);
   }
 
-  console.log(node.storage.sequencer);
-
+  console.log(node.storage.sequencer, await node.storage.sequencer.getCurrentRound());
+  
   console.log("Listener ready, listening on:");
   node.getMultiaddrs().forEach((ma) => {
     console.log(ma.toString());
   });
+
+  const abortController = new AbortController();
+  const cleanup = async () => {
+    abortController.abort();
+  };
+
+  process.on('SIGINT', async () => {
+    console.log('Caught SIGINT (Ctrl+C)');
+    await cleanup();
+    process.exit(0);
+  });
+  
+  process.on('SIGTERM', async () => {
+    console.log('Caught SIGTERM');
+    await cleanup();
+    process.exit(0);
+  });
+
+  node.storage.sequencer.run(abortController.signal);
 }
 
 import cliCalls from "cli-calls";

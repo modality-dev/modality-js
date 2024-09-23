@@ -78,7 +78,9 @@ export default async function createLibp2pNode({
     services: {
       identify: identify(),
       ping: ping(),
-      pubsub: gossipsub(),
+      pubsub: gossipsub({
+        emitSelf: true
+      }),
       reqres: reqres(),
     },
     peerId,

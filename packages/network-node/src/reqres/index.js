@@ -65,7 +65,7 @@ export class ReqResService {
       }
     }
     throw new CodeError(
-      "invalid path: must be a supported path by modality reqres",
+      `invalid path (${path}) must be a supported path by modality reqres`,
       ERR_INVALID_PARAMETERS
     );
   }

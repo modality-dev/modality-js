@@ -1,7 +1,7 @@
 import SafeJSON from "@modality-dev/utils/SafeJSON";
 // import "@modality-dev/network-consensus";
 
-export const TOPIC = "/consensus/page_draft";
+export const TOPIC = "/consensus/scribes/page_draft";
 
 export async function handler(node, event) {
   // todo check if i am in this epoch sequencers

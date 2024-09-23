@@ -50,7 +50,7 @@ export default class NetworkDatastoreBuilder {
     if (from_devnet_common) {
       const keypairs = Object.values(DevnetCommon.keypairs).slice(0, count);
       for (const keypair of keypairs) {
-        r[keypair.id] = keypair;
+        r[keypair.id] = await Keypair.fromJSON(keypair);
       }
     } else {
       for (let i = 1; i <= count; i++) {
