@@ -1,11 +1,10 @@
 {
-  "name": "@modality-dev/formula",
-  "version": "0.0.0",
+  "name": "@modality-dev/formulas",
+  "version": "0.0.5",
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "build": "rimraf ./dist && tsc && npx prettier ./dist --write",
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --passWithNoTests"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest"
   },
   "author": "Foy Savas",
   "license": "MIT",
@@ -19,9 +18,10 @@
     "./*": "./src/*.js"
   },
   "dependencies": {
+    "@modality-dev/utils": "workspace:^",
     "antlr4": "^4.13.0",
     "debug": "^4.3.4",
-    "jest": "^29.7",
+    "jest": "^28.1.1",
     "lodash": "^4.17.21",
     "uint8arrays": "^3.0.0"
   }
