@@ -2,6 +2,9 @@
 
 A modular framework for running and managing nodes with efficient communication between them.
 
+> "All models are wrong but some are useful"
+> - George Box
+
 ## Installation
 
 To install the necessary dependencies, run:
@@ -49,3 +52,6 @@ node packages/network-node/src/cmds/request.js --config packages/network-node/fi
 ```
 
 Feel free to reach out for any issues or contributions!
+
+## Start new datastore
+node src/cmds/run.js --config ./fixtures/configs/node1.json --load_storage ./fixtures/datastores/devnet-static1.tgz --services scribe
