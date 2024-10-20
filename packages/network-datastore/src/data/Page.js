@@ -145,9 +145,9 @@ export default class Page extends Model {
 
   validateAcks() {
     for (const ack of Object.values(this.acks)) {
-      const keypair = Keypair.fromPublicKey(ack.scribe);
+      const keypair = Keypair.fromPublicKey(ack.acker);
       if (
-        !keypair.verifyJSON(ack.sig, {
+        !keypair.verifyJSON(ack.acker_sig, {
           scribe: this.scribe,
           round: this.round,
           last_round_certs: this.last_round_certs,
@@ -164,9 +164,9 @@ export default class Page extends Model {
   countValidAcks() {
     let valid_acks = 0;
     for (const ack of Object.values(this.acks)) {
-      const keypair = Keypair.fromPublicKey(ack.scribe);
+      const keypair = Keypair.fromPublicKey(ack.acker);
       if (
-        keypair.verifyJSON(ack.sig, {
+        keypair.verifyJSON(ack.acker_sig, {
           scribe: this.scribe,
           round: this.round,
           events: this.events,
