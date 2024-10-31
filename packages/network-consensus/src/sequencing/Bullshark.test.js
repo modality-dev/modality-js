@@ -5,7 +5,7 @@ import NetworkDatastore from "@modality-dev/network-datastore";
 
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
-import RoundRobin from "../randomness/RoundRobin";
+import RoundRobin from "../election/RoundRobin";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 

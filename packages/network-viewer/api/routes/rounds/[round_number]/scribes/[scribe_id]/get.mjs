@@ -2,7 +2,7 @@ import Page from '@modality-dev/network-datastore/data/Page';
 import Round from '@modality-dev/network-datastore/data/Round';
 import Sequencer from '@modality-dev/network-consensus/sequencing/Sequencer';
 import DAGRider from '@modality-dev/network-consensus/sequencing/DAGRider';
-import RoundRobin from '@modality-dev/network-consensus/randomness/RoundRobin';
+import RoundRobin from '@modality-dev/network-consensus/election/RoundRobin';
 
 export default async function (req, res) {
   const round_number = parseInt(req.params.round_number);

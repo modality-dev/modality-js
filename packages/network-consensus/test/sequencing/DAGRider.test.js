@@ -9,7 +9,7 @@ import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkData
 import Devnet from "@modality-dev/network-configs/Devnet";
 
 import DAGRider from "../../src/sequencing/DAGRider";
-import RoundRobin from "../../src/randomness/RoundRobin";
+import RoundRobin from "../../src/election/RoundRobin";
 
 import SequencerTesting from "./SequencerTesting";
 

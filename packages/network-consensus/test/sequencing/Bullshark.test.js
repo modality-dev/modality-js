@@ -9,7 +9,7 @@ import Round from "@modality-dev/network-datastore/data/Round";
 import Devnet from "@modality-dev/network-configs/Devnet";
 
 import Bullshark from "../../src/sequencing/Bullshark";
-import RoundRobin from "../../src/randomness/RoundRobin";
+import RoundRobin from "../../src/election/RoundRobin";
 
 import SequencerTesting from "./SequencerTesting";
 

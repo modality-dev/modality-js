@@ -17,7 +17,7 @@ export const builder = {
 const log = console.log;
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
-import RoundRobin from "@modality-dev/network-consensus/randomness/RoundRobin";
+import RoundRobin from "@modality-dev/network-consensus/election/RoundRobin";
 import DAGRider from "@modality-dev/network-consensus/sequencing/DAGRider";
 
 export async function handler({

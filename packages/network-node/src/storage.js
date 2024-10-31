@@ -1,7 +1,7 @@
 import NetworkDatastore from "@modality-dev/network-datastore";
 import Keypair from "@modality-dev/utils/Keypair";
 import DAGRider from "@modality-dev/network-consensus/sequencing/DAGRider";
-import RoundRobin from "@modality-dev/network-consensus/randomness/RoundRobin";
+import RoundRobin from "@modality-dev/network-consensus/election/RoundRobin";
 
 import ConsensusCommunication from "./lib/ConsensusCommunication.js";
 

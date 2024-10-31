@@ -3,7 +3,7 @@ import NetworkDatastore from "@modality-dev/network-datastore";
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
 import DAGRider from "@modality-dev/network-consensus/sequencing/DAGRider";
-import RoundRobin from "@modality-dev/network-consensus/randomness/RoundRobin";
+import RoundRobin from "@modality-dev/network-consensus/election/RoundRobin";
 import chokidar from 'chokidar';
 import tmp from 'tmp';
 import path from 'path';

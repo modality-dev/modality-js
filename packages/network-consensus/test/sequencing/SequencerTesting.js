@@ -1,7 +1,7 @@
 import Devnet from "@modality-dev/network-configs/Devnet";
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 import SameProcess from "../../src/communication/SameProcess";
-import RoundRobin from "../../src/randomness/RoundRobin";
+import RoundRobin from "../../src/election/RoundRobin";
 
 export default class SequencerTesting {
   constructor() {
