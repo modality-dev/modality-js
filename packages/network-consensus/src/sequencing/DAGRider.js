@@ -25,6 +25,15 @@ export default class DAGRider extends Sequencer {
     });
   }
 
+  static create({datastore, randomness, peerid, keypair}) {
+    return new DAGRider({
+      datastore,
+      randomness,
+      keypair,
+      pubkey: peerid,
+    });
+  }
+
   async getScribesAtRound(round) {
     if (round < 1) {
       return [];

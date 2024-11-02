@@ -21,6 +21,13 @@ export async function getKeypairs(count = null) {
   return r;
 }
 
+export async function getKeypairByIndex(index) {
+  if (index > Object.keys(keypairs).length) {
+    throw new Error("not enough common IDs");
+  }
+  return await Keypair.fromJSON(Object.values(keypairs)[index]);
+}
+
 export async function getKeypairsDict(count = null) {
   if (!count) {
     count = Object.keys(keypairs).length;
@@ -74,6 +81,7 @@ export default {
   keypairs,
   getPubkeys,
   getKeypairs,
+  getKeypairByIndex,
   getKeypairFor,
   getKeypairsDict,
   pubkeyOf,

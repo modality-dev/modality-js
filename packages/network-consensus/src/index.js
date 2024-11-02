@@ -11,7 +11,7 @@ export async function setupNetworkConsensus({
   const consensus_system  = SEQUENCING_METHODS[sequencing_method].create({
     randomness: ELECTION_METHODS[election_method].create(),
     datastore,
-    pubkey: peerid,
+    peerid,
     keypair,
   });
   return consensus_system;

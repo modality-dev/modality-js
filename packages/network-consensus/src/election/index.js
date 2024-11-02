@@ -1,4 +1,4 @@
-import RoundRobin from "./election/RoundRobin";
+import RoundRobin from "./RoundRobin";
 
 export const ELECTION_METHODS = {
   'RoundRobin': RoundRobin
