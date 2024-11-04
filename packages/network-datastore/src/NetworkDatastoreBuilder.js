@@ -55,8 +55,8 @@ export default class NetworkDatastoreBuilder {
     } else {
       for (let i = 1; i <= count; i++) {
         const keypair = await Keypair.generate();
-        const keypair_pubkey = await keypair.asPublicAddress();
-        r[keypair_pubkey] = keypair;
+        const keypair_peerid = await keypair.asPublicAddress();
+        r[keypair_peerid] = keypair;
       }
     }
     return r;
@@ -90,7 +90,7 @@ export default class NetworkDatastoreBuilder {
     for (const scribe of this.scribes) {
       const seq = new SeqType({
         datastore: await this.datastore.cloneToMemory(),
-        pubkey: scribe,
+        peerid: scribe,
         keypair: this.scribe_keypairs[scribe],
         ...opts,
       });

@@ -15,14 +15,14 @@ export default class Sequencer {
     datastore,
     randomness,
     sequencer_first_round = 1,
-    pubkey,
+    peerid,
     keypair,
     communication,
   }) {
     this.datastore = datastore;
     this.randomness = randomness;
     this.sequencer_first_round = sequencer_first_round;
-    this.pubkey = pubkey;
+    this.peerid = peerid;
     this.keypair = keypair;
     this.communication = communication;
     this.mutex = new Mutex();
@@ -113,14 +113,14 @@ export default class Sequencer {
     // TODO provide same late ack if asked again
 
     // provide late ack
-    if (this.pubkey) {
+    if (this.peerid) {
       const ack = await page.generateLateAck(this.keypair, current_round);
       if (this.communication) {
         const last_round_certs = await this.datastore.getTimelyCertSigsAtRound(
           current_round - 1
         );
         await this.communication.sendPageLateAck({
-          from: this.pubkey,
+          from: this.peerid,
           to: ack.scribe,
           ack_data: ack,
           extra: { last_round_certs },
@@ -160,11 +160,11 @@ export default class Sequencer {
     const current_round = await this.datastore.getCurrentRound();
     const page = await Page.fromJSONObject(page_data);
 
-    if (this.pubkey) {
+    if (this.peerid) {
       const ack = await page.generateAck(this.keypair);
       if (this.communication) {
         await this.communication.sendPageAck({
-          from: this.pubkey,
+          from: this.peerid,
           to: ack.scribe,
           ack_data: ack,
         });
@@ -302,7 +302,7 @@ export default class Sequencer {
       for (const scribe of last_round_scribes) {
         const page_data =
           await this.communication.fetchScribeRoundCertifiedPage({
-            from: this.pubkey,
+            from: this.peerid,
             to: scribe,
             scribe,
             round: last_round,
@@ -408,7 +408,7 @@ export default class Sequencer {
     if (this.communication) {
       const page_data = await page.toDraftJSONObject();
       await this.communication.broadcastDraftPage({
-        from: this.pubkey,
+        from: this.peerid,
         page_data,
       });
     }
@@ -447,7 +447,7 @@ export default class Sequencer {
           await page.generateCert(this.keypair);
           if (this.communication) {
             await this.communication.broadcastCertifiedPage({
-              from: this.pubkey,
+              from: this.peerid,
               page_data: await page.toJSONObject(),
             });
           }
@@ -482,7 +482,7 @@ export default class Sequencer {
     const scribes = await this.getScribesAtRound(round);
     for (const scribe of scribes) {
       const page = await this.communication.fetchScribeRoundCertifiedPage({
-        from: this.pubkey,
+        from: this.peerid,
         to: scribe,
         scribe,
         round,

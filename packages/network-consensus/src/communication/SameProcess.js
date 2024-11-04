@@ -11,7 +11,7 @@ export default class SameProcess {
       return;
     }
     for (const to_seq of Object.values(this.scribe_sequencers)) {
-      if (this.offline_sequencers.includes(to_seq.pubkey)) {
+      if (this.offline_sequencers.includes(to_seq.peerid)) {
         continue;
       }
       await to_seq?.onReceiveDraftPage(page_data);
@@ -45,7 +45,7 @@ export default class SameProcess {
       return;
     }
     for (const to_seq of Object.values(this.scribe_sequencers)) {
-      if (this.offline_sequencers.includes(to_seq.pubkey)) {
+      if (this.offline_sequencers.includes(to_seq.peerid)) {
         continue;
       }
       await to_seq?.onReceiveCertifiedPage(page_data);

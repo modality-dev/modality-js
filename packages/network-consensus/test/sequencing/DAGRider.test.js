@@ -25,7 +25,7 @@ describe("DAGRider", () => {
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribes = await Devnet.getPeerids(NODE_COUNT);
     const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new DAGRider({
@@ -106,7 +106,7 @@ describe("DAGRider", () => {
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribes = await Devnet.getPeerids(NODE_COUNT);
     const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new DAGRider({
@@ -193,7 +193,7 @@ describe("DAGRider", () => {
     let page, ack, round;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribes = await Devnet.getPeerids(NODE_COUNT);
     const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
 
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
@@ -211,7 +211,7 @@ describe("DAGRider", () => {
     const seq1 = new DAGRider({
       datastore: datastores[0],
       randomness,
-      pubkey: scribes[0],
+      peerid: scribes[0],
       keypair: scribe_keypairs[scribes[0]],
       communication_enabled: true,
     });
@@ -219,14 +219,14 @@ describe("DAGRider", () => {
     const seq2 = new DAGRider({
       datastore: datastores[1],
       randomness,
-      pubkey: scribes[1],
+      peerid: scribes[1],
       keypair: scribe_keypairs[scribes[1]],
     });
 
     const seq3 = new DAGRider({
       datastore: datastores[2],
       randomness,
-      pubkey: scribes[2],
+      peerid: scribes[2],
       keypair: scribe_keypairs[scribes[2]],
     });
 
@@ -272,7 +272,7 @@ describe("DAGRider", () => {
 
   test("run sequencers", async () => {
     const NODE_COUNT = 9;
-    const my_seq_id = Devnet.pubkeyOf(0);
+    const my_seq_id = Devnet.peeridOf(0);
 
     const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: DAGRider, RandomnessModule: RoundRobin});
     await st.runUntilRound(9);
@@ -289,7 +289,7 @@ describe("DAGRider", () => {
   test("given f = 0, one bad sequence, network stalls", async () => {
     const NODE_COUNT = 3;
     const BAD_NODE_COUNT = 1;
-    const offline_seq_id = Devnet.pubkeyOf(NODE_COUNT - 1);
+    const offline_seq_id = Devnet.peeridOf(NODE_COUNT - 1);
 
     const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: DAGRider, RandomnessModule: RoundRobin});
     st.communication.offline_sequencers = [offline_seq_id];
@@ -301,7 +301,7 @@ describe("DAGRider", () => {
     st.communication.offline_sequencers = [];
     await st.runUntilRound(9);
 
-    const my_seq_id = Devnet.pubkeyOf(0);
+    const my_seq_id = Devnet.peeridOf(0);
     const seq1 = st.getSequencer(my_seq_id);
     const leader1 = await seq1.findLeaderInRound(1);
     expect(leader1).not.toBeNull();
@@ -314,8 +314,8 @@ describe("DAGRider", () => {
   test("given f = 1, one bad sequencer not elected leader, network can sequence", async () => {
     const NODE_COUNT = 4;
     const BAD_NODE_COUNT = 1;
-    const my_seq_id = Devnet.pubkeyOf(0);
-    const offline_seq_id = Devnet.pubkeyOf(3);
+    const my_seq_id = Devnet.peeridOf(0);
+    const offline_seq_id = Devnet.peeridOf(3);
 
     const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: DAGRider, RandomnessModule: RoundRobin});
     st.communication.offline_sequencers = [offline_seq_id];

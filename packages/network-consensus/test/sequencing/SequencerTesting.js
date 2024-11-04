@@ -30,8 +30,8 @@ export default class SequencerTesting {
     return r;
   }
 
-  getSequencer(pubkey) {
-    return this.seqs[pubkey];
+  getSequencer(peerid) {
+    return this.seqs[peerid];
   }
 
   onlineSequencerEntries() {

@@ -43,7 +43,7 @@ export async function getKeypairsDict(count = null) {
   return r;
 }
 
-export async function getPubkeys(count = null) {
+export async function getPeerids(count = null) {
   if (!count) {
     count = Object.keys(keypairs).length;
   }
@@ -58,14 +58,14 @@ export async function getPubkeys(count = null) {
   return r;
 }
 
-export function pubkeyOf(index) {
+export function peeridOf(index) {
   return Object.values(keypairs)[index]?.id;
 }
 
-export function indexOf(pubkey) {
+export function indexOf(peerid) {
   let index = 0
   for (const keypair of Object.entries(keypairs)) {
-    if (keypair[1].id === pubkey) {
+    if (keypair[1].id === peerid) {
       return index;
     }
     index++;
@@ -79,11 +79,11 @@ export async function getKeypairFor(id) {
 export default {
   name: "devnet-common",
   keypairs,
-  getPubkeys,
+  getPeerids,
   getKeypairs,
   getKeypairByIndex,
   getKeypairFor,
   getKeypairsDict,
-  pubkeyOf,
+  peeridOf,
   indexOf
 };

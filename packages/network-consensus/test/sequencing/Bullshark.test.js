@@ -19,7 +19,7 @@ describe("Bullshark", () => {
 
   test("run sequencers", async () => {
     const NODE_COUNT = 9;
-    const my_seq_id = Devnet.pubkeyOf(0);
+    const my_seq_id = Devnet.peeridOf(0);
 
     const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: Bullshark, RandomnessModule: RoundRobin});
     await st.runUntilRound(9);
@@ -36,8 +36,8 @@ describe("Bullshark", () => {
   test("given f = 1, one bad sequencer not elected leader, network can sequence", async () => {
     const NODE_COUNT = 4;
     const BAD_NODE_COUNT = 1;
-    const my_seq_id = Devnet.pubkeyOf(0);
-    const offline_seq_id = Devnet.pubkeyOf(3);
+    const my_seq_id = Devnet.peeridOf(0);
+    const offline_seq_id = Devnet.peeridOf(3);
 
     const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: Bullshark, RandomnessModule: RoundRobin});
     st.communication.offline_sequencers = [offline_seq_id];
@@ -55,7 +55,7 @@ describe("Bullshark", () => {
   test("given f = 0, one bad sequence, network stalls", async () => {
     const NODE_COUNT = 3;
     const BAD_NODE_COUNT = 1;
-    const offline_seq_id = Devnet.pubkeyOf(NODE_COUNT - 1);
+    const offline_seq_id = Devnet.peeridOf(NODE_COUNT - 1);
 
     const st = await SequencerTesting.setup({node_count: NODE_COUNT, SequencerModule: Bullshark, RandomnessModule: RoundRobin});
     st.communication.offline_sequencers = [offline_seq_id];

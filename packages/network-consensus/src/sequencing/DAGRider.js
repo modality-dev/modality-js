@@ -11,7 +11,7 @@ export default class DAGRider extends Sequencer {
     datastore,
     randomness,
     sequencer_first_round = 1,
-    pubkey,
+    peerid,
     keypair,
     communication,
   }) {
@@ -19,7 +19,7 @@ export default class DAGRider extends Sequencer {
       datastore,
       randomness,
       sequencer_first_round,
-      pubkey,
+      peerid,
       keypair,
       communication,
     });
@@ -30,7 +30,7 @@ export default class DAGRider extends Sequencer {
       datastore,
       randomness,
       keypair,
-      pubkey: peerid,
+      peerid,
     });
   }
 

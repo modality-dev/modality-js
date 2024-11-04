@@ -25,7 +25,7 @@ describe("Bullshark", () => {
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribes = await Devnet.getPeerids(NODE_COUNT);
     const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new Bullshark({
@@ -106,7 +106,7 @@ describe("Bullshark", () => {
     let pages, page, page1;
 
     // setup
-    const scribes = await Devnet.getPubkeys(NODE_COUNT);
+    const scribes = await Devnet.getPeerids(NODE_COUNT);
     const scribe_keypairs = await Devnet.getKeypairsDict(NODE_COUNT);
     const ds_builder = await NetworkDatastoreBuilder.createInMemory();
     const binder = new Bullshark({
