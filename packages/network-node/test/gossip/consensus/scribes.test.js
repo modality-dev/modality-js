@@ -5,7 +5,7 @@ import node1_config from "../../../fixtures/configs/node1.json";
 import node2_config from "../../../fixtures/configs/node2.json";
 
 import { addSequencerEventListeners } from "../../../src/gossip/index.js";
-import { attachDatastore } from "../../../src/storage.js";
+import { setupNode } from "../../../src/lib/setupNode.js";
 import Page from '@modality-dev/network-datastore/data/Page';
 import Round from '@modality-dev/network-datastore/data/Round';
 import Keypair from "@modality-dev/utils/Keypair";
@@ -14,11 +14,11 @@ describe("gossip /consensus/scribes/page_draft", () => {
   it("should work", async () => {
     const node1 = await createTestNode(node1_config);
     await addSequencerEventListeners(node1);
-    await attachDatastore(node1, node1_config);
+    await setupNode(node1, node1_config);
 
     const node2 = await createTestNode(node2_config);
     await addSequencerEventListeners(node2);
-    await attachDatastore(node2, node2_config);
+    await setupNode(node2, node2_config);
 
     const round = Round.from({
       round: 1,

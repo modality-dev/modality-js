@@ -6,7 +6,7 @@ import PeerIdHelpers from "../PeerIdHelpers.js";
 import { parseConfigArgs } from "../parseConfigArgs.js";
 
 import { addSequencerEventListeners } from "../gossip/index.js";
-import { attachDatastore } from "../storage.js";
+import { setupNode } from '../lib/setupNode.js';
 
 async function addPeerDiscoveryEventListeners(node) {
   node.addEventListener("peer:connect", (evt) => {
@@ -41,13 +41,13 @@ export default async function run({ config, keypair, listen, storage, load_stora
     bootstrappers: conf.bootstrappers,
   });
 
-  await attachDatastore(node, conf);
+  await setupNode(node, conf);
 
   await addPeerDiscoveryEventListeners(node);
   services = Array.isArray(services) ? services : [services];
   if (services.includes("scribe") || services.includes("sequencer")) {
     await addSequencerEventListeners(node);
-    console.log(`Starting on round: ${await node.storage.sequencer.getCurrentRound()}`);
+    console.log(`Starting on round: ${await node.consensus.getCurrentRound()}`);
   }
  
   console.log("Listener ready, listening on:");
@@ -72,7 +72,7 @@ export default async function run({ config, keypair, listen, storage, load_stora
     process.exit(0);
   });
 
-  node.storage.sequencer.run(abortController.signal);
+  node.consensus.run(abortController.signal);
 }
 
 import cliCalls from "cli-calls";

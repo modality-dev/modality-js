@@ -5,7 +5,7 @@
     "private_key": "CAESQOXrkVunUwHzs4yfH+1e5MXyeK0PTHQMJ3Jf+Sbx4/2uACJ0W1YPpuhcvLBR9Jkkk+6wx7ur63JhgbJnHPn0QYg="
   },
   "listen": "/ip4/0.0.0.0/tcp/10001/ws",
-  "storage": "/tmp/modality-fixtures/storage/node1",
+  "_storage": "/tmp/modality-fixtures/storage/node1",
   "bootstrappers": [
     "/ip4/127.0.0.1/tcp/10001/ws/p2p/12D3KooWPBRNBzgceXh7Z27wGoyYYz9ggwaYg2dWiwXXe8ieyFCN"
   ]
