@@ -56,10 +56,6 @@ export default class Sequencer {
     return this.constructor.calculate2fplus1(scribes.length);
   }
 
-  async getCurrentRound() {
-    return this.datastore.getCurrentRound();
-  }
-
   async getScribesAtRound(round) {
     throw new Error("Not implemented");
   }
@@ -83,117 +79,6 @@ export default class Sequencer {
     throw new Error("Not implemented");
   }
 
-  async findPage({ round, scribe }) {
-    try {
-      return await Page.findOne({ datastore: this.datastore, round, scribe });
-    } catch (e) {
-      // noop
-    }
-    return null;
-  }
-
-  async doesPageCertLinkToPage(later_page, earlier_page) {
-    if (later_page.round <= earlier_page.round) return false;
-    let round = later_page.round - 1;
-    let cert_set = new Set([
-      ...Object.values(later_page.last_round_certs).map((i) => i.scribe),
-    ]);
-    while (cert_set.size && round >= earlier_page.round) {
-      if (round === earlier_page.round && cert_set.has(earlier_page.scribe)) {
-        return true;
-      }
-      const new_cert_set = new Set();
-      for (const scribe of cert_set) {
-        let page = await this.findPage({ round, scribe });
-        if (!page) {
-          throw new Error(
-            `Page ${scribe} ${round} not found. You must retrieve it first.`
-          );
-        }
-        for (const i_cert of Object.values(page.last_round_certs)) {
-          new_cert_set.add(i_cert.scribe);
-        }
-      }
-      round = round - 1;
-      cert_set = new_cert_set;
-    }
-    return false;
-  }
-
-  async findCausallyLinkedPages(last_page, after_page = null) {
-    const r = [];
-    if (!last_page) return r;
-    if (last_page === after_page) return r;
-    r.push({ round: last_page.round, scribe: last_page.scribe });
-    let page;
-    let round = last_page.round - 1;
-
-    // TODO prioritize pages by MIN(ack_count, 2f+1), then by leader-first-lexicographic order,
-    // recursively causally order their ack linked pages with the same prioritization strategy.
-    // with some binders, this prevents a scribe from silently self-acking as means of prioritizing a commit
-
-    let cert_set = new Set([
-      ...Object.values(last_page.last_round_certs).map((i) => i.scribe),
-    ]);
-    while (cert_set.size && round >= 1) {
-      const new_cert_set = new Set();
-      // prioritize pages lexographically ordered starting at leader scribe
-      const certs_list_lexiordered = [...cert_set].sort();
-      const certs_list_start = Math.max(
-        0,
-        certs_list_lexiordered.findIndex(
-          (i) => i.localeCompare(last_page.scribe) > 0
-        )
-      );
-      const certs_list = [
-        ...certs_list_lexiordered.slice(certs_list_start),
-        ...certs_list_lexiordered.slice(0, certs_list_start),
-      ];
-      for (const scribe of certs_list) {
-        page = await this.findPage({ round, scribe });
-        if (!page) {
-          throw new Error(
-            `Page ${scribe} ${round} not found. You must retrieve it first.`
-          );
-        }
-        let should_skip = false;
-        if (after_page) {
-          if (
-            page.scribe === after_page.scribe &&
-            page.round === after_page.round
-          ) {
-            should_skip = true;
-          } else if (page.round < after_page.round) {
-            if (await this.doesPageCertLinkToPage(after_page, page)) {
-              // console.log(`
-              //   processing ${last_page.round}.${last_page.scribe}
-              //     skipping ${page.round}.${page.scribe}
-              //     because causally linked to
-              //     skipping ${after_page.round}.${after_page.scribe}
-              //   `)
-              should_skip = true;
-            } else {
-              //
-            }
-          }
-        }
-        if (!should_skip) {
-          r.push({ round: page.round, scribe: page.scribe });
-          for (const cert of Object.values(page.last_round_certs || {})) {
-            new_cert_set.add(cert.scribe);
-          }
-        } else {
-          new_cert_set.delete(page.scribe);
-        }
-      }
-
-      cert_set = new_cert_set;
-      round = round - 1;
-    }
-
-    return r.reverse();
-  }
-  
   async onReceiveDraftPage(page_data) {
     const page = await Page.fromJSONObject(page_data);
     if (!page.validateSig()) {
@@ -209,7 +94,7 @@ export default class Sequencer {
       return;
     }
 
-    const current_round = await this.getCurrentRound();
+    const current_round = await this.datastore.getCurrentRound();
 
     if (page.round > current_round) {
       return this.onReceiveDraftPageFromLaterRound(page_data);
@@ -221,7 +106,7 @@ export default class Sequencer {
   }
 
   async onReceiveDraftPageFromEarlierRound(page_data) {
-    const current_round = await this.getCurrentRound();
+    const current_round = await this.datastore.getCurrentRound();
     const page = await Page.fromJSONObject(page_data);
     // console.warn(`received draft for earlier round: round ${page.round} draft received but currently on round ${current_round}`);
 
@@ -231,7 +116,7 @@ export default class Sequencer {
     if (this.pubkey) {
       const ack = await page.generateLateAck(this.keypair, current_round);
       if (this.communication) {
-        const last_round_certs = await this.getTimelyCertSigsAtRound(
+        const last_round_certs = await this.datastore.getTimelyCertSigsAtRound(
           current_round - 1
         );
         await this.communication.sendPageLateAck({
@@ -246,7 +131,7 @@ export default class Sequencer {
   }
 
   async onReceiveDraftPageFromLaterRound(page_data) {
-    const current_round = await this.getCurrentRound();
+    const current_round = await this.datastore.getCurrentRound();
     const page = await Page.fromJSONObject(page_data);
     // console.warn(`received draft for later round: round ${page.round} draft received but currently on round ${current_round}`);
 
@@ -272,7 +157,7 @@ export default class Sequencer {
   }
 
   async onReceiveDraftPageFromCurrentRound(page_data) {
-    const current_round = await this.getCurrentRound();
+    const current_round = await this.datastore.getCurrentRound();
     const page = await Page.fromJSONObject(page_data);
 
     if (this.pubkey) {
@@ -298,7 +183,7 @@ export default class Sequencer {
       return;
     }
 
-    const round = await this.getCurrentRound();
+    const round = await this.datastore.getCurrentRound();
     if (ack.round !== round) {
       return;
     }
@@ -334,7 +219,7 @@ export default class Sequencer {
       return null;
     }
 
-    const round = await this.getCurrentRound();
+    const round = await this.datastore.getCurrentRound();
     if (page.round < round) {
       // console.log({round}, page_data);
       // return this.onReceiveLateCertifiedPage(page_data);
@@ -346,7 +231,7 @@ export default class Sequencer {
   }
 
   async onReceiveCertifiedPageFromLaterRound(page_data) {
-    const current_round = await this.getCurrentRound();
+    const current_round = await this.datastore.getCurrentRound();
     const page = await Page.fromJSONObject(page_data);
 
     await RoundMessage.fromJSONObject({
@@ -403,7 +288,7 @@ export default class Sequencer {
 
   async getOrFetchLastRoundCerts(round) {
     const last_round = round - 1;
-    let last_round_certs = await this.getTimelyCertSigsAtRound(last_round);
+    let last_round_certs = await this.datastore.getTimelyCertSigsAtRound(last_round);
     const last_round_scribes = await this.getScribesAtRound(last_round);
 
     const threshold = this.constructor.calculate2fplus1(
@@ -431,39 +316,17 @@ export default class Sequencer {
       }
     }
 
-    last_round_certs = await this.getTimelyCertSigsAtRound(last_round);
+    last_round_certs = await this.datastore.getTimelyCertSigsAtRound(last_round);
 
     return last_round_certs;
   }
 
-  async getTimelyCertsAtRound(round) {
-    const pages = (
-      await Page.findAllInRound({ datastore: this.datastore, round })
-    ).filter((i) => !i.seen_at_round);
-    return pages.reduce((acc, i) => {
-      acc[i.scribe] = i;
-      return acc;
-    }, {});
-  }
 
-  async getTimelyCertSigsAtRound(round) {
-    const pages = (
-      await Page.findAllInRound({ datastore: this.datastore, round })
-    ).filter((i) => !i.seen_at_round);
-    return pages.reduce((acc, i) => {
-      acc[i.scribe] = {
-        scribe: i.scribe,
-        cert: i.cert,
-        round: i.round,
-      };
-      return acc;
-    }, {});
-  }
 
   async speedUpToLatestUncertifiedRound() {
     let round_certified = true;
     while (round_certified) {
-      let round = await this.getCurrentRound() + 1;
+      let round = await this.datastore.getCurrentRound() + 1;
       const last_round_certs = await this.getOrFetchLastRoundCerts(round);
       const existing_certs = await RoundMessage.findAllInRoundOfType({
         datastore: this.datastore,
@@ -489,7 +352,7 @@ export default class Sequencer {
     const scribe = await this.keypair?.asPublicAddress();
 
     await this.speedUpToLatestUncertifiedRound();
-    let round = await this.getCurrentRound();
+    let round = await this.datastore.getCurrentRound();
 
     const last_round_certs = await this.getOrFetchLastRoundCerts(round);
     const last_round_scribes = await this.getScribesAtRound(round - 1);
@@ -508,7 +371,7 @@ export default class Sequencer {
     });
     if (existing_this_round_certs.length >= current_round_threshold) {
       await this.bumpCurrentRound();
-      round = await this.getCurrentRound();
+      round = await this.datastore.getCurrentRound();
     }
 
     let cc_events = await ContractCommitEvent.findAll({ datastore: this.datastore });
@@ -593,7 +456,7 @@ export default class Sequencer {
       }
       if (keep_waiting_for_certs) {
         const current_round_certs =
-          await this.getTimelyCertsAtRound(round);
+          await this.datastore.getTimelyCertsAtRound(round);
         if (
           Object.keys(current_round_certs).length >= current_round_threshold
         ) {
@@ -612,7 +475,7 @@ export default class Sequencer {
   }
 
   async onFetchScribeRoundCertifiedPageRequest({ round, scribe }) {
-    return this.findPage({ round, scribe });
+    return this.datastore.findPage({ round, scribe });
   }
 
   async requestRoundDataFromPeers(round) {
@@ -631,7 +494,7 @@ export default class Sequencer {
   }
 
   async jumpToRound(round_num) {
-    const current_round_num = await this.getCurrentRound();
+    const current_round_num = await this.datastore.getCurrentRound();
     for (let i = current_round_num + 1; i < round_num; i++) {
       // TODO maybe handle jumping from earlier rounds
       // const roundi = Round.from({ round: i });
@@ -645,7 +508,7 @@ export default class Sequencer {
   }
 
   async bumpCurrentRound() {
-    const round_num = await this.getCurrentRound();
+    const round_num = await this.datastore.getCurrentRound();
     const round = Round.from({ round: round_num });
     round.scribes = await this.getScribesAtRound(round_num);
     await round.save({ datastore: this.datastore });
@@ -653,13 +516,13 @@ export default class Sequencer {
   }
 
   async runUntilRound(round, signal) {
-    let current_round = await this.getCurrentRound();
+    let current_round = await this.datastore.getCurrentRound();
     while (current_round < round) {
       if (signal?.aborted) {
         throw new Error("aborted");
       }
       await this.runRound(signal);
-      current_round = await this.getCurrentRound();
+      current_round = await this.datastore.getCurrentRound();
     }
   }
 

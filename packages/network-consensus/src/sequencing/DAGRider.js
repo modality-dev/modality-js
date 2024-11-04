@@ -90,7 +90,7 @@ export default class DAGRider extends Sequencer {
       }),
     });
 
-    const leader = await this.findPage({ round, scribe });
+    const leader = await this.datastore.findPage({ round, scribe });
     // console.log({ round, scribes, scribe, leader });
     if (!leader) {
       return null;
@@ -102,13 +102,13 @@ export default class DAGRider extends Sequencer {
     for (const i of [1, 2, 3]) {
       // TODO support changes in scribes
       for (const i_scribe of scribes) {
-        const page = await this.findPage({
+        const page = await this.datastore.findPage({
           round: round + i,
           scribe: i_scribe,
         });
         if (page) {
           for (const prev_page_scribe of prev_round_scribes) {
-            const prev_page = await this.findPage({
+            const prev_page = await this.datastore.findPage({
               round: round + i - 1,
               scribe: prev_page_scribe,
             });
@@ -154,7 +154,7 @@ export default class DAGRider extends Sequencer {
     const starting_leader = await this.findLeaderInRound(start_round);
     const ending_leader = await this.findLeaderInRound(end_round);
     // console.log({start_round, starting_leader, end_round, ending_leader});
-    return this.findCausallyLinkedPages(ending_leader, starting_leader);
+    return this.datastore.findCausallyLinkedPages(ending_leader, starting_leader);
   }
 
   async findOrderedPagesUptoRound(end_round) {

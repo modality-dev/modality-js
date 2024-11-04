@@ -239,7 +239,7 @@ describe("DAGRider", () => {
     page = Page.from({
       round,
       scribe: scribes[0],
-      last_round_certs: await seq1.getTimelyCertsAtRound(round - 1),
+      last_round_certs: await seq1.datastore.getTimelyCertsAtRound(round - 1),
       events: [],
     });
     await page.generateSig(scribe_keypairs[scribes[0]]);

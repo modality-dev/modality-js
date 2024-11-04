@@ -72,7 +72,7 @@ export default class Bullshark extends Sequencer {
       }),
     });
 
-    const leader = await this.findPage({ round, scribe });
+    const leader = await this.datastore.findPage({ round, scribe });
     if (!leader) {
       return null;
     }
@@ -82,7 +82,7 @@ export default class Bullshark extends Sequencer {
     let next_pages = new Set();
     for (const i of [1, 2, 3]) {
       for (const i_scribe of scribes) {
-        const page = await this.findPage({
+        const page = await this.datastore.findPage({
           round: round + i,
           scribe: i_scribe,
         });
@@ -183,6 +183,6 @@ export default class Bullshark extends Sequencer {
   async findOrderedPagesInSection(start_round, end_round) {
     const starting_leader = await this.findFallbackLeaderInRound(start_round);
     const ending_leader = await this.findFallbackLeaderInRound(end_round);
-    return this.findCausallyLinkedPages(ending_leader, starting_leader);
+    return this.datastore.findCausallyLinkedPages(ending_leader, starting_leader);
   }
 }

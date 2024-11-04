@@ -47,7 +47,7 @@ export default async function run({ config, keypair, listen, storage, load_stora
   services = Array.isArray(services) ? services : [services];
   if (services.includes("scribe") || services.includes("sequencer")) {
     await addSequencerEventListeners(node);
-    console.log(`Starting on round: ${await node.consensus.getCurrentRound()}`);
+    console.log(`Starting on round: ${await node.storage.datastore.getCurrentRound()}`);
   }
  
   console.log("Listener ready, listening on:");
