@@ -6,6 +6,7 @@ import NetworkDatastore from "@modality-dev/network-datastore";
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 import RoundRobin from "../election/RoundRobin";
+import ConsensusMath from "../lib/ConsensusMath";
 
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
 
@@ -160,7 +161,7 @@ describe("Bullshark", () => {
     // given consensus connected rounds, how many nodes in round n-1
     // won't be acked by our nodes in round n?
     const ONE_ROUND_DROPOFF =
-      NODE_COUNT - Bullshark.consensusThresholdFor(NODE_COUNT);
+      NODE_COUNT - ConsensusMath.calculate2fplus1(NODE_COUNT);
     expect(pages.length).toBe(4 * NODE_COUNT - ONE_ROUND_DROPOFF);
     expect(pages.at(-1).scribe).toBe(scribes[1]);
 

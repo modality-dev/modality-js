@@ -2,7 +2,7 @@ import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 import RoundMessage from "@modality-dev/network-datastore/data/RoundMessage";
 import ContractCommitEvent from "@modality-dev/network-datastore/data/ContractCommitEvent";
-import ConsensusMath from "../lib/ConsensusMath";
+import ConsensusMath from "./lib/ConsensusMath";
 
 import { setTimeout, setImmediate } from "timers/promises";
 import { Mutex } from "async-mutex";
@@ -11,30 +11,32 @@ const INTRA_ROUND_WAIT_TIME_MS = 50;
 const NO_EVENTS_ROUND_WAIT_TIME_MS = 15000;
 const NO_EVENTS_POLL_WAIT_TIME_MS = 500;
 
-export default class Sequencer {
+export default class Runner {
   constructor({
     datastore,
-    randomness,
-    sequencer_first_round = 1,
     peerid,
     keypair,
     communication,
+    sequencing
   }) {
     this.datastore = datastore;
-    this.randomness = randomness;
-    this.sequencer_first_round = sequencer_first_round;
     this.peerid = peerid;
     this.keypair = keypair;
     this.communication = communication;
+    this.sequencing = sequencing;
     this.mutex = new Mutex();
   }
 
+  static create(props) {
+    return new Runner(props);
+  }
+
   async getScribesAtRound(round) {
-    throw new Error("Not implemented");
+    return this.sequencing.getScribesAtRound(round);
   }
 
   async consensusThresholdForRound(round) {
-    throw new Error("Not implemented");
+    return this.sequencing.consensusThresholdForRound(round);
   }
 
   async onReceiveDraftPage(page_data) {

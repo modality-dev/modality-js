@@ -22,7 +22,7 @@ export default async function (req, res) {
     randomness,
   });
   const prev_round_scribes_count = prev_round?.scribes.length;
-  const prev_round_threshold = Sequencer.consensusThresholdFor(prev_round_scribes_count);
+  const prev_round_threshold = Sequencer.consensusThresholdForRound(round_number-1);
   const leader = await binder.findLeaderInRound(round_number);
   const leader_scribe = leader?.scribe;
   const is_section_leader = leader_scribe === scribe_id;

@@ -3,35 +3,32 @@ import JSONStringifyDeterministic from "json-stringify-deterministic";
 import Sequencer from "./Sequencer.js";
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
+import ConsensusMath from "../lib/ConsensusMath.js";
 
 export const NAME = "DAGRider";
 
-export default class DAGRider extends Sequencer {
+export default class DAGRider {
   constructor({
     datastore,
-    randomness,
+    election,
     sequencer_first_round = 1,
-    peerid,
-    keypair,
-    communication,
   }) {
-    super({
+    this.datastore = datastore;
+    this.election = election;
+    this.sequencer_first_round = sequencer_first_round;
+  }
+
+  static create({datastore, election, sequencer_first_round}) {
+    return new DAGRider({
       datastore,
-      randomness,
-      sequencer_first_round,
-      peerid,
-      keypair,
-      communication,
+      election,
+      sequencer_first_round
     });
   }
 
-  static create({datastore, randomness, peerid, keypair}) {
-    return new DAGRider({
-      datastore,
-      randomness,
-      keypair,
-      peerid,
-    });
+  async consensusThresholdForRound(round) {
+    const scribes = await this.getScribesAtRound(round);
+    return ConsensusMath.calculate2fplus1(scribes.length);
   }
 
   async getScribesAtRound(round) {
@@ -63,6 +60,21 @@ export default class DAGRider extends Sequencer {
     return (bound_round % 4) + 1;
   }
 
+  static getRoundProps(round, sequencer_first_round) {
+    const binder_round = round - sequencer_first_round + 1;
+    const binder_wave = this.getWaveOfRound(round, sequencer_first_round);
+    const binder_wave_round = this.getWaveRoundOfRound(
+      round,
+      sequencer_first_round
+    );
+    return {
+      round,
+      binder_round,
+      binder_wave,
+      binder_wave_round,
+    };
+  }
+
   async findLeaderInRound(round) {
     const round_props = this.constructor.getRoundProps(
       round,
@@ -82,11 +94,11 @@ export default class DAGRider extends Sequencer {
 
     // use common coin to pick the leader
     const scribes = await this.getScribesAtRound(round);
-    const scribe = await this.randomness.pickOne({
+    const scribe = await this.election.pickOne({
       options: scribes.sort(),
       input: JSONStringifyDeterministic({
         round: round_props.binder_wave,
-        // TODO source of shared randomness
+        // TODO source of shared election
       }),
     });
 

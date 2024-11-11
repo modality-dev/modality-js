@@ -2,6 +2,7 @@ import JSONStringifyDeterministic from "json-stringify-deterministic";
 
 import Sequencer from "./Sequencer";
 import Round from "@modality-dev/network-datastore/data/Round";
+import ConsensusMath from "../lib/ConsensusMath.js";
 
 export const NAME = "Bullshark";
 
@@ -14,6 +15,11 @@ export const NAME = "Bullshark";
 export default class Bullshark extends Sequencer {
   constructor({ datastore, randomness, sequencer_first_round = 1, ...rest }) {
     super({ datastore, randomness, sequencer_first_round, ...rest });
+  }
+
+  async consensusThresholdForRound(round) {
+    const scribes = await this.getScribesAtRound(round);
+    return ConsensusMath.calculate2fplus1(scribes.length);
   }
 
   async getScribesAtRound(round) {
@@ -43,6 +49,21 @@ export default class Bullshark extends Sequencer {
   static getWaveRoundOfRound(round, sequencer_first_round) {
     const bound_round = this.getBoundRound(round, sequencer_first_round);
     return (bound_round % 4) + 1;
+  }
+
+  static getRoundProps(round, sequencer_first_round) {
+    const binder_round = round - sequencer_first_round + 1;
+    const binder_wave = this.getWaveOfRound(round, sequencer_first_round);
+    const binder_wave_round = this.getWaveRoundOfRound(
+      round,
+      sequencer_first_round
+    );
+    return {
+      round,
+      binder_round,
+      binder_wave,
+      binder_wave_round,
+    };
   }
 
   async findFallbackLeaderInRound(round) {
