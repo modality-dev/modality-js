@@ -14,7 +14,7 @@ export default class TestNetwork {
   static async setup({node_count = 1, election_method, sequencing_method}) {
     const tn = new TestNetwork();
     tn.communication = new SameProcess();
-    tn.communication.scribe_sequencers = {};
+    tn.communication.nodes = {};
 
     const scribes = await Devnet.getPeerids(node_count);
     const scribe_keypairs = await Devnet.getKeypairsDict(node_count);
@@ -48,7 +48,7 @@ export default class TestNetwork {
       runner.no_events_round_wait_time_ms = 0;
       runner.no_events_poll_wait_time_ms = 0;
 
-      tn.communication.scribe_sequencers[scribe] = runner;
+      tn.communication.nodes[scribe] = runner;
       tn.nodes[scribe].runner = runner;
     }
 
@@ -60,7 +60,7 @@ export default class TestNetwork {
   }
 
   onlineSequencerEntries() {
-    return Object.fromEntries(Object.entries(this.nodes).filter((seq) => !this.communication.offline_sequencers.includes(seq[0])));
+    return Object.fromEntries(Object.entries(this.nodes).filter((seq) => !this.communication.offline_nodes.includes(seq[0])));
   }
 
   runUntilRound(round, signal) {

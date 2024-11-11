@@ -33,7 +33,7 @@ describe("Bullshark", () => {
     const offline_seq_id = Devnet.peeridOf(3);
 
     const network = await TestNetwork.setup({node_count: NODE_COUNT, sequencing_method: 'Bullshark', election_method: 'RoundRobin'});
-    network.communication.offline_sequencers = [offline_seq_id];
+    network.communication.offline_nodes = [offline_seq_id];
     await network.runUntilRound(9);
 
     const runner1 = network.getNode(my_seq_id).runner;
@@ -51,7 +51,7 @@ describe("Bullshark", () => {
     const offline_seq_id = Devnet.peeridOf(NODE_COUNT - 1);
 
     const network = await TestNetwork.setup({node_count: NODE_COUNT, sequencing_method: 'Bullshark', election_method: 'RoundRobin'});
-    network.communication.offline_sequencers = [offline_seq_id];
+    network.communication.offline_nodes = [offline_seq_id];
 
     const abortController = new AbortController();
     setTimeoutPromise(3000).then(() => { abortController.abort() });    

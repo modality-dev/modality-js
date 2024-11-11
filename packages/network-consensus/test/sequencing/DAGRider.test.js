@@ -209,13 +209,13 @@ describe("DAGRider", () => {
     const offline_seq_id = Devnet.peeridOf(NODE_COUNT - 1);
 
     const network = await TestNetwork.setup({node_count: NODE_COUNT, sequencing_method: 'DAGRider', election_method: 'RoundRobin'});
-    network.communication.offline_sequencers = [offline_seq_id];
+    network.communication.offline_nodes = [offline_seq_id];
 
     const abortController = new AbortController();
     setTimeoutPromise(3000).then(() => { abortController.abort() });    
     await expect(network.runUntilRound(9, abortController.signal)).rejects.toThrow("aborted");
 
-    network.communication.offline_sequencers = [];
+    network.communication.offline_nodes = [];
     await network.runUntilRound(9);
 
     const my_seq_id = Devnet.peeridOf(0);
@@ -235,7 +235,7 @@ describe("DAGRider", () => {
     const offline_seq_id = Devnet.peeridOf(3);
 
     const network = await TestNetwork.setup({node_count: NODE_COUNT, sequencing_method: 'DAGRider', election_method: 'RoundRobin'});
-    network.communication.offline_sequencers = [offline_seq_id];
+    network.communication.offline_nodes = [offline_seq_id];
     await network.runUntilRound(9);
 
     const seq1 = network.getNode(my_seq_id).runner;
@@ -247,7 +247,7 @@ describe("DAGRider", () => {
     expect(pages.length).toBe((NODE_COUNT - BAD_NODE_COUNT) * 4 + 1 + BAD_NODE_COUNT);
 
     // bring back the offline sequencer
-    network.communication.offline_sequencers = [];
+    network.communication.offline_nodes = [];
     await network.runUntilRound(13);
     const pages_r0t9 = await seq1.sequencing.findOrderedPagesInSection(null, 9);
     // bad node not yet producing pages
