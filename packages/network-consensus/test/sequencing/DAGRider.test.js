@@ -10,7 +10,7 @@ import DAGRider from "../../src/sequencing/DAGRider";
 import RoundRobin from "../../src/election/RoundRobin";
 import ConsensusMath from "../../src/lib/ConsensusMath";
 
-import TestNetwork from "./TestNetwork";
+import TestNetwork from "../TestNetwork";
 
 describe("DAGRider", () => {
   // to make testing easy to understand

@@ -1,10 +1,10 @@
 import Devnet from "@modality-dev/network-configs/Devnet";
 import NetworkDatastoreBuilder from "@modality-dev/network-datastore/NetworkDatastoreBuilder";
-import SameProcess from "../../src/communication/SameProcess";
+import SameProcess from "../src/communication/SameProcess";
 
-import Runner from "../../src/Runner";
-import { SEQUENCING_METHODS } from "../../src/sequencing";
-import { ELECTION_METHODS } from "../../src/election";
+import Runner from "../src/Runner";
+import { SEQUENCING_METHODS } from "../src/sequencing";
+import { ELECTION_METHODS } from "../src/election";
 
 export default class TestNetwork {
   constructor() {

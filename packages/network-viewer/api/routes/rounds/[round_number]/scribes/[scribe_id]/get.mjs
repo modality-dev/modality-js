@@ -1,8 +1,6 @@
 import Page from '@modality-dev/network-datastore/data/Page';
 import Round from '@modality-dev/network-datastore/data/Round';
-import Sequencer from '@modality-dev/network-consensus/sequencing/Sequencer';
-import DAGRider from '@modality-dev/network-consensus/sequencing/DAGRider';
-import RoundRobin from '@modality-dev/network-consensus/election/RoundRobin';
+import { setupSequencing } from '@modality-dev/network-consensus';
 
 export default async function (req, res) {
   const round_number = parseInt(req.params.round_number);
@@ -16,14 +14,16 @@ export default async function (req, res) {
   } catch (e) {
     //
   }
-  const randomness = new RoundRobin();
-  const binder = new DAGRider({
+
+  const sequencing = setupSequencing({
     datastore,
-    randomness,
+    sequencing_method: 'DAGRider',
+    election_method: 'RoundRobin'
   });
+
   const prev_round_scribes_count = prev_round?.scribes.length;
-  const prev_round_threshold = Sequencer.consensusThresholdForRound(round_number-1);
-  const leader = await binder.findLeaderInRound(round_number);
+  const prev_round_threshold = sequencing.consensusThresholdForRound(round_number-1);
+  const leader = await sequencing.findLeaderInRound(round_number);
   const leader_scribe = leader?.scribe;
   const is_section_leader = leader_scribe === scribe_id;
 

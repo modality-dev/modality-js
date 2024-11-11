@@ -25,3 +25,17 @@ export async function setupNetworkConsensus({
   });
   return consensus_system;
 }
+
+
+export async function setupSequencing({
+  datastore,
+  sequencing_method,
+  election_method,
+}) {
+  const election = ELECTION_METHODS[election_method].create();
+  const sequencing = SEQUENCING_METHODS[sequencing_method].create({
+    datastore,
+    election,
+  });
+  return sequencing;
+}

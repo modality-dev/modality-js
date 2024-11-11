@@ -1,6 +1,5 @@
 import JSONStringifyDeterministic from "json-stringify-deterministic";
 
-import Sequencer from "./Sequencer.js";
 import Page from "@modality-dev/network-datastore/data/Page";
 import Round from "@modality-dev/network-datastore/data/Round";
 import ConsensusMath from "../lib/ConsensusMath.js";

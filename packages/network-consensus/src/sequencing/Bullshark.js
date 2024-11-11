@@ -1,6 +1,5 @@
 import JSONStringifyDeterministic from "json-stringify-deterministic";
 
-import Sequencer from "./Sequencer";
 import Round from "@modality-dev/network-datastore/data/Round";
 import ConsensusMath from "../lib/ConsensusMath.js";
 
@@ -12,9 +11,23 @@ export const NAME = "Bullshark";
 /// * wave round 1 fallback leader (based on randomness of wave round 4, only used during asynchrony)
 /// * wave round 1 leader (based on predefined randomness)
 /// * wave round 3 leader (based on predefined randomness)
-export default class Bullshark extends Sequencer {
-  constructor({ datastore, randomness, sequencer_first_round = 1, ...rest }) {
-    super({ datastore, randomness, sequencer_first_round, ...rest });
+export default class Bullshark {
+  constructor({
+    datastore,
+    election,
+    sequencer_first_round = 1,
+  }) {
+    this.datastore = datastore;
+    this.election = election;
+    this.sequencer_first_round = sequencer_first_round;
+  }
+
+  static create({datastore, election, sequencer_first_round}) {
+    return new Bullshark({
+      datastore,
+      election,
+      sequencer_first_round
+    });
   }
 
   async consensusThresholdForRound(round) {
@@ -85,7 +98,7 @@ export default class Bullshark extends Sequencer {
 
     // use common coin to pick the leader
     const scribes = await this.getScribesAtRound(round);
-    const scribe = await this.randomness.pickOne({
+    const scribe = await this.election.pickOne({
       options: scribes.sort(),
       input: JSONStringifyDeterministic({
         round: round_props.binder_wave,
