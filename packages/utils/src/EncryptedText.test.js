@@ -34,4 +34,23 @@ describe('EncryptedText', () => {
           .rejects
           .toThrow();
   });
+
+  test('known string', async () => {
+    const KNOWN_PASSWORD = "test_password_123";
+    const KNOWN_MESSAGE = "Hello, Cross-Platform Encryption!";
+    const KNOWN_ENCRYPTED = "1G73otj9BTJ5i3djZyuemijZnGkMb8XawInJVUqLqiNTIRPrBrs8MxL0y+cJWTcxGcxkS7H+/BltKwxqS0dd5TYTN81cOWaHmO7SJR0=";
+
+    try {
+        // Test decryption of known string
+        const decrypted = await decrypt(KNOWN_ENCRYPTED, KNOWN_PASSWORD);
+        expect(decrypted).toBe(KNOWN_MESSAGE); 
+
+        // Test that we can also encrypt and decrypt our own message
+        const encrypted = await encrypt(KNOWN_MESSAGE, KNOWN_PASSWORD);
+        const redecrypted = await decrypt(encrypted, KNOWN_PASSWORD);
+        expect(redecrypted).toBe(KNOWN_MESSAGE);
+    } catch (error) {
+        console.error("Test failed:", error);
+    }
+  });
 });
